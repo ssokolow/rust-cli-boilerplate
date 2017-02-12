@@ -102,6 +102,12 @@ license of choice.</td>
 <table>
 <tr><th>Command</th><th>Arguments</th><th>Description</th></tr>
 <tr>
+  <td><code>DEFAULT</code></td>
+  <td></td>
+  <td><code>diff</code>-friendly mapping from <code>just</code> to <code>just
+test</code></td>
+</tr>
+<tr>
   <td><code>build</code></td>
   <td></td>
   <td>Call <code>cargo build --release</code>. Enable size optimizations if <code>channel=nightly</code>.</td>
@@ -112,15 +118,10 @@ license of choice.</td>
   <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
-  <td><code>kcov</code></td>
-  <td></td>
-  <td>Generate a statement coverage report in <code>target/cov/</code></td>
+  <td><code>fmt</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>cargo fmt -- {{args}}</code></td>
 </tr>
-<tr>
-  <td><code>DEFAULT</code></td>
-  <td></td>
-  <td><code>diff</code>-friendly mapping from <code>just</code> to <code>just
-test</code></td>
 <tr>
   <td><code>install-apt-deps</code></td>
   <td></td>
@@ -146,14 +147,14 @@ toolchains, plus <code>target</code>.</td>
 then list what remains.</td>
 </tr>
 <tr>
+  <td><code>kcov</code></td>
+  <td></td>
+  <td>Generate a statement coverage report in <code>target/cov/</code></td>
+</tr>
+<tr>
   <td><code>miniclean</code></td>
   <td></td>
   <td>Remove the release binary. (Used to avoid <code>strip</code>-ing UPX'd files.)</td>
-</tr>
-<tr>
-  <td><code>fmt</code></td>
-  <td>args (optional)</td>
-  <td>Alias for <code>cargo fmt -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>run</code></td>

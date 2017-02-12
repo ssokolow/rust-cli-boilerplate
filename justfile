@@ -53,6 +53,39 @@ build-release: miniclean build
 	@ls -sh "{{zz_target_path}}"
 	@printf "\n"
 
+# Alias for `cargo fmt -- {{args}}`
+fmt +args="":
+	cargo fmt -- {{args}}
+
+# Ensure `strip` and `upx` are installed via `apt-get`.
+install-apt-deps:
+	sudo apt-get install binutils upx
+
+# `install-rustup-deps` and then `cargo install` tools
+install-cargo-deps: install-rustup-deps
+	@# Prevent "already installed" from causing a failure
+	cargo install rustfmt || true
+	cargo install cargo-deadlinks || true
+	cargo install cargo-outdated || true
+	cargo +nightly install clippy || true
+
+# Install (but don't update) nightly, stable, and `channel` toolchains, plus `target`.
+install-rustup-deps:
+	@# Prevent this from gleefully doing an unwanted "rustup update"
+	rustup toolchain list | grep -q stable || rustup toolchain install stable
+	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
+	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
+	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
+
+# Run `install-apt-deps` and `install-cargo-deps`, then list what remains.
+@install-deps: install-apt-deps install-cargo-deps
+	echo
+	echo "-----------------------------------------------------------"
+	echo "IMPORTANT: You will need to install the following manually:"
+	echo "-----------------------------------------------------------"
+	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
+	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
+
 # Generate a statement coverage report in `target/cov/`
 kcov:
 	#!/bin/bash
@@ -94,42 +127,9 @@ kcov:
 	rm -rf "$ORIGIN/target/cov"
 	kcov --exclude-pattern=/.cargo,/usr/lib --verify "$ORIGIN/target/cov" "$ORIGIN/target/debug/$zz_pkgname-"* "$@"
 
-# Ensure `strip` and `upx` are installed via `apt-get`.
-install-apt-deps:
-	sudo apt-get install binutils upx
-
-# `install-rustup-deps` and then `cargo install` tools
-install-cargo-deps: install-rustup-deps
-	@# Prevent "already installed" from causing a failure
-	cargo install rustfmt || true
-	cargo install cargo-deadlinks || true
-	cargo install cargo-outdated || true
-	cargo +nightly install clippy || true
-
-# Install (but don't update) nightly, stable, and `channel` toolchains, plus `target`.
-install-rustup-deps:
-	@# Prevent this from gleefully doing an unwanted "rustup update"
-	rustup toolchain list | grep -q stable || rustup toolchain install stable
-	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
-	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
-	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
-
-# Run `install-apt-deps` and `install-cargo-deps`, then list what remains.
-@install-deps: install-apt-deps install-cargo-deps
-	echo
-	echo "-----------------------------------------------------------"
-	echo "IMPORTANT: You will need to install the following manually:"
-	echo "-----------------------------------------------------------"
-	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
-	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
-
 # Remove the release binary. (Used to avoid `strip`-ing UPX'd files.)
 @miniclean:
 	rm -f "{{zz_target_path}}"
-
-# Alias for `cargo fmt -- {{args}}`
-fmt +args="":
-	cargo fmt -- {{args}}
 
 # Alias for `cargo fmt -- {{args}}` with the *default* toolchain
 run +args="":
