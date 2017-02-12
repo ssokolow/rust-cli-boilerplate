@@ -1,7 +1,8 @@
 # Rust CLI Project Template
 
 The base project template I use with
-[cargo-template](https://github.com/pwoolcoc/cargo-template/) for starting
+[cargo-template](https://github.com/pwoolcoc/cargo-template/) (pending the
+stabilization of the `--template` option for `cargo new`) for starting
 new projects in the [Rust](https://rust-lang.org/) programming language.
 
 Given the current lack of mature equivalents to
@@ -20,9 +21,10 @@ I'll probably build another one for use with
 * Opts into almost all available rustc and
   [clippy](https://github.com/Manishearth/rust-clippy) lints without requiring
   that all builds be done on a clippy-enabled Rust version.
-* `release.sh --nightly` produces a fully statically-linked i686 binary where
-  the base size of the boilerplate, including statically-linked musl-libc,
-  error-chain, and "Did you mean...?"-enabled clap, is 178K.
+* `just build-release` produces a fully statically-linked i686 binary where
+  the binary size of just the boilerplate is under 200K, including a
+  statically-linked musl-libc, error-chain, and clap with "Did you mean...?"
+  support enabled.
 
 ## Supplementary Files
 
@@ -48,22 +50,121 @@ license of choice.</td>
   <td><code>rustfmt.toml</code></td>
   <td>A definition of my preferred coding style</td>
 </tr>
-<tr><th colspan="2">Helper Scripts</th></tr>
+<tr><th colspan="2">Development Automation</th></tr>
 <tr>
-  <td><code>coverage.sh</code></td>
-  <td>Automation for generating a statement coverage report at <code>target/cov/</code>. (Branch coverage is pending something less involved than <a href="https://users.rust-lang.org/t/howto-generating-a-branch-coverage-report/8524">this</a>.)</td>
-</tr>
-<tr>
-  <td><code>release.sh</code></td>
-  <td>Build automation to produce the most compact statically-linked binary
-possible. (A workaround for the inability to define a post-build script for <code>cargo build --release</code>)</td>
-</tr>
-<tr>
-  <td><code>test.sh</code></td>
-  <td>A script to run the most pedantic run of automated testing and static analysis that is feasible.</td>
+  <td><code>justfile</code></td>
+  <td>Various build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike).</td>
 </tr>
 </table>
 </html>
+
+## Justfile Reference
+
+### Variables (`just --evaluate`)
+<html>
+<table>
+<tr><th>Variable</th><th>Default Value</th><th>Description</th></tr>
+<tr>
+  <td><code>channel</code></td>
+  <td><code>nightly</code></code></td>
+  <td>The <code>rustc</code> channel used for <code>build</code> and commands which depend on it.</td>
+</tr>
+<tr>
+  <td><code>target</code></td>
+  <td><code>i686-unknown-linux-musl</code></td>
+  <td>Target used for <code>build</code> and additionally installed by <code>install-rustup-deps</code>.</td>
+</tr>
+<tr>
+  <td><code>features</code></td>
+  <td></td>
+  <td>Extra features to enable. Gains <code>nightly</code> when <code>channel=nightly</code>.</td>
+</tr>
+<tr>
+  <td><code>strip_bin</code></td>
+  <td><code>strip</code></td>
+  <td>Override this when cross-compiling. See <code>justfile</code> source for example.</td>
+</tr>
+<tr>
+  <td><code>strip_flags</code></td>
+  <td><code>--strip-unneeded</code></td>
+  <td>Flags passed to <code>strip_bin</code>.</td>
+</tr>
+<tr>
+  <td><code>upx_flags</code></td>
+  <td><code>--ultra-brute</code></td>
+  <td>Flags passed to UPX.</td>
+</tr>
+</table>
+</html>
+
+### Commands (`just --list`)
+<html>
+<table>
+<tr><th>Command</th><th>Arguments</th><th>Description</th></tr>
+<tr>
+  <td><code>build</code></td>
+  <td></td>
+  <td>Call <code>cargo build --release</code>. Enable size optimizations if <code>channel=nightly</code>.</td>
+</tr>
+<tr>
+  <td><code>build-release</code></td>
+  <td></td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
+</tr>
+<tr>
+  <td><code>coverage</code></td>
+  <td></td>
+  <td>Generate a statement coverage report in <code>target/cov/</code></td>
+</tr>
+<tr>
+  <td><code>install-apt-deps</code></td>
+  <td></td>
+  <td>Ensure <code>strip</code> and <code>upx</code> are installed via
+<code>apt-get</code>.</td>
+</tr>
+<tr>
+  <td><code>install-cargo-deps</code></td>
+  <td></td>
+  <td><code>install-rustup-deps</code> and then <code>cargo install</code>
+tools</td>
+</tr>
+<tr>
+  <td><code>install-rustup-deps</code></td>
+  <td></td>
+  <td>Install (but don't update) nightly, stable, and <code>channel</code>
+toolchains, plus <code>target</code>.</td>
+</tr>
+<tr>
+  <td><code>install-deps</code></td>
+  <td></td>
+  <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
+then list what remains.</td>
+</tr>
+<tr>
+  <td><code>miniclean</code></td>
+  <td></td>
+  <td>Remove the release binary. (Used to avoid <code>strip</code>-ing UPX'd files.)</td>
+</tr>
+<tr>
+  <td><code>fmt</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>cargo fmt -- {{args}}</code></td>
+</tr>
+<tr>
+  <td><code>run</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>cargo run -- {{args}}</code> with the <em>default</em>
+toolchain</td>
+</tr>
+<tr>
+  <td><code>test</code></td>
+  <td></td>
+  <td>Run all installed static analysis, plus <code>cargo +stable
+test</code>.</td>
+</tr>
+</table>
+</html>
+
 
 ## Build Behaviour
 
@@ -86,7 +187,7 @@ are defined:
 3. Panic via `abort` rather than unwinding to allow backtrace code to be pruned
    away by dead code optimization.
 
-### If built via `./release.sh`:
+### If built via `just channel=stable build-release`:
 
 1. Unless otherwise noted, all optimizations listed above.
 2. The binary will be statically linked against
@@ -99,7 +200,7 @@ are defined:
    [`upx --ultra-brute`](https://upx.github.io/).
    In my experience, this makes a file about 1/3rd the size of the input.
 
-### If built via `./release.sh --nightly`:
+### If built via `just channel=nightly build-release`:
 
 1. Unless otherwise noted, all optimizations listed above.
 2. The binary will be built with `opt-level = "z"` to further reduce file size.
@@ -111,25 +212,21 @@ are defined:
 In order to use the full functionality offered by this boilerplate, the
 following system-level dependencies must be installed:
 
-* `coverage.sh`:
+* `just build-release`:
 
-  * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
-kcov
-
-* `release.sh`:
-
+  * The toolchain specified by the <code>channel</code> variable.
   * 32-bit musl-libc targeting support
     (`rustup target add i686-unknown-linux-musl`)
   * `strip` (Included with binutils)
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
+    **(optional)**
   * [`upx`](https://upx.github.io/) (`sudo apt-get install upx`)
+* `just coverage`:
 
-* `release.sh --nightly`:
+  * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
+kcov
 
-  * The base requirements for `release.sh`
-  * A nightly Rust toolchain (`rustup toolchain add nightly`)
-
-* `test.sh`:
+* `just test`:
 
   * A stable Rust toolchain (`rustup toolchain add stable`)
   * A nightly Rust toolchain (`rustup toolchain add nightly`)
@@ -142,7 +239,22 @@ kcov
   * [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
     (`cargo install rustfmt`)
 
-**Note:** `release.sh` also contains commented-out lines to enable targeting
+### Dependency Installation
+
+* **Debian/Ubuntu/Mint:**
+
+        export PATH="$HOME/.cargo/bin:$PATH"
+        cargo install just
+        just install-deps
+
+* **Other distros:**
+
+        export PATH="$HOME/.cargo/bin:$PATH"
+        cargo install just
+        just install-cargo-deps
+        # ...and now manually make sure `strip` and `upx` are installed
+
+**Note:** `justfile` also contains commented-out example lines for targeting
 the [OpenPandora](http://openpandora.org/) Linux palmtop using a
 [cross-compiling gcc toolchain](https://pandorawiki.org/Cross-compiler) for
 the final glibc link.
@@ -151,8 +263,11 @@ the final glibc link.
 
 * Set up [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/) as an analogue to the
   `logging` module from Python stdlib
-* Consider using [just](https://github.com/casey/just) for helper scripting
-* Add a table to "Build Behaviour" showing output file sizes
+* Note the resulting file sizes in "Build Behaviour"
+* Add ready-to-run CI boilerplate, such as a `.travis.yml`
+* Check what effect 32-bit vs. 64-bit musl targeting has on UPXed file size,
+  if any.
+* Investigate commit hooks
 * Gather my custom clap validators into a crate and have this depend on it:
 
   * Can be parsed as an integer > 0 (eg. number of volumes)
@@ -160,8 +275,3 @@ the final glibc link.
   * File path exists and is readable
   * Target directory probably writable (via `access()`)
   * Filename/path contains no characters that are invalid on FAT32 thumbdrives
-
-* Add ready-to-run CI boilerplate, such as a `.travis.yml`
-* Check what effect 32-bit vs. 64-bit musl targeting has on UPXed file size,
-  if any.
-* Investigate commit hooks
