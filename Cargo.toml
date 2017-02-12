@@ -12,7 +12,9 @@ default-features = false  # disable pulling in backtrace
 
 [profile.release]
 lto = true
-panic = 'abort'
+
+# Uncomment to sacrifice Drop-on-panic cleanup for 20K space saving
+#panic = 'abort'
 
 # We need to specify this explicitly so sed can swap the 3 for "z" in
 # release.sh when running with --nightly
