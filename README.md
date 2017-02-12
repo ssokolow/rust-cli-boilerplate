@@ -112,7 +112,7 @@ license of choice.</td>
   <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
-  <td><code>coverage</code></td>
+  <td><code>kcov</code></td>
   <td></td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
@@ -233,7 +233,7 @@ following system-level dependencies must be installed:
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
   * [`upx`](https://upx.github.io/) (`sudo apt-get install upx`)
-* `just coverage`:
+* `just kcov`:
 
   * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
 kcov

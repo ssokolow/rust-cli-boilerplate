@@ -54,7 +54,7 @@ build-release: miniclean build
 	@printf "\n"
 
 # Generate a statement coverage report in `target/cov/`
-coverage:
+kcov:
 	#!/bin/bash
 	# Sources:
 	# - http://sunjay.ca/2016/07/25/rust-code-coverage
