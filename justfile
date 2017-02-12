@@ -146,7 +146,7 @@ test:
 	@printf "\n--== Clippy Lints ==--\n"
 	cargo +nightly clippy  # Run clippy for maximum pedantry
 	@printf "\n--== Test Suite (on stable) ==--\n"
-	cargo +stable test  # Test with stable to catch nightly dependencies
+	cargo +stable test  # Test with stable so nightly dependencies don't slip in
 
 	# TODO: https://users.rust-lang.org/t/howto-sanitize-your-rust-code/9378
 	#	  (And use clippy as a compiler plugin so we can save a pass)
