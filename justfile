@@ -43,10 +43,10 @@ build:
 
 # Call `build` and then strip and compress the resulting binary
 build-release: miniclean build
-	# Depend on miniclean to since stripping UPXd executables is fatal
+	@# Depend on miniclean since stripping UPXd executables is fatal
 	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
 	{{strip_bin}} {{strip_flags}} "{{zz_target_path}}"
-	# Allow sstrip to fail because it can't be installed via "just install-deps"
+	@# Allow sstrip to fail because it can't be installed via "just install-deps"
 	sstrip "{{zz_target_path}}" || true
 	upx {{upx_flags}} "{{zz_target_path}}"
 	@printf "\n--== Final Result ==--\n"
