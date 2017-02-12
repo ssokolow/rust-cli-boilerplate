@@ -1,0 +1,37 @@
+# Version 0.1
+
+# Always nice to have a way to gather TODOs and FIXMEs quickly
+report_todo = "Always"
+report_fixme = "Always"
+
+# I was one of the proponents in the RFC discussion
+use_try_shorthand = true
+
+# Keep rustfmt from from being over-eager to break my function signatures
+# (And use @ubsan's suggested line length from https://ubsan.github.io/style/ )
+# XXX: Still needs https://github.com/rust-lang-nursery/rustfmt/issues/1241
+ideal_width = 100
+fn_call_width = 100
+fn_brace_style = "PreferSameLine"
+where_density = "Compressed"
+single_line_if_else_max_width = 100
+
+# I happen to like /* this */ for multi-line comments, thank you very much
+normalize_comments = false
+
+# -----------------------------------------------------------------------------
+
+# Used for debugging rustfmt configurations
+#write_mode = "Diff"
+
+# XXX: Try reorder_imports once this issue is implemented:
+#      https://github.com/rust-lang-nursery/rustfmt/issues/1205
+#reorder_imports = true
+
+# XXX: This is useless to me while it's case-sensitive.
+#      See https://github.com/rust-lang-nursery/rustfmt/issues/1242
+#          https://github.com/rust-lang-nursery/fmt-rfcs/issues/24
+#reorder_imported_names = true
+
+# XXX: Rustfmt needs a length/complexity-controlled mode for fn_single_line
+# XXX: wrap_comments is too dumb/naive to meet people's needs currently
