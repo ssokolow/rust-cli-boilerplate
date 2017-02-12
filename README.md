@@ -117,6 +117,11 @@ license of choice.</td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
 <tr>
+  <td><code>DEFAULT</code></td>
+  <td></td>
+  <td><code>diff</code>-friendly mapping from <code>just</code> to <code>just
+test</code></td>
+<tr>
   <td><code>install-apt-deps</code></td>
   <td></td>
   <td>Ensure <code>strip</code> and <code>upx</code> are installed via
@@ -165,6 +170,13 @@ test</code>.</td>
 </table>
 </html>
 
+
+### Tips
+
+* Edit the `DEFAULT` command. That's what it's there for.
+* You can use `just` from any subdirectory in your project. It's like `git` that way.
+* `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
+* `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
 
 ## Build Behaviour
 

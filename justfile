@@ -22,6 +22,9 @@ upx_flags = "--ultra-brute"
 export zz_pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
 export zz_target_path="target/" + target  + "/release/" + zz_pkgname
 
+# `diff`-friendly mapping from `just` to `just test`
+DEFAULT: test
+
 # Call `cargo build --release`. Enable size optimizations if `channel=nightly`.
 build:
 	#!/bin/sh
