@@ -2,17 +2,8 @@
 ![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache_2.0-blue.svg)
 ![POSIX-only build tooling](https://img.shields.io/badge/dev_platform-POSIX-lightgrey.svg)
 
-
-The base project template I use for starting new projects in the
+A base project template for building small but reliable utilities in the
 [Rust](https://rust-lang.org/) programming language.
-
-Given the current lack of mature, stable-channel equivalents to
-[Django](https://www.djangoproject.com/) and
-[PyQt](https://riverbankcomputing.com/news), I use Rust primarily for building
-command-line tools.
-
-I'll probably build another one of these for building libraries with
-[rust-cypthon](https://github.com/dgrunwald/rust-cpython) later.
 
 **NOTE:** While the `LICENSE` file must contain my preferred choice for
 starting new projects (the GNU GPLv3), **you may use the contents of this
@@ -33,6 +24,9 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   customized via variables. (eg. for cross-compilation)
 * `just build-release` for a 100% static i686 binary totalling under `205KiB`
   (`185KiB` with `panic="abort"`) in new projects
+* `just install-deps` to install all but two optional dependencies on
+  Debian-family distros.
+* `just install-cargo-deps` to install all distro-agnostic dependencies.
 
 ## Supplementary Files
 
@@ -51,17 +45,17 @@ license of choice.</td>
 </tr>
 <tr>
   <td><code>clippy.toml</code></td>
-  <td>A whitelist for CamelCase names which trigger Clippy's "identifier needs
+  <td>Whitelist for CamelCase names which trigger Clippy's "identifier needs
   backticks" lint.</td>
 </tr>
 <tr>
   <td><code>rustfmt.toml</code></td>
-  <td>A definition of my preferred coding style</td>
+  <td>Show TODO/FIXME comments and tweak default <code>rustfmt</code> style</td>
 </tr>
 <tr><th colspan="2">Development Automation</th></tr>
 <tr>
   <td><code>justfile</code></td>
-  <td>Various build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike).</td>
+  <td>Build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike).</td>
 </tr>
 </table>
 </html>
@@ -75,27 +69,27 @@ license of choice.</td>
 <tr>
   <td><code>channel</code></td>
   <td><code>nightly</code></code></td>
-  <td>The <code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
+  <td><code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
 </tr>
 <tr>
   <td><code>target</code></td>
   <td><code>i686-unknown-linux-musl</code></td>
-  <td>Target used for <code>build</code> and additionally installed by <code>install-rustup-deps</code>.</td>
+  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
 </tr>
 <tr>
   <td><code>features</code></td>
   <td></td>
-  <td>Extra features to enable. Gains <code>nightly</code> when <code>channel=nightly</code>.</td>
+  <td>Extra features to enable. Gains <code>nightly</code> when <code>channel=nightly</code></td>
 </tr>
 <tr>
   <td><code>strip_bin</code></td>
   <td><code>strip</code></td>
-  <td>Override this when cross-compiling. See <code>justfile</code> source for example.</td>
+  <td>Override when cross-compiling. See <code>justfile</code> source for example.</td>
 </tr>
 <tr>
   <td><code>strip_flags</code></td>
   <td><code>--strip-unneeded</code></td>
-  <td>Flags passed to <code>strip_bin</code>.</td>
+  <td>Flags passed to <code>strip_bin</code></td>
 </tr>
 <tr>
   <td><code>upx_flags</code></td>
@@ -118,12 +112,12 @@ test</code></td>
 <tr>
   <td><code>build</code></td>
   <td></td>
-  <td>Call <code>cargo build --release</code>. Enable size optimizations if <code>channel=nightly</code>.</td>
+  <td>Call <code>cargo build --release</code>. Enable size optimizations if <code>channel=nightly</code></td>
 </tr>
 <tr>
   <td><code>build-release</code></td>
   <td></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary.</td>
 </tr>
 <tr>
   <td><code>fmt</code></td>
@@ -134,19 +128,19 @@ test</code></td>
   <td><code>install-apt-deps</code></td>
   <td></td>
   <td>Ensure <code>strip</code> and <code>upx</code> are installed via
-<code>apt-get</code>.</td>
+<code>apt-get</code></td>
 </tr>
 <tr>
   <td><code>install-cargo-deps</code></td>
   <td></td>
   <td><code>install-rustup-deps</code> and then <code>cargo install</code>
-tools</td>
+tools.</td>
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
   <td></td>
   <td>Install (but don't update) nightly, stable, and <code>channel</code>
-toolchains, plus <code>target</code>.</td>
+toolchains, plus <code>target</code></td>
 </tr>
 <tr>
   <td><code>install-deps</code></td>
@@ -168,13 +162,13 @@ then list what remains.</td>
   <td><code>run</code></td>
   <td>args (optional)</td>
   <td>Alias for <code>cargo run -- {{args}}</code> with the <em>default</em>
-toolchain</td>
+toolchain.</td>
 </tr>
 <tr>
   <td><code>test</code></td>
   <td></td>
   <td>Run all installed static analysis, plus <code>cargo +stable
-test</code>.</td>
+test</code></td>
 </tr>
 </table>
 </html>
