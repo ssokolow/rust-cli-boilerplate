@@ -1,30 +1,38 @@
 # Rust CLI Project Template
+![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache_2.0-blue.svg)
+![POSIX-only build tooling](https://img.shields.io/badge/dev_platform-POSIX-lightgrey.svg)
 
-The base project template I use with
-[cargo-template](https://github.com/pwoolcoc/cargo-template/) (pending the
-stabilization of the `--template` option for `cargo new`) for starting
-new projects in the [Rust](https://rust-lang.org/) programming language.
 
-Given the current lack of mature equivalents to
+The base project template I use for starting new projects in the
+[Rust](https://rust-lang.org/) programming language.
+
+Given the current lack of mature, stable-channel equivalents to
 [Django](https://www.djangoproject.com/) and
-[PyQt](https://riverbankcomputing.com/news) (which run on stable-channel Rust),
-this template is primarily optimized for building command-line tools.
+[PyQt](https://riverbankcomputing.com/news), I use Rust primarily for building
+command-line tools.
 
-I'll probably build another one for use with
+I'll probably build another one of these for building libraries with
 [rust-cypthon](https://github.com/dgrunwald/rust-cpython) later.
 
-## Application Boilerplate Features
+**NOTE:** While the `LICENSE` file must contain my preferred choice for
+starting new projects (the GNU GPLv3), **you may use the contents of this
+repository under your choice of the [MIT](http://opensource.org/licenses/MIT)
+and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 
-* Uses [clap](https://clap.rs/) for argument parsing
+## Features
+
+* Uses [clap](https://clap.rs/) (with "Did you mean...?" suggestions enabled)
+  for argument parsing.
 * Uses [error-chain](https://github.com/brson/error-chain) for unified error
   handling
-* Opts into almost all available rustc and
-  [clippy](https://github.com/Manishearth/rust-clippy) lints without requiring
-  that all builds be done on a clippy-enabled Rust version.
-* `just build-release` produces a fully statically-linked i686 binary where
-  the binary size of just the boilerplate is under 200K, including a
-  statically-linked musl-libc, error-chain, and clap with "Did you mean...?"
-  support enabled.
+* Enables almost all rustc and
+  [clippy](https://github.com/Manishearth/rust-clippy) lints without making
+  clippy mandatory.
+* Takes advantage of nightly-only features without requiring nightly.
+* A comprehensive set of [just](https://github.com/casey/just) commands, easily
+  customized via variables. (eg. for cross-compilation)
+* `just build-release` for a 100% static i686 binary totalling under `205KiB`
+  (`185KiB` with `panic="abort"`) in new projects
 
 ## Supplementary Files
 
@@ -43,8 +51,8 @@ license of choice.</td>
 </tr>
 <tr>
   <td><code>clippy.toml</code></td>
-  <td>A whitelist for CamelCase names which produce false positives in Clippy's
-"identifier needs backticks" lint.</td>
+  <td>A whitelist for CamelCase names which trigger Clippy's "identifier needs
+  backticks" lint.</td>
 </tr>
 <tr>
   <td><code>rustfmt.toml</code></td>
@@ -67,7 +75,7 @@ license of choice.</td>
 <tr>
   <td><code>channel</code></td>
   <td><code>nightly</code></code></td>
-  <td>The <code>rustc</code> channel used for <code>build</code> and commands which depend on it.</td>
+  <td>The <code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
 </tr>
 <tr>
   <td><code>target</code></td>
@@ -223,7 +231,7 @@ are defined:
 ## Dependencies
 
 In order to use the full functionality offered by this boilerplate, the
-following system-level dependencies must be installed:
+following dependencies must be installed:
 
 * `just build-release`:
 
@@ -267,19 +275,11 @@ kcov
         just install-cargo-deps
         # ...and now manually make sure `strip` and `upx` are installed
 
-**Note:** `justfile` also contains commented-out example lines for targeting
-the [OpenPandora](http://openpandora.org/) Linux palmtop using a
-[cross-compiling gcc toolchain](https://pandorawiki.org/Cross-compiler) for
-the final glibc link.
-
 ## TODO
 
 * Set up [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/) as an analogue to the
   `logging` module from Python stdlib
-* Note the resulting file sizes in "Build Behaviour"
 * Add ready-to-run CI boilerplate, such as a `.travis.yml`
-* Check what effect 32-bit vs. 64-bit musl targeting has on UPXed file size,
-  if any.
 * Investigate commit hooks
 * Gather my custom clap validators into a crate and have this depend on it:
 
