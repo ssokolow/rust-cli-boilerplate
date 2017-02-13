@@ -25,7 +25,7 @@ export zz_target_path="target/" + target  + "/release/" + zz_pkgname
 # `diff`-friendly mapping from `just` to `just test`
 DEFAULT: test
 
-# Call `cargo build --release`. Enable size optimizations if `channel=nightly`.
+# Call `cargo build --release`. Optimize for size if `channel=nightly`.
 build:
 	#!/bin/sh
 	# If on nightly, opt-level=z and alloc_system to shrink output further
@@ -69,7 +69,7 @@ install-cargo-deps: install-rustup-deps
 	cargo install cargo-outdated || true
 	cargo +nightly install clippy || true
 
-# Install (but don't update) nightly, stable, and `channel` toolchains, plus `target`.
+# Install (don't update) nightly, stable, and `channel` toolchains, plus `target`.
 install-rustup-deps:
 	@# Prevent this from gleefully doing an unwanted "rustup update"
 	rustup toolchain list | grep -q stable || rustup toolchain install stable
@@ -77,7 +77,7 @@ install-rustup-deps:
 	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
 	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
 
-# Run `install-apt-deps` and `install-cargo-deps`, then list what remains.
+# Run `install-apt-deps` and `install-cargo-deps`, list what remains.
 @install-deps: install-apt-deps install-cargo-deps
 	echo
 	echo "-----------------------------------------------------------"

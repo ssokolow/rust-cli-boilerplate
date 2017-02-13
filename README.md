@@ -112,7 +112,7 @@ test</code></td>
 <tr>
   <td><code>build</code></td>
   <td></td>
-  <td>Call <code>cargo build --release</code>. Enable size optimizations if <code>channel=nightly</code></td>
+  <td>Call <code>cargo build --release</code>. Optimize for size if <code>channel=nightly</code></td>
 </tr>
 <tr>
   <td><code>build-release</code></td>
@@ -139,14 +139,14 @@ tools.</td>
 <tr>
   <td><code>install-rustup-deps</code></td>
   <td></td>
-  <td>Install (but don't update) nightly, stable, and <code>channel</code>
+  <td>Install (don't update) nightly, stable, and <code>channel</code>
 toolchains, plus <code>target</code></td>
 </tr>
 <tr>
   <td><code>install-deps</code></td>
   <td></td>
   <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
-then list what remains.</td>
+list what remains.</td>
 </tr>
 <tr>
   <td><code>kcov</code></td>
