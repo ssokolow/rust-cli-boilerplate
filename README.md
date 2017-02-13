@@ -19,7 +19,7 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * Enables almost all rustc and
   [clippy](https://github.com/Manishearth/rust-clippy) lints without making
   clippy mandatory.
-* Takes advantage of nightly-only features without requiring nightly.
+* Takes advantage of nightly-only features but only if nightly is used.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables. (eg. for cross-compilation)
 * `just build-release` for a 100% static i686 binary totalling under `205KiB`
@@ -177,6 +177,8 @@ test</code></td>
 ### Tips
 
 * Edit the `DEFAULT` command. That's what it's there for.
+* Feel free to hang your own nightly-only optimizations off the `nightly`
+  feature.
 * You can use `just` from any subdirectory in your project. It's like `git` that way.
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
