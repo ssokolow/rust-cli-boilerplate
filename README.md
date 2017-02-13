@@ -232,8 +232,7 @@ following dependencies must be installed:
 * `just build-release`:
 
   * The toolchain specified by the <code>channel</code> variable.
-  * 32-bit musl-libc targeting support
-    (`rustup target add i686-unknown-linux-musl`)
+  * The target specified by the <code>target</code> variable.
   * `strip` (Included with binutils)
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
