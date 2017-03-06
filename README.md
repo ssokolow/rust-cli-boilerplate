@@ -268,7 +268,12 @@ kcov
         export PATH="$HOME/.cargo/bin:$PATH"
         cargo install just
         just install-cargo-deps
-        # ...and now manually make sure `strip` and `upx` are installed
+
+        # ...and now manually make sure the following tools are installed:
+        #  - strip (from binutils)
+        #  - upx
+        #  - sstrip (optional, from ELFkickers)
+        #  - kcov (optional, version 31 or higher with --verify support)
 
 ## TODO
 
