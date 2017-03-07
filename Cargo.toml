@@ -1,7 +1,7 @@
 [package]
-name = "{{toml-escape name}}"
+name = {{toml-escape name}}
 version = "0.1.0"
-authors = ["{{toml-escape author}}"]
+authors = [{{toml-escape author}}]
 
 [dependencies]
 clap = "2"
