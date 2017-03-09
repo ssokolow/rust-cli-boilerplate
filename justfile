@@ -104,10 +104,6 @@ kcov:
 	# coverage data. If you discover a way to run the doctest executable with kcov,
 	# please open an Issue and we will add that to these instructions.
 	# -- https://github.com/codecov/example-rust
-	PKGID="$(cargo pkgid)"
-	[ -z "$PKGID" ] && exit 1
-	ORIGIN="${PKGID%#*}"
-	ORIGIN="${ORIGIN#file://*}"
 
 	# Ensure that kcov can see totally unused functions
 	# Sources:
@@ -118,14 +114,14 @@ kcov:
 
 	shift
 	cargo test --no-run || exit $?
-	EXE=($ORIGIN/target/debug/$zz_pkgname-*)
+	EXE=(target/debug/$zz_pkgname-*)
 	if [ ${#EXE[@]} -ne 1 ]; then
 		echo 'Non-unique test file, retrying...' >2
 		rm -f "${EXE[@]}"
 		cargo test --no-run || exit $?
 	fi
-	rm -rf "$ORIGIN/target/cov"
-	kcov --exclude-pattern=/.cargo,/usr/lib --verify "$ORIGIN/target/cov" "$ORIGIN/target/debug/$zz_pkgname-"* "$@"
+	rm -rf target/cov
+	kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov" "target/debug/$zz_pkgname-"* "$@"
 
 # Remove the release binary. (Used to avoid `strip`-ing UPX'd files.)
 @miniclean:
