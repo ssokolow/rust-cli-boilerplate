@@ -67,19 +67,29 @@ license of choice.</td>
 <table>
 <tr><th>Variable</th><th>Default Value</th><th>Description</th></tr>
 <tr>
+  <td><code>callgrind_args</code></td>
+  <td></td>
+  <td>Extra arguments to pass to callgrind</td>
+</tr>
+<tr>
+  <td><code>callgrind_out_file</code></td>
+  <td><code>callgrind.out.justfile</code></td>
+  <td>Temporary file used by <code>just kcachegrind</code></td>
+</tr>
+<tr>
   <td><code>channel</code></td>
   <td><code>nightly</code></code></td>
   <td><code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
 </tr>
 <tr>
-  <td><code>target</code></td>
-  <td><code>i686-unknown-linux-musl</code></td>
-  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
-</tr>
-<tr>
   <td><code>features</code></td>
   <td></td>
   <td>Extra features to enable. Gains <code>nightly</code> when <code>channel=nightly</code></td>
+</tr>
+<tr>
+  <td><code>target</code></td>
+  <td><code>i686-unknown-linux-musl</code></td>
+  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
 </tr>
 <tr>
   <td><code>strip_bin</code></td>
@@ -147,6 +157,14 @@ toolchains, plus <code>target</code></td>
   <td></td>
   <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
 list what remains.</td>
+</tr>
+<tr>
+  <td><code>kcachegrind</code></td>
+  <td></td>
+  <td>Run a debug build under
+  <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then
+  open the profile in
+  <a href="https://kcachegrind.github.io/">KCachegrind</a>.</td>
 </tr>
 <tr>
   <td><code>kcov</code></td>
@@ -230,20 +248,19 @@ In order to use the full functionality offered by this boilerplate, the
 following dependencies must be installed:
 
 * `just build-release`:
-
   * The toolchain specified by the <code>channel</code> variable.
   * The target specified by the <code>target</code> variable.
   * `strip` (Included with binutils)
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
   * [`upx`](https://upx.github.io/) (`sudo apt-get install upx`)
+* `just kcachegrind`:
+   * [Valgrind](http://valgrind.org/) (`sudo apt-get install valgrind`)
+   * [KCachegrind](https://kcachegrind.github.io/) (`sudo apt-get install kcachegrind`)
 * `just kcov`:
-
   * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
 kcov
-
 * `just test`:
-
   * A stable Rust toolchain (`rustup toolchain add stable`)
   * A nightly Rust toolchain (`rustup toolchain add nightly`)
   * [cargo-deadlinks](https://github.com/deadlinks/cargo-deadlinks)
@@ -273,15 +290,31 @@ kcov
         #  - strip (from binutils)
         #  - upx
         #  - sstrip (optional, from ELFkickers)
+        #  - kcachegrind (optional)
         #  - kcov (optional, version 31 or higher with --verify support)
+        #  - valgrind (optional)
 
 ## TODO
 
 * Compare the [shortcomings](https://www.reddit.com/r/rust/comments/5x82jp/using_log_and_env_logger_in_tests/degk7w5/)
   of [log](https://github.com/rust-lang-nursery/log) and
   [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/)
-  to choose a an analogue to the `logging` module from Python stdlib with the
+  to choose an analogue to the `logging` module from Python stdlib with the
   most favourable balance of pros and cons.
+* Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
+  figure out how to exclude the Rust standard library from what KCacheGrind
+  displays.
+  * I may need to filter the output.
+    [[1]](https://stackoverflow.com/questions/7761448/filter-calls-to-libc-from-valgrinds-callgrind-output)
+  * Figure out how to add a `just` task for a faster but less precise profiler
+    like [gprof](https://en.wikipedia.org/wiki/Gprof)
+    [[1]](http://www.thegeekstuff.com/2012/08/gprof-tutorial/)
+    [[2]](https://sourceware.org/binutils/docs/gprof/),
+    [OProfile](http://oprofile.sourceforge.net/), or
+    [perf](https://perf.wiki.kernel.org/index.php/Main_Page) to make it easy to
+    leverage the various trade-offs.
+  * Include a reference to [this](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
+    blog post on how profilers can can mislead in different ways.
 * Add ready-to-run CI boilerplate, such as a `.travis.yml`
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
 * Gather my custom clap validators into a crate, add some more, and have this

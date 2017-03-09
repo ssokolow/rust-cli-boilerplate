@@ -9,6 +9,8 @@ export features = ""
 strip_bin = "strip"
 strip_flags = "--strip-unneeded"
 upx_flags = "--ultra-brute"
+callgrind_args = ""
+callgrind_out_file = "callgrind.out.justfile"
 
 # Examples for OpenPandora cross-compilation
 # target = "arm-unknown-linux-gnueabi"
@@ -59,7 +61,7 @@ fmt +args="":
 
 # Ensure `strip` and `upx` are installed via `apt-get`.
 install-apt-deps:
-	sudo apt-get install binutils upx
+	sudo apt-get install binutils kcachegrind upx valgrind
 
 # `install-rustup-deps` and then `cargo install` tools
 install-cargo-deps: install-rustup-deps
@@ -85,6 +87,14 @@ install-rustup-deps:
 	echo "-----------------------------------------------------------"
 	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
 	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
+
+# Build the program, run it under valgrind's callgrind profiler and open the result in kcachegrind
+kcachegrind +args="":
+	cargo build
+	rm -rf '{{ callgrind_out_file }}'
+	valgrind --tool=callgrind --callgrind-out-file='{{ callgrind_out_file }}' {{ callgrind_args }} 'target/debug/{{ zz_pkgname }}' '{{ args }}' || true
+	test -e '{{ callgrind_out_file }}'
+	kcachegrind '{{ callgrind_out_file }}'
 
 # Generate a statement coverage report in `target/cov/`
 kcov:
