@@ -277,14 +277,60 @@ kcov
 
 ## TODO
 
-* Set up [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/) as an analogue to the
-  `logging` module from Python stdlib
+* Compare the [shortcomings](https://www.reddit.com/r/rust/comments/5x82jp/using_log_and_env_logger_in_tests/degk7w5/)
+  of [log](https://github.com/rust-lang-nursery/log) and
+  [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/)
+  to choose a an analogue to the `logging` module from Python stdlib with the
+  most favourable balance of pros and cons.
 * Add ready-to-run CI boilerplate, such as a `.travis.yml`
-* Investigate commit hooks
-* Gather my custom clap validators into a crate and have this depend on it:
-
-  * Can be parsed as an integer > 0 (eg. number of volumes)
-  * Can be parsed as an integer >= 0 (eg. number of bytes)
-  * File path exists and is readable
-  * Target directory probably writable (via `access()`)
-  * Filename/path contains no characters that are invalid on FAT32 thumbdrives
+* Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
+* Gather my custom clap validators into a crate, add some more, and have this
+  depend on it:
+  * Self-Contained data:
+    * Boolean is `1`/`y`/`yes`/`t`/`true` or `0`/`n`/`no`/`f`/`false`
+      (case-insensitive, include a utility function for actual parsing)
+    * Integers:
+      * Can be parsed as a decimal integer `> 0` (eg. number of volumes)
+      * Can be parsed as a decimal integer `>= 0` (eg. number of bytes)
+      * Number of bytes, with optional SI mebi- unit suffix
+        (eg. `16m`, including optional `b`, case-insensitive)
+    * Floats:
+      * Can be parsed as a float in the range `0.0 <= x <= 1.0`
+  * Invalidatable/Referential data:
+    * Input files:
+      * File exists and is readable
+      * Directory exists and is browsable (`+rX`)
+      * Path is a readable file or browsable directory (ie. read or recurse)
+    * Output files:
+      * Integers:
+        * Augmented "number of bytes, with optional SI mebi- unit suffix"
+          validator with upper limit for producing files representable by
+          ISO9660/FAT32 filesystems on removable media.
+          (2GiB, since some implementations use 32-bit signed offsets)
+      * Strings:
+        * Is valid FAT32-safe filename/prefix (path separators disallowed)
+      * Paths:
+        * File path is probably FAT32 writable
+          * If file exists, `access()` says it's probably writable
+          * If file does not exist, name is FAT32-valid and within a
+            probably-writable directory.
+        * File path is probably FAT32 writable, with `mkdir -p`
+          * Nonexistent path components are FAT32-valid
+          * Closest existing ancestor is a probably-writable directory
+        * Directory exists and is probably writable
+          * "probably writable" is tested via `access()` and will need
+            portability shimming.
+    * Network I/O:
+      * Integers:
+        * Successfully parses into a valid listening TCP/UDP port number
+          (0-65535, I think)
+        * Successfully parses into a valid, non-root, listening TCP/UDP port
+          number (0 or 1024-65535, I think)
+        * Successfully parses into a valid connecting TCP/UDP port number
+          (1-65535, I think)
+      * Strings:
+        * Successfully parses into a [`SocketAddr`](https://doc.rust-lang.org/std/net/enum.SocketAddr.html) (IP+port, may perform DNS lookup?)
+        * Successfully parses into an [`IpAddr`](https://doc.rust-lang.org/std/net/enum.IpAddr.html) (may perform DNS lookup?)
+      * URLs:
+        * Is well-formed relative URL ([external dependency](https://docs.rs/url/1.4.0/url/) behind a cargo feature)
+        * Is well-formed absolute URL ([external dependency](https://docs.rs/url/1.4.0/url/) behind a cargo feature)
