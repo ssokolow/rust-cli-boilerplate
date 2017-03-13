@@ -27,6 +27,8 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
+* A basic `.travis.yml` for use with [Travis-CI](https://travis-ci.org/) and
+  [Nightli.es](https://nightli.es/).
 
 ## Supplementary Files
 
@@ -317,7 +319,7 @@ kcov
     leverage the various trade-offs.
   * Include a reference to [this](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
     blog post on how profilers can can mislead in different ways.
-* Add ready-to-run CI boilerplate, such as a `.travis.yml`
+* Test and enhance `.travis.yml`
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
 * Once I've cleared out these TODOs, consider using this space for a reminder
   list of best practices for avoiding "higher-level footguns" noted in my pile
