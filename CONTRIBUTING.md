@@ -7,7 +7,7 @@ conditions:
 2. In the event that the `README.md` file overrules the `LICENSE` file to work
    around technical limitations (eg. in a project template which does not share
    the license of the projects it generates), your contribution shall also be
-   released under these second set of terms.
+   released under this second set of terms.
 
 3. In the event that the repository specifies that users may use its contents
    under one of multiple licenses, at their discretion, your contribution shall
