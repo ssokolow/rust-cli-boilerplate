@@ -158,4 +158,8 @@ test:
 	#	  (And use clippy as a compiler plugin so we can save a pass)
 
 
+# Local Variables:
+# mode: makefile
+# End:
+
 # vim: set ft=make textwidth=100 colorcolumn=101 noexpandtab sw=8 sts=8 ts=8 :
