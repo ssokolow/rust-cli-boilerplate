@@ -296,6 +296,7 @@ kcov
 
 ## TODO
 
+* Use the `year` template variable to automatically fill out copyright dates.
 * Compare the [shortcomings](https://www.reddit.com/r/rust/comments/5x82jp/using_log_and_env_logger_in_tests/degk7w5/)
   of [log](https://github.com/rust-lang-nursery/log) and
   [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/)
@@ -310,13 +311,20 @@ kcov
     like [gprof](https://en.wikipedia.org/wiki/Gprof)
     [[1]](http://www.thegeekstuff.com/2012/08/gprof-tutorial/)
     [[2]](https://sourceware.org/binutils/docs/gprof/),
-    [OProfile](http://oprofile.sourceforge.net/), or
+    [OProfile](http://oprofile.sourceforge.net/)
+    [[1]](https://llogiq.github.io/2015/07/15/profiling.html), or
     [perf](https://perf.wiki.kernel.org/index.php/Main_Page) to make it easy to
     leverage the various trade-offs.
   * Include a reference to [this](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
     blog post on how profilers can can mislead in different ways.
 * Add ready-to-run CI boilerplate, such as a `.travis.yml`
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
+* Once I've cleared out these TODOs, consider using this space for a reminder
+  list of best practices for avoiding "higher-level footguns" noted in my pile
+  of assorted advice.
+  (Things like "If you can find a way to not need path manipulation beyond
+   'pass this opaque token around', then you can eliminate entire classes of
+   bugs")
 * Gather my custom clap validators into a crate, add some more, and have this
   depend on it:
   * Self-Contained data:
