@@ -55,6 +55,10 @@ build-release: miniclean build
 	@ls -sh "{{zz_target_path}}"
 	@printf "\n"
 
+# Alias for `cargo check {{args}}` with the default toolchain
+check +args="":
+	cargo check {{args}}
+
 # Alias for `cargo fmt -- {{args}}`
 fmt +args="":
 	cargo fmt -- {{args}}

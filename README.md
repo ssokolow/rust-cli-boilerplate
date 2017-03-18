@@ -132,6 +132,11 @@ test</code></td>
   <td>Call <code>build</code> and then strip and compress the resulting binary.</td>
 </tr>
 <tr>
+  <td><code>check</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>cargo check {{args}}</code> with the default toolchain.</code></td>
+</tr>
+<tr>
   <td><code>fmt</code></td>
   <td>args (optional)</td>
   <td>Alias for <code>cargo fmt -- {{args}}</code></td>
