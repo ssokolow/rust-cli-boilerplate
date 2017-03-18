@@ -315,10 +315,21 @@ kcov
     [[2]](https://sourceware.org/binutils/docs/gprof/),
     [OProfile](http://oprofile.sourceforge.net/)
     [[1]](https://llogiq.github.io/2015/07/15/profiling.html), or
-    [perf](https://perf.wiki.kernel.org/index.php/Main_Page) to make it easy to
-    leverage the various trade-offs.
+    [perf](https://perf.wiki.kernel.org/index.php/Main_Page)
+    [[1]](http://blog.adamperry.me/rust/2016/07/24/profiling-rust-perf-flamegraph/)
+     to make it easy to leverage the various trade-offs. (And make sure to
+     provide convenient access to flame graphs and at least one perf inspector
+     GUI or TUI.)
   * Include a reference to [this](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
-    blog post on how profilers can can mislead in different ways.
+    blog post on how profilers can can mislead in different ways and probably
+    also [this](http://blog.adamperry.me/rust/2016/07/24/profiling-rust-perf-flamegraph/)
+    too.
+  * Look into options for making it as easy as possible to optimize and
+    regression-test runtime performance.
+    [[1]](https://github.com/rust-lang/rust/issues/31265https://github.com/rust-lang/rust/issues/31265)
+    [[2]](https://crates.io/crates/bencher)
+    [[3]](https://github.com/japaric/criterion.rshttps://github.com/japaric/criterion.rs)
+    [[4]](https://github.com/BurntSushi/cargo-benchcmp)
 * Test and enhance `.travis.yml`
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
 * Once I've cleared out these TODOs, consider using this space for a reminder
