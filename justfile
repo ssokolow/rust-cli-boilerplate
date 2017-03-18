@@ -59,7 +59,7 @@ build-release: miniclean build
 fmt +args="":
 	cargo fmt -- {{args}}
 
-# Ensure `strip` and `upx` are installed via `apt-get`.
+# Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
 install-apt-deps:
 	sudo apt-get install binutils kcachegrind upx valgrind
 
@@ -88,7 +88,7 @@ install-rustup-deps:
 	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
 	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
 
-# Build the program, run it under valgrind's callgrind profiler and open the result in kcachegrind
+# Run a debug build under callgrind, then open the profile in KCachegrind.
 kcachegrind +args="":
 	cargo build
 	rm -rf '{{ callgrind_out_file }}'
@@ -137,7 +137,7 @@ kcov:
 @miniclean:
 	rm -f "{{zz_target_path}}"
 
-# Alias for `cargo fmt -- {{args}}` with the *default* toolchain
+# Alias for `cargo run -- {{args}}` with the *default* toolchain
 run +args="":
 	cargo run -- {{args}}
 

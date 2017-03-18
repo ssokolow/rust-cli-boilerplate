@@ -71,7 +71,7 @@ license of choice.</td>
 <tr>
   <td><code>callgrind_args</code></td>
   <td></td>
-  <td>Extra arguments to pass to callgrind</td>
+  <td>Extra arguments to pass to <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>.</td>
 </tr>
 <tr>
   <td><code>callgrind_out_file</code></td>
@@ -106,7 +106,7 @@ license of choice.</td>
 <tr>
   <td><code>upx_flags</code></td>
   <td><code>--ultra-brute</code></td>
-  <td>Flags passed to UPX.</td>
+  <td>Flags passed to <a href="https://upx.github.io/">UPX</a>.</td>
 </tr>
 </table>
 </html>
@@ -139,8 +139,8 @@ test</code></td>
 <tr>
   <td><code>install-apt-deps</code></td>
   <td></td>
-  <td>Ensure <code>strip</code> and <code>upx</code> are installed via
-<code>apt-get</code></td>
+  <td>Use <code>apt-get</code> to install dependencies <code>cargo</code> can't
+(except <code>kcov</code> and <code>sstrip</code>)</td>
 </tr>
 <tr>
   <td><code>install-cargo-deps</code></td>
