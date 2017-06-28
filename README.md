@@ -288,6 +288,10 @@ kcov
         cargo install just
         just install-deps
 
+        # ...and now  manually make sure the following tools are installed:
+        #  - sstrip (optional, from ELFkickers)
+        #  - kcov (optional, version 31 or higher with --verify support)
+
 * **Other distros:**
 
         export PATH="$HOME/.cargo/bin:$PATH"
