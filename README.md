@@ -226,8 +226,9 @@ are defined:
 
 1. Unless otherwise noted, all optimizations listed above.
 2. Link-time optimization will be enabled (`lto = true`)
-3. Panic via `abort` rather than unwinding to allow backtrace code to be pruned
-   away by dead code optimization.
+3. Optionally (uncomment a line in `Cargo.toml`) panic via `abort` rather than
+   unwinding to allow backtrace code to be pruned away by dead code
+   optimization.
 
 ### If built via `just channel=stable build-release`:
 
