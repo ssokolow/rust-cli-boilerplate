@@ -12,6 +12,7 @@ default-features = false  # disable pulling in backtrace
 
 [profile.release]
 lto = true
+codegen-units = 1
 
 # Uncomment to sacrifice Drop-on-panic cleanup for 20K space saving
 #panic = 'abort'
