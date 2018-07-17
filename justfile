@@ -22,7 +22,7 @@ callgrind_out_file = "callgrind.out.justfile"
 # using only the commands any POSIX-compliant platform should have
 # Source: http://stackoverflow.com/a/40778047/435253
 export zz_pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
-export zz_target_path="target/" + target  + "/release/" + zz_pkgname
+export zz_target_path="target/nightly/" + target  + "/release/" + zz_pkgname
 
 # `diff`-friendly mapping from `just` to `just test`
 DEFAULT: test
@@ -32,6 +32,7 @@ build:
 	#!/bin/sh
 	# If on nightly, opt-level=z and alloc_system to shrink output further
 	if [ "$channel" = "nightly" ]; then
+		export CARGO_TARGET_DIR=target/nightly 
 		features="nightly $features"
 		# TODO: Find a less hacky way to do this
 		cleanup() {
@@ -154,7 +155,7 @@ test:
 	@printf "\n--== Dead Internal Documentation Links ==--\n"
 	cargo doc && cargo deadlinks
 	@printf "\n--== Clippy Lints ==--\n"
-	cargo +nightly clippy  # Run clippy for maximum pedantry
+	CARGO_TARGET_DIR=target/nightly cargo +nightly clippy  # Run clippy for maximum pedantry
 	@printf "\n--== Test Suite (on stable) ==--\n"
 	cargo +stable test  # Test with stable so nightly dependencies don't slip in
 
