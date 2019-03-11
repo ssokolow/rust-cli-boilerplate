@@ -33,15 +33,15 @@ build:
 	cargo "+$channel" build --release --target="$target" "--features=$features"
 
 # Call `build` and then strip and compress the resulting binary
-build-release: miniclean build
-	@# Depend on miniclean since stripping UPXd executables is fatal
+build-release: build
+	cp "{{zz_target_path}}" "{{zz_target_path}}.upx"
 	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
-	{{strip_bin}} {{strip_flags}} "{{zz_target_path}}"
+	{{strip_bin}} {{strip_flags}} "{{zz_target_path}}.upx"
 	@# Allow sstrip to fail because it can't be installed via "just install-deps"
-	sstrip "{{zz_target_path}}" || true
-	upx {{upx_flags}} "{{zz_target_path}}"
+	sstrip "{{zz_target_path}}.upx" || true
+	upx {{upx_flags}} "{{zz_target_path}}.upx"
 	@printf "\n--== Final Result ==--\n"
-	@ls -sh "{{zz_target_path}}"
+	@ls -1sh "{{zz_target_path}}" "{{zz_target_path}}.upx"
 	@printf "\n"
 
 # Alias for `cargo check {{args}}` with the default toolchain
@@ -123,10 +123,6 @@ kcov:
 	fi
 	rm -rf target/cov
 	kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov" "target/debug/$zz_pkgname-"* "$@"
-
-# Remove the release binary. (Used to avoid `strip`-ing UPX'd files.)
-@miniclean:
-	rm -f "{{zz_target_path}}"
 
 # Alias for `cargo run -- {{args}}` with the *default* toolchain
 run +args="":
