@@ -123,7 +123,7 @@ test</code></td>
 </tr>
 <tr>
   <td><code>bloat</code></td>
-  <td>args (optional</td>
+  <td>args (optional)</td>
   <td>Call <code>cargo bloat --release</code></td>
 <tr>
   <td><code>build</code></td>

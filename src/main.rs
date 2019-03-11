@@ -1,31 +1,30 @@
-//! TODO: Application description here
-//!
-//! # Development Policy
-//! Clap validators for references like filesystem paths (as opposed to self-contained
-//! data like set sizes) are to be used only to improving the user experience by
-//! maximizing the chance that bad data will be caught early.
-//!
-//! To avoid vulnerabilities based on race conditions or shortcomings in functions like
-//! access() (which may falsely claim "/" is writable), all "reference data" must be
-//! validated (and failures handled) on **every** use.
-//!
-//! See Also:
-//!  http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/
+/*! TODO: Application description here
+
+# Development Policy
+Clap validators for references like filesystem paths (as opposed to self-contained data like set
+sizes) are to be used only to improving the user experience by maximizing the chance that bad
+data will be caught early.
+
+To avoid vulnerabilities based on race conditions or shortcomings in functions like access()
+(which may falsely claim `/` is writable), all "reference data" must be validated
+(and failures handled) on **every** use.
+
+See Also: [A More Formal Way To Think About Validity of Input Data](
+ http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/)
+*/
 
 // `error_chain` recursion adjustment
 #![recursion_limit = "1024"]
 
-// Make rustc's built-in lints more strict (I'll opt back out selectively)
-#![warn(warnings)]
-
-// Set clippy into a whitelist-based configuration so I'll see new lints as they come in
-#![warn(clippy::all, clippy::complexity, clippy::correctness, clippy::pedantic,
+// Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration so
+// we see new lints as they get written (We'll opt back out selectively)
+#![warn(warnings, clippy::all, clippy::complexity, clippy::correctness, clippy::pedantic,
         clippy::perf, clippy::style, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
 #![allow(clippy::assign_ops, clippy::float_arithmetic)]
 
-/// The verbosity level when no -q or -v arguments are given, with 0 being -q
+/// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
 const DEFAULT_VERBOSITY: usize = 1;
 
 // stdlib imports
@@ -44,10 +43,11 @@ use structopt::StructOpt;
 
 /// Command-line argument schema
 ///
-/// NOTE: `about` should begin with a newline or the resulting `--help` won't comply with platform
-/// conventions and tools like help2man will treat the "<name> <version>" line as part of `about`.
+/// **NOTE:** The top-level `about` should begin with a newline (`\n`) or the resulting `--help`
+///           won't comply with platform conventions and tools like help2man will treat the
+///           "<name> <version>" line as part of `about`.
 #[derive(StructOpt, Debug)]
-#[structopt(author="", about = "\nTODO: Replace me with the description text for the command",
+#[structopt(author="", long_about = "\nTODO: Replace me with the description text for the command",
             raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
 struct Opt {
     /// Decrease verbosity (-q, -qq, -qqq, etc.)
@@ -66,41 +66,36 @@ struct Opt {
     inpath: Vec<PathBuf>,
 }
 
-/// Test that the given path can be opened for reading and adjust failure messages
+/// Clap/StructOpt validator for testing that the given path can be opened for reading
 fn path_readable(value: &OsStr) -> std::result::Result<(), OsString> {
     File::open(&value)
         .map(|_| ())
         .map_err(|e| format!("{}: {}", Path::new(value).display(), e).into())
 }
 
-/// Slightly adjusted version of the suggested error-chain harness from
-/// https://github.com/brson/error-chain/blob/master/examples/quickstart.rs
+/// Adjusted and `log`-ified version of the suggested error-chain harness from
+/// [quickstart.rs](https://github.com/brson/error-chain/blob/master/examples/quickstart.rs)
+///
+/// **TODO:** Consider switching to Failure and look into `impl Termination` as a way to avoid
+///           having to put the error message pretty-printing inside main()
 fn main() {
     if let Err(ref e) = run() {
-        use std::io::Write;
-        let stderr = &mut ::std::io::stderr();
-        let stderr_fail_msg = "Error writing to stderr";
-
-        // Write the top-level error message
-        writeln!(stderr, "error: {}", e).expect(stderr_fail_msg);
-
-        // Trace back through the chained errors
+        // Write the top-level error message, then chained errors, then backtrace if available
+        error!("error: {}", e);
         for e in e.iter().skip(1) {
-            writeln!(stderr, "caused by: {}", e).expect(stderr_fail_msg);
+            error!("caused by: {}", e);
         }
-
-        // Print the backtrace if available
         if let Some(backtrace) = e.backtrace() {
-            writeln!(stderr, "backtrace: {:?}", backtrace).expect(stderr_fail_msg);
+            error!("backtrace: {:?}", backtrace);
         }
 
         // Exit with a nonzero exit code
         // TODO: Decide how to allow code to set this to something other than 1
-        ::std::process::exit(1);
+        std::process::exit(1);
     }
 }
 
-/// The actual main()
+/// The actual `main()`
 fn run() -> Result<()> {
     // Parse command-line arguments
     let opts = Opt::from_args();
