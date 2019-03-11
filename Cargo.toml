@@ -8,7 +8,7 @@ edition = "2018"
 clap = "2"
 
 [dependencies.error-chain]
-version = "0.9"
+version = "0.12"
 default-features = false  # disable pulling in backtrace
 
 [profile.release]
