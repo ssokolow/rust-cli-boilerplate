@@ -115,14 +115,14 @@ kcov:
 
 	shift
 	cargo test --no-run || exit $?
-	EXE=(target/debug/$zz_pkgname-*)
-	if [ ${#EXE[@]} -ne 1 ]; then
-		echo 'Non-unique test file, retrying...' >2
-		rm -f "${EXE[@]}"
-		cargo test --no-run || exit $?
-	fi
 	rm -rf target/cov
-	kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov" "target/debug/$zz_pkgname-"* "$@"
+
+	for file in target/debug/$zz_pkgname-*; do
+		if [ -x "$file" ]; then
+			mkdir -p "target/cov/$(basename $file)"
+			kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file" "$@"
+		fi
+	done
 
 # Alias for `cargo run -- {{args}}` with the *default* toolchain
 run +args="":
