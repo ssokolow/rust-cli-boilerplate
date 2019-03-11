@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = false
+trim_trailing_whitespace = true
+
+# justfile uses Makefile-like significant indentation
+[justfile]
+indent_style = tab
+
+# If I have a TODO file, I want the outline lists to line up nicely and
+# .travis.yml just uses 2-space indentation by convention
+[{.travis.yml, TODO}]
+indent_style = space
+indent_size = 2
+
