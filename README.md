@@ -143,6 +143,11 @@ test</code></td>
   <td>Alias for <code>cargo check {{args}}</code> with the default toolchain</code></td>
 </tr>
 <tr>
+  <td><code>clean</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>cargo clean -v {{args}}</code> with the default toolchain</code></td>
+</tr>
+<tr>
   <td><code>doc</code></td>
   <td>args (optional)</td>
   <td>Alias for <code>cargo doc --document-private-items {{args}}</code></td>

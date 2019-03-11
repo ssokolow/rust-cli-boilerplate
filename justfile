@@ -52,6 +52,10 @@ bloat +args="":
 check +args="":
 	cargo check {{args}}
 
+# Alias for `cargo clean -v {{args}}`
+clean +args="":
+	cargo clean -v {{args}}
+
 # alias for `cargo doc --document-private-items {{args}}` with the default toolchain
 doc +args="":
 	cargo doc --document-private-items {{args}}
