@@ -1,5 +1,6 @@
 /*! TODO: Application description here
 
+Copyright {{ "now" | date: "%Y" }}, {{ authors }}
 */
 
 // `error_chain` recursion adjustment

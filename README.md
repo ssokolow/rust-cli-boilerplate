@@ -70,6 +70,11 @@ license of choice. You can replace this.</td>
 </tr>
 <tr><th colspan="2">Development Automation</th></tr>
 <tr>
+  <td><code>apply.sh</code></td>
+  <td>Run this to generate new projects as a workaround for cargo-generate's
+  incompatibility with justfile syntax.</td>
+</tr>
+<tr>
   <td><code>justfile</code></td>
   <td>Build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike).</td>
 </tr>
