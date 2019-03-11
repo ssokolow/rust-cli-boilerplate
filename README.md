@@ -368,6 +368,11 @@ kcov
     [[3]](https://github.com/japaric/criterion.rshttps://github.com/japaric/criterion.rs)
     [[4]](https://github.com/BurntSushi/cargo-benchcmp)
 * Test and enhance `.travis.yml`
+  * Consider officially supporting Windows as a target (probably using
+    [cargo-make](https://crates.io/crates/cargo-make) instead of Just) and, if
+    I do, come up with an `appveyor.yml`... possibly the one from this project:
+    https://github.com/starkat99/appveyor-rust
+* Add a `run-memstats` Just task which swaps in jemalloc and sets MALLOC_CONF=stats_print:true
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
 * Once I've cleared out these TODOs, consider using this space for a reminder
   list of best practices for avoiding "higher-level footguns" noted in my pile
@@ -375,6 +380,8 @@ kcov
   (Things like "If you can find a way to not need path manipulation beyond
    'pass this opaque token around', then you can eliminate entire classes of
    bugs")
+* At least *list* a snip of example code for something like RustyLine as the
+  suggested way to do simple user prompting.
 * Gather my custom clap validators into a crate, add some more, and have this
   depend on it:
   * Self-Contained data:
