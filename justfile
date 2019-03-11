@@ -1,8 +1,8 @@
-# Version 0.1
+# Version 0.2
 
 # --== Variables to be customized/overridden by the user ==--
 
-export channel = "nightly"
+export channel = "stable"
 export target = "i686-unknown-linux-musl"
 export features = ""
 
@@ -22,26 +22,14 @@ callgrind_out_file = "callgrind.out.justfile"
 # using only the commands any POSIX-compliant platform should have
 # Source: http://stackoverflow.com/a/40778047/435253
 export zz_pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
-export zz_target_path="target/nightly/" + target  + "/release/" + zz_pkgname
+export zz_target_path="target/" + target  + "/release/" + zz_pkgname
 
 # `diff`-friendly mapping from `just` to `just test`
 DEFAULT: test
 
-# Call `cargo build --release`. Optimize for size if `channel=nightly`.
+# Call `cargo build --release`
 build:
-	#!/bin/sh
-	# If on nightly, opt-level=z and alloc_system to shrink output further
-	if [ "$channel" = "nightly" ]; then
-		export CARGO_TARGET_DIR=target/nightly 
-		features="nightly $features"
-		# TODO: Find a less hacky way to do this
-		cleanup() {
-			sed -i 's/opt-level = "z"/opt-level = 3/' Cargo.toml
-		}
-		trap cleanup EXIT
-		sed -i 's/opt-level = 3/opt-level = "z"/' Cargo.toml
-	fi
-	printf "\n--== Building with %s for %s (features: %s) ==--\n" "$channel" "$target" "$features"
+	@echo "\n--== Building with {{channel}} for {{target}} (features: {{features}}) ==--\n"
 	cargo "+$channel" build --release --target="$target" "--features=$features"
 
 # Call `build` and then strip and compress the resulting binary
@@ -71,18 +59,16 @@ install-apt-deps:
 # `install-rustup-deps` and then `cargo install` tools
 install-cargo-deps: install-rustup-deps
 	@# Prevent "already installed" from causing a failure
-	cargo install rustfmt || true
 	cargo install cargo-deadlinks || true
 	cargo install cargo-outdated || true
-	cargo +nightly install clippy || true
 
 # Install (don't update) nightly, stable, and `channel` toolchains, plus `target`.
 install-rustup-deps:
 	@# Prevent this from gleefully doing an unwanted "rustup update"
 	rustup toolchain list | grep -q stable || rustup toolchain install stable
-	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
-	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
 	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
+	rustup component list | grep -q 'clippy-\S* (' || rustup component add clippy
+	rustup component list | grep 'rustfmt-\S* (' || rustup component add rustfmt
 
 # Run `install-apt-deps` and `install-cargo-deps`, list what remains.
 @install-deps: install-apt-deps install-cargo-deps
@@ -148,19 +134,16 @@ run +args="":
 
 # Run all installed static analysis, plus `cargo +stable test`.
 test:
-	@echo "--== Coding Style ==--"
-	cargo fmt -- --write-mode checkstyle | grep -v '<'
 	@echo "--== Outdated Packages ==--"
 	cargo outdated
+	@printf "\n--== Clippy Lints ==--\n"
+	cargo clippy  # Run clippy for maximum pedantry
 	@printf "\n--== Dead Internal Documentation Links ==--\n"
 	cargo doc && cargo deadlinks
-	@printf "\n--== Clippy Lints ==--\n"
-	CARGO_TARGET_DIR=target/nightly cargo +nightly clippy  # Run clippy for maximum pedantry
-	@printf "\n--== Test Suite (on stable) ==--\n"
-	cargo +stable test  # Test with stable so nightly dependencies don't slip in
+	@printf "\n--== Test Suite ==--\n"
+	cargo test
 
 	# TODO: https://users.rust-lang.org/t/howto-sanitize-your-rust-code/9378
-	#	  (And use clippy as a compiler plugin so we can save a pass)
 
 
 # Local Variables:

@@ -2,6 +2,7 @@
 name = {{toml-escape name}}
 version = "0.1.0"
 authors = [{{toml-escape author}}]
+edition = "2018"
 
 [dependencies]
 clap = "2"
@@ -13,13 +14,10 @@ default-features = false  # disable pulling in backtrace
 [profile.release]
 lto = true
 codegen-units = 1
+opt-level = "z"
 
 # Uncomment to sacrifice Drop-on-panic cleanup for 20K space saving
 #panic = 'abort'
-
-# We need to specify this explicitly so sed can swap the 3 for "z" in
-# release.sh when running with --nightly
-opt-level = 3
 
 [features]
 nightly = []

@@ -18,32 +18,21 @@
 // Make rustc's built-in lints more strict (I'll opt back out selectively)
 #![warn(warnings)]
 
-// TODO: Once clippy is included in stable, don't feature-gate my warnings
-// (Or at least find a way to enable build-time and `cargo clippy`-time with a single feature)
 // Set clippy into a whitelist-based configuration so I'll see new lints as they come in
-#![cfg_attr(feature="cargo-clippy", warn(clippy_pedantic, clippy_restrictions))]
+#![warn(clippy::all, clippy::complexity, clippy::correctness, clippy::pedantic,
+        clippy::perf, clippy::style, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
-#![cfg_attr(feature="cargo-clippy", allow(assign_ops, float_arithmetic))]
-
-// Avoid bundling a copy of jemalloc when building on nightly for maximum size reduction
-#![cfg_attr(feature="nightly", feature(alloc_system))]
-#[cfg(feature="nightly")]
-extern crate alloc_system;
+#![allow(clippy::assign_ops, clippy::float_arithmetic)]
 
 /// `error_chain` imports
-#[macro_use]
-extern crate error_chain;
 mod errors;
-use errors::*;
+use crate::errors::*;
 
 /// clap-rs imports
-#[macro_use]
-extern crate clap;
-use clap::{App, Arg};
-// TODO: https://github.com/slog-rs/slog
-//       https://siciarz.net/24-days-rust-clap/
-//       https://docs.rs/slog-scope/0.2.2/slog_scope/
+use clap::{App, Arg, crate_version};
+
+// TODO: Logging
 
 /// stdlib imports
 use std::path::Component;
@@ -85,7 +74,7 @@ fn run() -> Result<()> {
     let matches = App::new(env!("CARGO_PKG_NAME"))
         .version(crate_version!())
         // .about("Description text here")
-        // TODO: Add args to control slog logging level
+        // TODO: Add args to control logging level
         .arg(Arg::with_name("inpath")
             .help("File(s) to use as input")
             .multiple(true)
@@ -114,6 +103,5 @@ mod tests {
     }
     // TODO: Unit tests
 }
-
 
 // vim: set sw=4 sts=4 expandtab :

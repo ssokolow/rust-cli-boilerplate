@@ -14,16 +14,15 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 
 * Uses [clap](https://clap.rs/) (with "Did you mean...?" suggestions enabled)
   for argument parsing.
-* Uses [error-chain](https://github.com/brson/error-chain) for unified error
-  handling
+* Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
+  unified error handling
 * Enables almost all rustc and
-  [clippy](https://github.com/Manishearth/rust-clippy) lints without making
+  [clippy](https://github.com/rust-lang/rust-clippy) lints without making
   clippy mandatory.
-* Takes advantage of nightly-only features but only if nightly is used.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables. (eg. for cross-compilation)
-* `just build-release` for a 100% static i686 binary totalling under `205KiB`
-  (`185KiB` with `panic="abort"`) in new projects
+* `just build-release` for a 100% static i686 binary totalling roughly `220KiB`
+  (`196KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
@@ -80,7 +79,7 @@ license of choice.</td>
 </tr>
 <tr>
   <td><code>channel</code></td>
-  <td><code>nightly</code></code></td>
+  <td><code>stable</code></code></td>
   <td><code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
 </tr>
 <tr>
@@ -124,17 +123,17 @@ test</code></td>
 <tr>
   <td><code>build</code></td>
   <td></td>
-  <td>Call <code>cargo build --release</code>. Optimize for size if <code>channel=nightly</code></td>
+  <td>Call <code>cargo build --release</code></td>
 </tr>
 <tr>
   <td><code>build-release</code></td>
   <td></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary.</td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
   <td><code>check</code></td>
   <td>args (optional)</td>
-  <td>Alias for <code>cargo check {{args}}</code> with the default toolchain.</code></td>
+  <td>Alias for <code>cargo check {{args}}</code> with the default toolchain</code></td>
 </tr>
 <tr>
   <td><code>fmt</code></td>
@@ -157,7 +156,7 @@ tools.</td>
   <td><code>install-rustup-deps</code></td>
   <td></td>
   <td>Install (don't update) nightly, stable, and <code>channel</code>
-toolchains, plus <code>target</code></td>
+toolchains, plus <code>target</code>, clippy, and rustfmt</td>
 </tr>
 <tr>
   <td><code>install-deps</code></td>
@@ -179,11 +178,6 @@ list what remains.</td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
 <tr>
-  <td><code>miniclean</code></td>
-  <td></td>
-  <td>Remove the release binary. (Used to avoid <code>strip</code>-ing UPX'd files.)</td>
-</tr>
-<tr>
   <td><code>run</code></td>
   <td>args (optional)</td>
   <td>Alias for <code>cargo run -- {{args}}</code> with the <em>default</em>
@@ -202,8 +196,6 @@ test</code></td>
 ### Tips
 
 * Edit the `DEFAULT` command. That's what it's there for.
-* Feel free to hang your own nightly-only optimizations off the `nightly`
-  feature.
 * You can use `just` from any subdirectory in your project. It's like `git` that way.
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
@@ -230,25 +222,19 @@ are defined:
    unwinding to allow backtrace code to be pruned away by dead code
    optimization.
 
-### If built via `just channel=stable build-release`:
-
-1. Unless otherwise noted, all optimizations listed above.
-2. The binary will be statically linked against
-   [musl-libc](http://www.musl-libc.org/) for maximum portability.
-3. The binary will be stripped with `--strip-unneeded` and then with
-   [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
-   (a more aggressive companion used in embedded development) to produce the
-   smallest possible pre-compression size.
-4. The binary will be compressed via
-   [`upx --ultra-brute`](https://upx.github.io/).
-   In my experience, this makes a file about 1/3rd the size of the input.
-
-### If built via `just channel=nightly build-release`:
+### If built via `just build-release`:
 
 1. Unless otherwise noted, all optimizations listed above.
 2. The binary will be built with `opt-level = "z"` to further reduce file size.
-3. The binary will be built against the system memory allocator to avoid the
-   overhead of bundling a copy of jemalloc.
+3. The binary will be statically linked against
+   [musl-libc](http://www.musl-libc.org/) for maximum portability.
+4. The binary will be stripped with `--strip-unneeded` and then with
+   [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
+   (a more aggressive companion used in embedded development) to produce the
+   smallest possible pre-compression size.
+5. The binary will be compressed via
+   [`upx --ultra-brute`](https://upx.github.io/).
+   In my experience, this makes a file about 1/3rd the size of the input.
 
 ## Dependencies
 
@@ -270,15 +256,14 @@ following dependencies must be installed:
 kcov
 * `just test`:
   * A stable Rust toolchain (`rustup toolchain add stable`)
-  * A nightly Rust toolchain (`rustup toolchain add nightly`)
+  * [clippy](https://github.com/rust-lang/rust-clippy)
+    (`rustup component add clippy`)
+  * [rustfmt](https://github.com/rust-lang/rustfmt)
+    (`rustup component add rustfmt`)
   * [cargo-deadlinks](https://github.com/deadlinks/cargo-deadlinks)
     (`cargo install cargo-deadlinks`)
   * [cargo-outdated](https://github.com/kbknapp/cargo-outdated)
     (`cargo install cargo-outdated`)
-  * [clippy](https://github.com/Manishearth/rust-clippy)
-    (`cargo +nightly install clippy`)
-  * [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
-    (`cargo install rustfmt`)
 
 ### Dependency Installation
 
@@ -308,12 +293,10 @@ kcov
 
 ## TODO
 
-* Use the `year` template variable to automatically fill out copyright dates.
-* Compare the [shortcomings](https://www.reddit.com/r/rust/comments/5x82jp/using_log_and_env_logger_in_tests/degk7w5/)
-  of [log](https://github.com/rust-lang-nursery/log) and
-  [slog](https://github.com/slog-rs/slog) [[1]](https://docs.rs/slog-scope/0.2.2/slog_scope/)
-  to choose an analogue to the `logging` module from Python stdlib with the
-  most favourable balance of pros and cons.
+* Update this for a modern `Cargo.toml` template renderer.
+  * Use a `year` template variable to automatically fill out copyright dates.
+* Re-incorporate use of `nightly` for access to unstable rustfmt options.
+* Add [log](https://github.com/rust-lang-nursery/log) to the boilerplate
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
   figure out how to exclude the Rust standard library from what KCacheGrind
   displays.
