@@ -44,6 +44,10 @@ build-release: build
 	@ls -1sh "{{zz_target_path}}" "{{zz_target_path}}.upx"
 	@printf "\n"
 
+# Alias for `cargo bloat --release {{args}}` with the default toolchain
+bloat +args="":
+	cargo bloat --release {{args}}
+
 # Alias for `cargo check {{args}}` with the default toolchain
 check +args="":
 	cargo check {{args}}
@@ -60,6 +64,7 @@ install-apt-deps:
 install-cargo-deps: install-rustup-deps
 	@# Prevent "already installed" from causing a failure
 	cargo install cargo-deadlinks || true
+	cargo install cargo-bloat || true
 	cargo install cargo-outdated || true
 
 # Install (don't update) nightly, stable, and `channel` toolchains, plus `target`.

@@ -121,6 +121,10 @@ license of choice.</td>
 test</code></td>
 </tr>
 <tr>
+  <td><code>bloat</code></td>
+  <td>args (optional</td>
+  <td>Call <code>cargo bloat --release</code></td>
+<tr>
   <td><code>build</code></td>
   <td></td>
   <td>Call <code>cargo build --release</code></td>
@@ -241,6 +245,9 @@ are defined:
 In order to use the full functionality offered by this boilerplate, the
 following dependencies must be installed:
 
+* `just bloat`:
+  * [cargo-bloat](https://github.com/RazrFalcon/cargo-bloat)
+    (`cargo install cargo-bloat`)
 * `just build-release`:
   * The toolchain specified by the <code>channel</code> variable.
   * The target specified by the <code>target</code> variable.
