@@ -22,7 +22,7 @@ See Also: [A More Formal Way To Think About Validity of Input Data](
         clippy::perf, clippy::style, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
-#![allow(clippy::assign_ops, clippy::float_arithmetic)]
+#![allow(clippy::float_arithmetic)]
 
 /// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
 const DEFAULT_VERBOSITY: usize = 1;
@@ -101,14 +101,14 @@ fn run() -> Result<()> {
     let opts = Opt::from_args();
 
     // Configure logging output
-    let verbosity = (opts.verbose + DEFAULT_VERBOSITY).saturating_sub(opts.quiet);
+    let verbosity = (opts.verbose.saturating_add(DEFAULT_VERBOSITY)).saturating_sub(opts.quiet);
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
         .verbosity(verbosity.saturating_sub(1))
         .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
         .init()
-        .unwrap();
+        .expect("initializing logging output");
 
     for inpath in opts.inpath {
         unimplemented!()
