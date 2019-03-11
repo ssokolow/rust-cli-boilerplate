@@ -20,6 +20,3 @@ opt-level = "z"
 
 # Uncomment to sacrifice Drop-on-panic cleanup for 20K space saving
 #panic = 'abort'
-
-[features]
-nightly = []

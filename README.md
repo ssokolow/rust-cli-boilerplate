@@ -86,7 +86,7 @@ license of choice.</td>
 <tr>
   <td><code>features</code></td>
   <td></td>
-  <td>Extra features to enable. Gains <code>nightly</code> when <code>channel=nightly</code></td>
+  <td>Extra features to enable.</td>
 </tr>
 <tr>
   <td><code>target</code></td>
