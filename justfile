@@ -34,14 +34,15 @@ build:
 
 # Call `build` and then strip and compress the resulting binary
 build-release: build
-	cp "{{zz_target_path}}" "{{zz_target_path}}.upx"
+	cp "{{zz_target_path}}" "{{zz_target_path}}.packed"
 	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
-	{{strip_bin}} {{strip_flags}} "{{zz_target_path}}.upx"
+	{{strip_bin}} {{strip_flags}} "{{zz_target_path}}.packed"
 	@# Allow sstrip to fail because it can't be installed via "just install-deps"
-	sstrip "{{zz_target_path}}.upx" || true
-	upx {{upx_flags}} "{{zz_target_path}}.upx"
+	sstrip "{{zz_target_path}}.packed" || true
+	@# Allow upx to fail in case the user wants to force no UPXing by leaving it uninstalled
+	upx {{upx_flags}} "{{zz_target_path}}.packed" || true
 	@printf "\n--== Final Result ==--\n"
-	@ls -1sh "{{zz_target_path}}" "{{zz_target_path}}.upx"
+	@ls -1sh "{{zz_target_path}}" "{{zz_target_path}}.packed"
 	@printf "\n"
 
 # Alias for `cargo bloat --release {{args}}` with the default toolchain
