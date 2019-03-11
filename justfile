@@ -1,4 +1,5 @@
 # Version 0.2
+# Copyright 2017-2019, Stephan Sokolow
 
 # --== Variables to be customized/overridden by the user ==--
 

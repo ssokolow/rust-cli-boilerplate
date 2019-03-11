@@ -1,6 +1,7 @@
 /*! TODO: Application description here
 
 Copyright {{ "now" | date: "%Y" }}, {{ authors }}
+Parts Copyright 2017-2019, Stephan Sokolow
 */
 
 // `error_chain` recursion adjustment
