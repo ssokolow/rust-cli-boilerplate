@@ -61,9 +61,9 @@ clean +args="":
 doc +args="":
 	cargo doc --document-private-items {{args}}
 
-# Alias for `cargo fmt -- {{args}}`
+# Alias for `cargo +nightly fmt -- {{args}}`
 fmt +args="":
-	cargo fmt -- {{args}}
+	cargo +nightly fmt -- {{args}}
 
 # Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
 install-apt-deps:
@@ -82,7 +82,7 @@ install-rustup-deps:
 	rustup toolchain list | grep -q stable || rustup toolchain install stable
 	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
 	rustup component list | grep -q 'clippy-\S* (' || rustup component add clippy
-	rustup component list | grep 'rustfmt-\S* (' || rustup component add rustfmt
+	rustup component list --toolchain nightly | grep 'rustfmt-\S* (' || rustup component add rustfmt --toolchain nightly
 
 # Run `install-apt-deps` and `install-cargo-deps`, list what remains.
 @install-deps: install-apt-deps install-cargo-deps

@@ -31,6 +31,9 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
 * A basic `.travis.yml` for use with [Travis-CI](https://travis-ci.org/) and
   [Nightli.es](https://nightli.es/).
+* The `fmt` just command always calls the nightly version of rustfmt to ensure
+  access to the excessive number of customization options which are gated away
+  as unstable.
 
 ## Supplementary Files
 
@@ -155,7 +158,7 @@ test</code></td>
 <tr>
   <td><code>fmt</code></td>
   <td>args (optional)</td>
-  <td>Alias for <code>cargo fmt -- {{args}}</code></td>
+  <td>Alias for <code>cargo +nightly fmt -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>install-apt-deps</code></td>
@@ -315,7 +318,6 @@ kcov
 
 * Update this for a modern `Cargo.toml` template renderer.
   * Use a `year` template variable to automatically fill out copyright dates.
-* Re-incorporate use of `nightly` for access to unstable rustfmt options.
 * Add [log](https://github.com/rust-lang-nursery/log) to the boilerplate
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
   figure out how to exclude the Rust standard library from what KCacheGrind
