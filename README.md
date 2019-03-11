@@ -21,8 +21,8 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   clippy mandatory.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables. (eg. for cross-compilation)
-* `just build-release` for a 100% static i686 binary totalling roughly `220KiB`
-  (`196KiB` with `panic="abort"`) in new projects
+* `just build-release` for a 100% static i686 binary totalling roughly `212KiB`
+  (`192KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
