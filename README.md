@@ -186,6 +186,12 @@ one or more of the variables listed above.
   <td>Alias for <code>cargo +nightly fmt -- {{args}}</code></td>
 </tr>
 <tr>
+  <td><code>fmt-check</code></td>
+  <td>args (optional)</td>
+  <td>Alias for <code>just fmt -- --check</code> which un-bloats TODO/FIXME
+  warnings</td>
+</tr>
+<tr>
   <td><code>install-apt-deps</code></td>
   <td></td>
   <td>Use <code>apt-get</code> to install dependencies <code>cargo</code> can't
@@ -299,7 +305,7 @@ following dependencies must be installed:
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
   * [`upx`](https://upx.github.io/) (**optional**, `sudo apt-get install upx`)
-* `just fmt`:
+* `just fmt` and `just fmt-check`:
   * A nightly Rust toolchain
   * (`rustup toolchain install nightly`)
   * [rustfmt](https://github.com/rust-lang/rustfmt) for the nightly toolchain

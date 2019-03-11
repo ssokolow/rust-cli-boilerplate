@@ -67,6 +67,10 @@ doc +args="":
 fmt +args="":
 	cargo +nightly fmt -- {{args}}
 
+# Alias for `cargo +nightly fmt -- --check {{args}} which un-bloats TODO/FIXME warnings
+fmt-check +args="":
+	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
+
 # Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
 install-apt-deps:
 	sudo apt-get install binutils kcachegrind upx valgrind
