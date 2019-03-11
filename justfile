@@ -52,6 +52,10 @@ bloat +args="":
 check +args="":
 	cargo check {{args}}
 
+# alias for `cargo doc --document-private-items {{args}}` with the default toolchain
+doc +args="":
+	cargo doc --document-private-items {{args}}
+
 # Alias for `cargo fmt -- {{args}}`
 fmt +args="":
 	cargo fmt -- {{args}}
@@ -140,7 +144,7 @@ test:
 	@printf "\n--== Clippy Lints ==--\n"
 	cargo clippy  # Run clippy for maximum pedantry
 	@printf "\n--== Dead Internal Documentation Links ==--\n"
-	cargo doc && cargo deadlinks
+	cargo doc --document-private-items && cargo deadlinks
 	@printf "\n--== Test Suite ==--\n"
 	cargo test
 
