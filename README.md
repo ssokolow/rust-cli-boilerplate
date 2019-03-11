@@ -43,7 +43,7 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 <tr>
   <td><code>LICENSE</code></td>
   <td>A copy of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a> as my "until I've had time to think about it"
-license of choice.</td>
+license of choice. You can replace this.</td>
 </tr>
 <tr>
   <td><code>CONTRIBUTING.md</code></td>
@@ -126,38 +126,42 @@ license of choice.</td>
 </html>
 
 ### Commands (`just --list`)
+
+**NOTE:** Commands marked with &dagger; will have their behaviour affected by
+one or more of the variables listed above.
+
 <html>
 <table>
 <tr><th>Command</th><th>Arguments</th><th>Description</th></tr>
 <tr>
   <td><code>DEFAULT</code></td>
   <td></td>
-  <td><code>diff</code>-friendly mapping from <code>just</code> to <code>just
-test</code></td>
+  <td>Defines <code>just</code> as shorthand for <code>just test</code></td>
 </tr>
 <tr>
   <td><code>bloat</code></td>
   <td>args (optional)</td>
-  <td>Call <code>cargo bloat --release</code></td>
+  <td>Alias for <code>cargo bloat --release</code></td>
 <tr>
   <td><code>build</code></td>
   <td></td>
-  <td>Call <code>cargo build --release</code></td>
+  <td>Build the binary with <code>--release</code> &dagger;</td>
 </tr>
 <tr>
   <td><code>build-release</code></td>
   <td></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary
+      &dagger;</td>
 </tr>
 <tr>
   <td><code>check</code></td>
   <td>args (optional)</td>
-  <td>Alias for <code>cargo check {{args}}</code> with the default toolchain</code></td>
+  <td>Alias for <code>cargo check {{args}}</code> &dagger;</td>
 </tr>
 <tr>
   <td><code>clean</code></td>
   <td>args (optional)</td>
-  <td>Alias for <code>cargo clean -v {{args}}</code> with the default toolchain</code></td>
+  <td>Alias for <code>cargo clean -v {{args}}</code></td>
 </tr>
 <tr>
   <td><code>doc</code></td>
@@ -179,19 +183,19 @@ test</code></td>
   <td><code>install-cargo-deps</code></td>
   <td></td>
   <td><code>install-rustup-deps</code> and then <code>cargo install</code>
-tools.</td>
+tools. &dagger;</td>
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
   <td></td>
-  <td>Install (don't update) nightly, stable, and <code>channel</code>
-toolchains, plus <code>target</code>, clippy, and rustfmt</td>
+  <td>Install (don't update) nightly and <code>channel</code>
+toolchains, plus <code>target</code>, clippy, and rustfmt &dagger;</td>
 </tr>
 <tr>
   <td><code>install-deps</code></td>
   <td></td>
   <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
-list what remains.</td>
+list what remains. &dagger;</td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
@@ -209,14 +213,12 @@ list what remains.</td>
 <tr>
   <td><code>run</code></td>
   <td>args (optional)</td>
-  <td>Alias for <code>cargo run -- {{args}}</code> with the <em>default</em>
-toolchain.</td>
+  <td>Alias for <code>cargo run -- {{args}}</code> &dagger;</td>
 </tr>
 <tr>
   <td><code>test</code></td>
   <td></td>
-  <td>Run all installed static analysis, plus <code>cargo +stable
-test</code></td>
+  <td>Run all installed static analysis, plus <code>cargo test</code></td>
 </tr>
 </table>
 </html>
@@ -229,6 +231,11 @@ test</code></td>
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
 
+* Only use Clap/StructOpt validators for references like filesystem paths (as opposed to
+  self-contained data like set sizes) as a way to bail out early on bad data,
+  not as your *only* check of validity. See [this blog post
+ ](http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/) for more.
+
 ## Build Behaviour
 
 In order to be as suitable as possible for building self-contained,
@@ -240,28 +247,28 @@ are defined:
 1. Backtrace support will be disabled in `error-chain` unless explicitly
    built with the `backtrace` feature. (This began as a workaround to unbreak
    cross-compiling to musl-libc and ARM after backtrace-rs 0.1.6 broke it, but
-   it also makes sense to opt out of it if I'm using `panic="abort"` to save
+   it also makes sense to opt out of it if you're using `panic="abort"` to save
    space)
 
 ### If built via `cargo build --release`:
 
 1. Unless otherwise noted, all optimizations listed above.
 2. Link-time optimization will be enabled (`lto = true`)
-3. Optionally (uncomment a line in `Cargo.toml`) panic via `abort` rather than
+3. The binary will be built with `opt-level = "z"` to further reduce file size.
+4. Optionally (uncomment a line in `Cargo.toml`) panic via `abort` rather than
    unwinding to allow backtrace code to be pruned away by dead code
    optimization.
 
 ### If built via `just build-release`:
 
 1. Unless otherwise noted, all optimizations listed above.
-2. The binary will be built with `opt-level = "z"` to further reduce file size.
-3. The binary will be statically linked against
+2. The binary will be statically linked against
    [musl-libc](http://www.musl-libc.org/) for maximum portability.
-4. The binary will be stripped with `--strip-unneeded` and then with
+3. The binary will be stripped with `--strip-unneeded` and then with
    [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
    (a more aggressive companion used in embedded development) to produce the
    smallest possible pre-compression size.
-5. The binary will be compressed via
+4. The binary will be compressed via
    [`upx --ultra-brute`](https://upx.github.io/).
    In my experience, this makes a file about 1/3rd the size of the input.
 
@@ -279,7 +286,12 @@ following dependencies must be installed:
   * `strip` (Included with binutils)
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
-  * [`upx`](https://upx.github.io/) (`sudo apt-get install upx`)
+  * [`upx`](https://upx.github.io/) (**optional**, `sudo apt-get install upx`)
+* `just fmt`:
+  * A nightly Rust toolchain
+  * (`rustup toolchain install nightly`)
+  * [rustfmt](https://github.com/rust-lang/rustfmt) for the nightly toolchain
+    (`rustup component add rustfmt --toolchain nightly`)
 * `just kcachegrind`:
    * [Valgrind](http://valgrind.org/) (`sudo apt-get install valgrind`)
    * [KCachegrind](https://kcachegrind.github.io/) (`sudo apt-get install kcachegrind`)
@@ -287,11 +299,8 @@ following dependencies must be installed:
   * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
 kcov
 * `just test`:
-  * A stable Rust toolchain (`rustup toolchain add stable`)
   * [clippy](https://github.com/rust-lang/rust-clippy)
     (`rustup component add clippy`)
-  * [rustfmt](https://github.com/rust-lang/rustfmt)
-    (`rustup component add rustfmt`)
   * [cargo-deadlinks](https://github.com/deadlinks/cargo-deadlinks)
     (`cargo install cargo-deadlinks`)
   * [cargo-outdated](https://github.com/kbknapp/cargo-outdated)
@@ -305,9 +314,9 @@ kcov
         cargo install just
         just install-deps
 
-        # ...and now  manually make sure the following tools are installed:
-        #  - sstrip (optional, from ELFkickers)
-        #  - kcov (optional, version 31 or higher with --verify support)
+        # ...and now manually install the following optional tools:
+        #  - sstrip (from ELFkickers)
+        #  - kcov (version 31 or higher with --verify support)
 
 * **Other distros:**
 
@@ -315,19 +324,18 @@ kcov
         cargo install just
         just install-cargo-deps
 
-        # ...and now manually make sure the following tools are installed:
+        # ...and now manually install the following optional tools:
         #  - strip (from binutils)
         #  - upx
-        #  - sstrip (optional, from ELFkickers)
-        #  - kcachegrind (optional)
-        #  - kcov (optional, version 31 or higher with --verify support)
-        #  - valgrind (optional)
+        #  - sstrip (from ELFkickers)
+        #  - kcachegrind
+        #  - kcov (version 31 or higher with --verify support)
+        #  - valgrind
 
 ## TODO
 
-* Update this for a modern `Cargo.toml` template renderer.
-  * Use a `year` template variable to automatically fill out copyright dates.
-* Add [log](https://github.com/rust-lang-nursery/log) to the boilerplate
+* Figure out whether StructOpt or Clap is to blame for doubling the leading
+  newline when `about` is specified via the doc comment and then report the bug.
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
   figure out how to exclude the Rust standard library from what KCacheGrind
   displays.

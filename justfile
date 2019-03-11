@@ -2,9 +2,9 @@
 
 # --== Variables to be customized/overridden by the user ==--
 
-export channel = "stable"
-export target = "i686-unknown-linux-musl"
-export features = ""
+channel = "stable"
+target = "i686-unknown-linux-musl"
+features = ""
 
 strip_bin = "strip"
 strip_flags = "--strip-unneeded"
@@ -24,13 +24,13 @@ callgrind_out_file = "callgrind.out.justfile"
 export zz_pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
 export zz_target_path="target/" + target  + "/release/" + zz_pkgname
 
-# `diff`-friendly mapping from `just` to `just test`
+# Shorthand for `just test`
 DEFAULT: test
 
 # Call `cargo build --release`
 build:
 	@echo "\n--== Building with {{channel}} for {{target}} (features: {{features}}) ==--\n"
-	cargo "+$channel" build --release --target="$target" "--features=$features"
+	cargo "+{{channel}}" build --release --target="{{target}}" --features="{{features}}"
 
 # Call `build` and then strip and compress the resulting binary
 build-release: build
@@ -49,9 +49,9 @@ build-release: build
 bloat +args="":
 	cargo bloat --release {{args}}
 
-# Alias for `cargo check {{args}}` with the default toolchain
+# Alias for `cargo check {{args}}`
 check +args="":
-	cargo check {{args}}
+	cargo "+{{channel}}" check {{args}}
 
 # Alias for `cargo clean -v {{args}}`
 clean +args="":
@@ -76,10 +76,11 @@ install-cargo-deps: install-rustup-deps
 	cargo install cargo-bloat || true
 	cargo install cargo-outdated || true
 
-# Install (don't update) nightly, stable, and `channel` toolchains, plus `target`.
+# Install (don't update) nightly `channel` toolchains, plus `target`, clippy, and rustfmt
 install-rustup-deps:
 	@# Prevent this from gleefully doing an unwanted "rustup update"
-	rustup toolchain list | grep -q stable || rustup toolchain install stable
+	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
+	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
 	rustup target list | grep -q '{{target}} (' || rustup target add '{{target}}'
 	rustup component list | grep -q 'clippy-\S* (' || rustup component add clippy
 	rustup component list --toolchain nightly | grep 'rustfmt-\S* (' || rustup component add rustfmt --toolchain nightly
@@ -138,11 +139,11 @@ kcov:
 		fi
 	done
 
-# Alias for `cargo run -- {{args}}` with the *default* toolchain
+# Alias for `cargo run -- {{args}}`
 run +args="":
-	cargo run -- {{args}}
+	cargo "+{{channel}}" run -- {{args}}
 
-# Run all installed static analysis, plus `cargo +stable test`.
+# Run all installed static analysis, plus `cargo test`.
 test:
 	@echo "--== Outdated Packages ==--"
 	cargo outdated

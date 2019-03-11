@@ -1,16 +1,5 @@
 /*! TODO: Application description here
 
-# Development Policy
-Clap validators for references like filesystem paths (as opposed to self-contained data like set
-sizes) are to be used only to improving the user experience by maximizing the chance that bad
-data will be caught early.
-
-To avoid vulnerabilities based on race conditions or shortcomings in functions like access()
-(which may falsely claim `/` is writable), all "reference data" must be validated
-(and failures handled) on **every** use.
-
-See Also: [A More Formal Way To Think About Validity of Input Data](
- http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/)
 */
 
 // `error_chain` recursion adjustment
@@ -37,9 +26,6 @@ mod errors;
 use crate::errors::*;
 use log::{debug, error, info, trace, warn};
 use structopt::StructOpt;
-
-// TODO: Figure out whether StructOpt or Clap is to blame for doubling the leading newline when
-// `about` is specified via the doc comment and then report the bug.
 
 /// Command-line argument schema
 ///
