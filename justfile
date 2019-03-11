@@ -7,6 +7,7 @@ channel = "stable"
 target = "i686-unknown-linux-musl"
 features = ""
 
+build_flags = "--release"
 strip_bin = "strip"
 strip_flags = "--strip-unneeded"
 upx_flags = "--ultra-brute"
@@ -28,10 +29,14 @@ export zz_target_path="target/" + target  + "/release/" + zz_pkgname
 # Shorthand for `just test`
 DEFAULT: test
 
-# Call `cargo build --release`
+# Alias for `cargo bloat --release {{args}}` with the default toolchain
+bloat +args="":
+	cargo bloat --release {{args}}
+
+# Call `cargo build`
 build:
 	@echo "\n--== Building with {{channel}} for {{target}} (features: {{features}}) ==--\n"
-	cargo "+{{channel}}" build --release --target="{{target}}" --features="{{features}}"
+	cargo "+{{channel}}" build --target="{{target}}" --features="{{features}}" {{build_flags}}
 
 # Call `build` and then strip and compress the resulting binary
 build-release: build
@@ -46,13 +51,9 @@ build-release: build
 	@ls -1sh "{{zz_target_path}}" "{{zz_target_path}}.packed"
 	@printf "\n"
 
-# Alias for `cargo bloat --release {{args}}` with the default toolchain
-bloat +args="":
-	cargo bloat --release {{args}}
-
 # Alias for `cargo check {{args}}`
 check +args="":
-	cargo "+{{channel}}" check {{args}}
+	cargo "+{{channel}}" check --target="{{target}}" --features="{{features}}" {{build_flags}} {{args}}
 
 # Alias for `cargo clean -v {{args}}`
 clean +args="":
@@ -60,7 +61,7 @@ clean +args="":
 
 # alias for `cargo doc --document-private-items {{args}}` with the default toolchain
 doc +args="":
-	cargo doc --document-private-items {{args}}
+	cargo doc --document-private-items --target="{{target}}" --features="{{features}}" {{build_flags}} {{args}}
 
 # Alias for `cargo +nightly fmt -- {{args}}`
 fmt +args="":
@@ -97,7 +98,7 @@ install-rustup-deps:
 
 # Run a debug build under callgrind, then open the profile in KCachegrind.
 kcachegrind +args="":
-	cargo build
+	cargo build --target="{{target}}" --features="{{features}}" {{build_flags}}
 	rm -rf '{{ callgrind_out_file }}'
 	valgrind --tool=callgrind --callgrind-out-file='{{ callgrind_out_file }}' {{ callgrind_args }} 'target/debug/{{ zz_pkgname }}' '{{ args }}' || true
 	test -e '{{ callgrind_out_file }}'
@@ -130,7 +131,7 @@ kcov:
 	cargo clean -v
 
 	shift
-	cargo test --no-run || exit $?
+	cargo test --no-run --target="{{target}}" --features="{{features}}" {{build_flags}} || exit $?
 	rm -rf target/cov
 
 	for file in target/debug/$zz_pkgname-*; do
@@ -142,21 +143,20 @@ kcov:
 
 # Alias for `cargo run -- {{args}}`
 run +args="":
-	cargo "+{{channel}}" run -- {{args}}
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} -- {{args}}
 
 # Run all installed static analysis, plus `cargo test`.
 test:
 	@echo "--== Outdated Packages ==--"
 	cargo outdated
 	@printf "\n--== Clippy Lints ==--\n"
-	cargo clippy  # Run clippy for maximum pedantry
+	cargo clippy --target="{{target}}" --features="{{features}}" {{build_flags}}
 	@printf "\n--== Dead Internal Documentation Links ==--\n"
-	cargo doc --document-private-items && cargo deadlinks
+	cargo doc --document-private-items  --target="{{target}}" --features="{{features}}" {{build_flags}} && cargo deadlinks
 	@printf "\n--== Test Suite ==--\n"
-	cargo test
+	cargo test --target="{{target}}" --features="{{features}}" {{build_flags}}
 
 	# TODO: https://users.rust-lang.org/t/howto-sanitize-your-rust-code/9378
-
 
 # Local Variables:
 # mode: makefile

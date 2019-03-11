@@ -43,26 +43,26 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 <tr>
   <td><code>LICENSE</code></td>
   <td>A copy of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a> as my "until I've had time to think about it"
-license of choice. You can replace this.</td>
+license of choice. You can replace this</td>
 </tr>
 <tr>
   <td><code>CONTRIBUTING.md</code></td>
   <td>A copy of the
-  [Developer Certificate of Origin](https://developercertificate.org/),
+  <a href="https://developercertificate.org/">Developer Certificate of Origin</a>,
   suitable for both this template and projects generated from it, which is the
   Linux kernel developers' more ideologically appropriate alternative to CLAs
   as a means of legally armoring themselves against bad-faith
-  contributions.</td>
+  contributions</td>
 </tr>
 <tr><th colspan="2">Configuration</th></tr>
 <tr>
   <td><code>.gitignore</code></td>
-  <td>Just ignore <code>/target</code> since that's where Cargo puts everything.</td>
+  <td>Just ignore <code>/target</code> since that's where Cargo puts everything</td>
 </tr>
 <tr>
   <td><code>clippy.toml</code></td>
   <td>Whitelist for CamelCase names which trigger Clippy's "identifier needs
-  backticks" lint.</td>
+  backticks" lint</td>
 </tr>
 <tr>
   <td><code>rustfmt.toml</code></td>
@@ -72,11 +72,11 @@ license of choice. You can replace this.</td>
 <tr>
   <td><code>apply.sh</code></td>
   <td>Run this to generate new projects as a workaround for cargo-generate's
-  incompatibility with justfile syntax.</td>
+  incompatibility with justfile syntax</td>
 </tr>
 <tr>
   <td><code>justfile</code></td>
-  <td>Build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike).</td>
+  <td>Build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike)</td>
 </tr>
 </table>
 </html>
@@ -87,6 +87,11 @@ license of choice. You can replace this.</td>
 <html>
 <table>
 <tr><th>Variable</th><th>Default Value</th><th>Description</th></tr>
+<tr>
+  <td><code>build_flags</code></td>
+  <td><code>--release</code></td>
+  <td>An easy place to modify the build flags used</td>
+</tr>
 <tr>
   <td><code>callgrind_args</code></td>
   <td></td>
@@ -100,22 +105,17 @@ license of choice. You can replace this.</td>
 <tr>
   <td><code>channel</code></td>
   <td><code>stable</code></code></td>
-  <td><code>rustc</code> channel used for <code>build</code> and dependent commands.</td>
+  <td><code>rustc</code> channel used for <code>build</code> and dependent commands</td>
 </tr>
 <tr>
   <td><code>features</code></td>
   <td></td>
-  <td>Extra features to enable.</td>
-</tr>
-<tr>
-  <td><code>target</code></td>
-  <td><code>i686-unknown-linux-musl</code></td>
-  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
+  <td>Extra features to enable</td>
 </tr>
 <tr>
   <td><code>strip_bin</code></td>
   <td><code>strip</code></td>
-  <td>Override when cross-compiling. See <code>justfile</code> source for example.</td>
+  <td>Override when cross-compiling. See <code>justfile</code> source for example</td>
 </tr>
 <tr>
   <td><code>strip_flags</code></td>
@@ -123,9 +123,14 @@ license of choice. You can replace this.</td>
   <td>Flags passed to <code>strip_bin</code></td>
 </tr>
 <tr>
+  <td><code>target</code></td>
+  <td><code>i686-unknown-linux-musl</code></td>
+  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
+</tr>
+<tr>
   <td><code>upx_flags</code></td>
   <td><code>--ultra-brute</code></td>
-  <td>Flags passed to <a href="https://upx.github.io/">UPX</a>.</td>
+  <td>Flags passed to <a href="https://upx.github.io/">UPX</a></td>
 </tr>
 </table>
 </html>
@@ -149,19 +154,19 @@ one or more of the variables listed above.
   <td>Alias for <code>cargo bloat --release</code></td>
 <tr>
   <td><code>build</code></td>
-  <td></td>
-  <td>Build the binary with <code>--release</code> &dagger;</td>
+  <td><sub>&dagger;</sub></td>
+  <td>Build the binary with <code>--release</code></td>
 </tr>
 <tr>
   <td><code>build-release</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td>Call <code>build</code> and then strip and compress the resulting binary
-      &dagger;</td>
+  </td>
 </tr>
 <tr>
   <td><code>check</code></td>
-  <td>args (optional)</td>
-  <td>Alias for <code>cargo check {{args}}</code> &dagger;</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>Alias for <code>cargo check {{args}}</code></td>
 </tr>
 <tr>
   <td><code>clean</code></td>
@@ -170,7 +175,7 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>doc</code></td>
-  <td>args (optional)</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Alias for <code>cargo doc --document-private-items {{args}}</code></td>
 </tr>
 <tr>
@@ -182,33 +187,33 @@ one or more of the variables listed above.
   <td><code>install-apt-deps</code></td>
   <td></td>
   <td>Use <code>apt-get</code> to install dependencies <code>cargo</code> can't
-(except <code>kcov</code> and <code>sstrip</code>)</td>
+  (except <code>kcov</code> and <code>sstrip</code>)</td>
 </tr>
 <tr>
   <td><code>install-cargo-deps</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td><code>install-rustup-deps</code> and then <code>cargo install</code>
-tools. &dagger;</td>
+  tools</td>
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td>Install (don't update) nightly and <code>channel</code>
-toolchains, plus <code>target</code>, clippy, and rustfmt &dagger;</td>
+  toolchains, plus <code>target</code>, clippy, and rustfmt</td>
 </tr>
 <tr>
   <td><code>install-deps</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
-list what remains. &dagger;</td>
+  list what remains</td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
-  <td></td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Run a debug build under
   <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then
   open the profile in
-  <a href="https://kcachegrind.github.io/">KCachegrind</a>.</td>
+  <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
 </tr>
 <tr>
   <td><code>kcov</code></td>
@@ -217,12 +222,12 @@ list what remains. &dagger;</td>
 </tr>
 <tr>
   <td><code>run</code></td>
-  <td>args (optional)</td>
-  <td>Alias for <code>cargo run -- {{args}}</code> &dagger;</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>Alias for <code>cargo run -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>test</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td>Run all installed static analysis, plus <code>cargo test</code></td>
 </tr>
 </table>
