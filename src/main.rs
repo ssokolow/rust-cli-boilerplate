@@ -25,17 +25,53 @@
 // Opt out of the lints I've seen and don't want
 #![allow(clippy::assign_ops, clippy::float_arithmetic)]
 
-/// `error_chain` imports
+/// The verbosity level when no -q or -v arguments are given, with 0 being -q
+const DEFAULT_VERBOSITY: usize = 1;
+
+// stdlib imports
+use std::ffi::{OsStr, OsString};
+use std::fs::File;
+use std::path::{Component::CurDir, Path, PathBuf};
+
+// `error_chain`, `structopt`, and logging imports
 mod errors;
 use crate::errors::*;
+use log::{debug, error, info, trace, warn};
+use structopt::StructOpt;
 
-/// clap-rs imports
-use clap::{App, Arg, crate_version};
+// TODO: Figure out whether StructOpt or Clap is to blame for doubling the leading newline when
+// `about` is specified via the doc comment and then report the bug.
 
-// TODO: Logging
+/// Command-line argument schema
+///
+/// NOTE: `about` should begin with a newline or the resulting `--help` won't comply with platform
+/// conventions and tools like help2man will treat the "<name> <version>" line as part of `about`.
+#[derive(StructOpt, Debug)]
+#[structopt(author="", about = "\nTODO: Replace me with the description text for the command",
+            raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
+struct Opt {
+    /// Decrease verbosity (-q, -qq, -qqq, etc.)
+    #[structopt(short, long, parse(from_occurrences))]
+    quiet: usize,
+    /// Increase verbosity (-v, -vv, -vvv, etc.)
+    #[structopt(short, long, parse(from_occurrences))]
+    verbose: usize,
+    /// Display timestamps on log messages (sec, ms, ns, none)
+    #[structopt(short, long)]
+    timestamp: Option<stderrlog::Timestamp>,
 
-/// stdlib imports
-use std::path::Component;
+    /// File(s) to use as input
+    #[structopt(parse(from_os_str),
+                raw(validator_os = "path_readable", default_value_os = "CurDir.as_os_str()"))]
+    inpath: Vec<PathBuf>,
+}
+
+/// Test that the given path can be opened for reading and adjust failure messages
+fn path_readable(value: &OsStr) -> std::result::Result<(), OsString> {
+    File::open(&value)
+        .map(|_| ())
+        .map_err(|e| format!("{}: {}", Path::new(value).display(), e).into())
+}
 
 /// Slightly adjusted version of the suggested error-chain harness from
 /// https://github.com/brson/error-chain/blob/master/examples/quickstart.rs
@@ -64,27 +100,22 @@ fn main() {
     }
 }
 
-/// The actual main(), but with the ability to use ? for easy early return
+/// The actual main()
 fn run() -> Result<()> {
-    // env::current_dir is fallible and default_value can't take a callback for lazy eval, so
-    // resort to "." but future-proof it in case of esoteric platforms.
-    // (Not perfect, but to_string_lossy() is necessary without a `default_value_os`)
-    let lazy_currdir = &Component::CurDir.as_os_str().to_string_lossy();
+    // Parse command-line arguments
+    let opts = Opt::from_args();
 
-    let matches = App::new(env!("CARGO_PKG_NAME"))
-        .version(crate_version!())
-        // .about("Description text here")
-        // TODO: Add args to control logging level
-        .arg(Arg::with_name("inpath")
-            .help("File(s) to use as input")
-            .multiple(true)
-            .empty_values(false)
-            .default_value(lazy_currdir)
-            // .validator_os(validators::path_readable)
-            .required(true))
-        .get_matches();
+    // Configure logging output
+    let verbosity = (opts.verbose + DEFAULT_VERBOSITY).saturating_sub(opts.quiet);
+    stderrlog::new()
+        .module(module_path!())
+        .quiet(verbosity == 0)
+        .verbosity(verbosity.saturating_sub(1))
+        .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
+        .init()
+        .unwrap();
 
-    for inpath in matches.values_of_os("inpath").expect("unreachable: Arg.required(true)") {
+    for inpath in opts.inpath {
         unimplemented!()
     }
 
@@ -94,7 +125,7 @@ fn run() -> Result<()> {
 // Tests go below the code where they'll be out of the way when not the target of attention
 #[cfg(test)]
 mod tests {
-    // use super::make_clap_parser;
+    // use super::Opt;
 
     #[test]
     /// Test something

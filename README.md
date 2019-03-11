@@ -12,17 +12,18 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 
 ## Features
 
-* Uses [clap](https://clap.rs/) (with "Did you mean...?" suggestions enabled)
-  for argument parsing.
+* Uses [StructOpt](https://github.com/TeXitoi/structopt) (with colorized
+  `--help` output and "Did you mean...?" suggestions enabled) for argument
+  parsing.
 * Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
-  unified error handling
+  unified error handling.
 * Enables almost all rustc and
   [clippy](https://github.com/rust-lang/rust-clippy) lints without making
   clippy mandatory.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables. (eg. for cross-compilation)
-* `just build-release` for a 100% static i686 binary totalling roughly `212KiB`
-  (`192KiB` with `panic="abort"`) in new projects
+* `just build-release` for a 100% static i686 binary totalling roughly `236KiB`
+  (`212KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.

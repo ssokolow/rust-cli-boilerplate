@@ -5,7 +5,9 @@ authors = [{{toml-escape author}}]
 edition = "2018"
 
 [dependencies]
-clap = "2"
+log = "0.4"
+stderrlog = "0.4"
+structopt = "0.2"
 
 [dependencies.error-chain]
 version = "0.12"
