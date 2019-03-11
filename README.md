@@ -66,7 +66,9 @@ license of choice. You can replace this</td>
 </tr>
 <tr>
   <td><code>rustfmt.toml</code></td>
-  <td>Show TODO/FIXME comments and tweak default <code>rustfmt</code> style</td>
+  <td>A custom rustfmt configuration which shows TODO/FIXME comments and
+  attempts to make it conform to the style I'm willing to enforce at the
+  expense of not using rustfmt if necessary.</td>
 </tr>
 <tr><th colspan="2">Development Automation</th></tr>
 <tr>
