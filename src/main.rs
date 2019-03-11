@@ -73,13 +73,28 @@ fn path_readable(value: &OsStr) -> std::result::Result<(), OsString> {
         .map_err(|e| format!("{}: {}", Path::new(value).display(), e).into())
 }
 
-/// Adjusted and `log`-ified version of the suggested error-chain harness from
-/// [quickstart.rs](https://github.com/brson/error-chain/blob/master/examples/quickstart.rs)
+/// Boilerplate to parse command-line arguments, set up logging, and handle bubbled-up `Error`s.
+///
+/// Based on the `StructOpt` example from stderrlog and the suggested error-chain harness from
+/// [quickstart.rs](https://github.com/brson/error-chain/blob/master/examples/quickstart.rs).
 ///
 /// **TODO:** Consider switching to Failure and look into `impl Termination` as a way to avoid
 ///           having to put the error message pretty-printing inside main()
 fn main() {
-    if let Err(ref e) = run() {
+    // Parse command-line arguments (exiting on parse error, --version, or --help)
+    let opts = Opt::from_args();
+
+    // Configure logging output so that -q is "decrease verbosity" rather than instant silence
+    let verbosity = (opts.verbose.saturating_add(DEFAULT_VERBOSITY)).saturating_sub(opts.quiet);
+    stderrlog::new()
+        .module(module_path!())
+        .quiet(verbosity == 0)
+        .verbosity(verbosity.saturating_sub(1))
+        .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
+        .init()
+        .expect("initializing logging output");
+
+    if let Err(ref e) = run(opts) {
         // Write the top-level error message, then chained errors, then backtrace if available
         error!("error: {}", e);
         for e in e.iter().skip(1) {
@@ -96,20 +111,7 @@ fn main() {
 }
 
 /// The actual `main()`
-fn run() -> Result<()> {
-    // Parse command-line arguments
-    let opts = Opt::from_args();
-
-    // Configure logging output
-    let verbosity = (opts.verbose.saturating_add(DEFAULT_VERBOSITY)).saturating_sub(opts.quiet);
-    stderrlog::new()
-        .module(module_path!())
-        .quiet(verbosity == 0)
-        .verbosity(verbosity.saturating_sub(1))
-        .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
-        .init()
-        .expect("initializing logging output");
-
+fn run(opts: Opt) -> Result<()> {
     for inpath in opts.inpath {
         unimplemented!()
     }
