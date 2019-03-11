@@ -1,2 +1,2 @@
 # Version 0.1
-doc-valid-idents = ["MiB", "GiB", "TiB", "PiB", "EiB", "DirectX", "GPLv2", "GPLv3", "GitHub", "IPv4", "IPv6", "JavaScript", "NaN", "OAuth", "OpenGL", "TrueType", "OSes"]
+doc-valid-idents = ["MiB", "GiB", "TiB", "PiB", "EiB", "DirectX", "GPLv2", "GPLv3", "GitHub", "IPv4", "IPv6", "JavaScript", "NaN", "OAuth", "OpenGL", "TrueType", "OSes", "node_modules"]
