@@ -45,6 +45,15 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   <td>A copy of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a> as my "until I've had time to think about it"
 license of choice.</td>
 </tr>
+<tr>
+  <td><code>CONTRIBUTING.md</code></td>
+  <td>A copy of the
+  [Developer Certificate of Origin](https://developercertificate.org/),
+  suitable for both this template and projects generated from it, which is the
+  Linux kernel developers' more ideologically appropriate alternative to CLAs
+  as a means of legally armoring themselves against bad-faith
+  contributions.</td>
+</tr>
 <tr><th colspan="2">Configuration</th></tr>
 <tr>
   <td><code>.gitignore</code></td>
