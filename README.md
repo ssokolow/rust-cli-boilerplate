@@ -452,6 +452,9 @@ kcov
     mirrors of each other" and I'm rather fond of stderrlog's approach to
     timestamp toggling.)
   * What effect does quicli have on the final binary size? (not a huge concern)
+* Investigate why [cargo-cov](https://github.com/kennytm/cov) isn't hiding the
+    components of the rust standard library and whether it can be induced to
+    generate coverage despite some tests failing. If so, add a command for it.
 * Figure out whether StructOpt or Clap is to blame for doubling the leading
   newline when `about` is specified via the doc comment and then report the bug.
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
