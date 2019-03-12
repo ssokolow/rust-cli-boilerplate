@@ -375,6 +375,12 @@ are defined:
    this case, but it's a good idea to get in the habit of using the safe option
    that's smart enough to just Do What I Mean™.
 
+### If built by `just dist`:
+
+1. A packed binary will be built via `build-release` and copied into `dist/`
+2. Shell completion files and a manpage will also be built and saved into
+   `dist/`
+
 ## Dependencies
 
 In order to use the full functionality offered by this boilerplate, the
