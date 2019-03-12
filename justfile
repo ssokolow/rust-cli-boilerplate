@@ -83,7 +83,7 @@ dist-supplemental:
 	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
 		-- --dump-completions powershell > dist/{{ zz_pkgname }}.powershell
 	@# Generate manpage and store it gzipped in dist/
-	help2man dist/{{ zz_pkgname }} | gzip -9 > dist/{{ zz_pkgname }}.1.gz || true
+	help2man -N dist/{{ zz_pkgname }} | gzip -9 > dist/{{ zz_pkgname }}.1.gz || true
 
 # Call `dist` and `build-release` and copy the packed binary to dist/
 dist: build-release dist-supplemental
