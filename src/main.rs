@@ -19,6 +19,7 @@ Parts Copyright 2017-2019, Stephan Sokolow
 const DEFAULT_VERBOSITY: usize = 1;
 
 // stdlib imports
+use std::io;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::path::{Component::CurDir, Path, PathBuf};
@@ -27,7 +28,7 @@ use std::path::{Component::CurDir, Path, PathBuf};
 mod errors;
 use crate::errors::*;
 use log::{debug, error, info, trace, warn};
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 
 /// Command-line argument schema
 ///
@@ -35,7 +36,8 @@ use structopt::StructOpt;
 ///           won't comply with platform conventions and tools like help2man will treat the
 ///           "<name> <version>" line as part of `about`.
 #[derive(StructOpt, Debug)]
-#[structopt(author="", long_about = "\nTODO: Replace me with the description text for the command",
+#[structopt(author="", rename_all = "kebab-case",
+            long_about = "\nTODO: Replace me with the description text for the command",
             raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
 struct Opt {
     /// Decrease verbosity (-q, -qq, -qqq, etc.)
@@ -45,8 +47,11 @@ struct Opt {
     #[structopt(short, long, parse(from_occurrences))]
     verbose: usize,
     /// Display timestamps on log messages (sec, ms, ns, none)
-    #[structopt(short, long)]
+    #[structopt(short, long, value_name="resolution")]
     timestamp: Option<stderrlog::Timestamp>,
+    /// Write a completion definition for the specified shell to stdout (bash, zsh, etc.)
+    #[structopt(long, value_name="shell")]
+    dump_completions: Option<clap::Shell>,
 
     /// File(s) to use as input
     #[structopt(parse(from_os_str),
@@ -81,6 +86,15 @@ fn main() {
         .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
         .init()
         .expect("initializing logging output");
+
+    // If requested, generate shell completions and then exit with status of "success"
+    if let Some(shell) = opts.dump_completions {
+        Opt::clap().gen_completions_to(
+            Opt::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
+            shell,
+            &mut io::stdout());
+        std::process::exit(0);
+    };
 
     if let Err(ref e) = run(opts) {
         // Write the top-level error message, then chained errors, then backtrace if available

@@ -14,6 +14,9 @@ upx_flags = "--ultra-brute"
 callgrind_args = ""
 callgrind_out_file = "callgrind.out.justfile"
 
+bash_completion_dir = "~/.bash_completion.d"
+fish_completion_dir = "~/.config/fish/completions"
+zsh_completion_dir = "~/.zsh/functions"
 # Examples for OpenPandora cross-compilation
 # target = "arm-unknown-linux-gnueabi"
 # strip_bin = `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
@@ -55,9 +58,22 @@ build-release: build
 check +args="":
 	cargo "+{{channel}}" check --target="{{target}}" --features="{{features}}" {{build_flags}} {{args}}
 
-# Alias for `cargo clean -v {{args}}`
+# Alias for `cargo clean -v {{args}}` which also deletes dist/
 clean +args="":
 	cargo clean -v {{args}}
+	rm -rf dist
+# Build the shell completions and a help file, and put them in a "dist" folder
+dist-supplemental:
+	mkdir -p dist
+	@# Generate bash completion in dist/
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
+		-- --dump-completions bash > dist/{{ zz_pkgname }}.bash
+	@# Generate zsh completion in dist/
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
+		-- --dump-completions zsh > dist/{{ zz_pkgname }}.zsh
+	@# Generate fish completion in dist/
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
+		-- --dump-completions fish > dist/{{ zz_pkgname }}.fish
 
 # alias for `cargo doc --document-private-items {{args}}` with the default toolchain
 doc +args="":

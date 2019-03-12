@@ -19,6 +19,8 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   unified error handling.
 * Presents a `run(opts: Opt)` function for you to use as your `main()` to
   keep the boilerplate cleanly separated from the specific logic.
+* Exposes Clap's support for generating shell completions by providing a
+  `--dump-completions <shell>` option.
 * Enables almost all rustc and
   [clippy](https://github.com/rust-lang/rust-clippy) lints without making
   clippy mandatory.
@@ -95,6 +97,38 @@ license of choice. You can replace this</td>
   <td>An easy place to modify the build flags used</td>
 </tr>
 <tr>
+  <td><code>channel</code></td>
+  <td><code>stable</code></code></td>
+  <td><code>rustc</code> channel used for <code>build</code> and dependent commands</td>
+</tr>
+<tr>
+  <td><code>features</code></td>
+  <td></td>
+  <td>Extra cargo features to enable</td>
+</tr>
+<tr>
+  <td><code>target</code></td>
+  <td><code>i686-unknown-linux-musl</code></td>
+  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
+</tr>
+<tr><th colspan="3"><code>build-release</code></th></tr>
+<tr>
+  <td><code>strip_bin</code></td>
+  <td><code>strip</code></td>
+  <td>Set this to the cross-compiler's <code>strip</code> when cross-compiling</td>
+</tr>
+<tr>
+  <td><code>strip_flags</code></td>
+  <td><code>--strip-unneeded</code></td>
+  <td>Flags passed to <code>strip_bin</code></td>
+</tr>
+<tr>
+  <td><code>upx_flags</code></td>
+  <td><code>--ultra-brute</code></td>
+  <td>Flags passed to <a href="https://upx.github.io/">UPX</a></td>
+</tr>
+<tr><th colspan="3"><code>kcachegrind</code></th></tr>
+<tr>
   <td><code>callgrind_args</code></td>
   <td></td>
   <td>Extra arguments to pass to <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>.</td>
@@ -104,35 +138,24 @@ license of choice. You can replace this</td>
   <td><code>callgrind.out.justfile</code></td>
   <td>Temporary file used by <code>just kcachegrind</code></td>
 </tr>
+<tr><th colspan="3"><code>install</code> and <code>uninstall</code></th></tr>
 <tr>
-  <td><code>channel</code></td>
-  <td><code>stable</code></code></td>
-  <td><code>rustc</code> channel used for <code>build</code> and dependent commands</td>
+  <td><code>bash_completion_dir</code></td>
+  <td><code>~/.bash_completion.d</code></td>
+  <td>Where to <code>install</code> bash completions. <strong>You'll need to
+  manually add some lines to source these files in <code>.bashrc</code>.</td>
 </tr>
 <tr>
-  <td><code>features</code></td>
-  <td></td>
-  <td>Extra features to enable</td>
+  <td><code>fish_completion_dir</code></td>
+  <td><code>~/.config/fish/completions</code></td>
+  <td>Where to <code>install</code> fish completions. You'll probably never
+      need to change this.</td>
 </tr>
 <tr>
-  <td><code>strip_bin</code></td>
-  <td><code>strip</code></td>
-  <td>Override when cross-compiling. See <code>justfile</code> source for example</td>
-</tr>
-<tr>
-  <td><code>strip_flags</code></td>
-  <td><code>--strip-unneeded</code></td>
-  <td>Flags passed to <code>strip_bin</code></td>
-</tr>
-<tr>
-  <td><code>target</code></td>
-  <td><code>i686-unknown-linux-musl</code></td>
-  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
-</tr>
-<tr>
-  <td><code>upx_flags</code></td>
-  <td><code>--ultra-brute</code></td>
-  <td>Flags passed to <a href="https://upx.github.io/">UPX</a></td>
+  <td><code>zsh_completion_dir</code></td>
+  <td><code>~/.zsh/functions</code>
+  <td>Where to install zsh completions. <strong>You'll need to add this to your
+  <code>fpath</code> manually</strong></td>
 </tr>
 </table>
 </html>
@@ -150,20 +173,11 @@ one or more of the variables listed above.
   <td></td>
   <td>Defines <code>just</code> as shorthand for <code>just test</code></td>
 </tr>
+<tr><th colspan="3">Development</th></tr>
 <tr>
   <td><code>bloat</code></td>
   <td>args (optional)</td>
   <td>Alias for <code>cargo bloat --release</code></td>
-<tr>
-  <td><code>build</code></td>
-  <td><sub>&dagger;</sub></td>
-  <td>Build the binary with <code>--release</code></td>
-</tr>
-<tr>
-  <td><code>build-release</code></td>
-  <td><sub>&dagger;</sub></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary
-  </td>
 </tr>
 <tr>
   <td><code>check</code></td>
@@ -192,6 +206,48 @@ one or more of the variables listed above.
   warnings</td>
 </tr>
 <tr>
+  <td><code>kcachegrind</code></td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>Run a debug build under
+  <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then
+  open the profile in
+  <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
+</tr>
+<tr>
+  <td><code>kcov</code></td>
+  <td></td>
+  <td>Generate a statement coverage report in <code>target/cov/</code></td>
+</tr>
+<tr>
+  <td><code>test</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Run all installed static analysis, plus <code>cargo test</code></td>
+</tr>
+<tr><th colspan="3">Local Builds</th></tr>
+<tr>
+  <td><code>build</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Build the binary with <code>--release</code></td>
+</tr>
+<tr>
+  <td><code>run</code></td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>Alias for <code>cargo run -- {{args}}</code></td>
+</tr>
+<tr><th colspan="3">Release Builds</th></tr>
+<tr>
+  <td><code>build-release</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary
+  </td>
+</tr>
+<tr>
+  <td><code>dist-supplemental</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Generate shell completions in <code>dist/</code></td>
+</tr>
+<tr><th colspan="3">Dependencies</th></tr>
+<tr>
   <td><code>install-apt-deps</code></td>
   <td></td>
   <td>Use <code>apt-get</code> to install dependencies <code>cargo</code> can't
@@ -215,29 +271,6 @@ one or more of the variables listed above.
   <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
   list what remains</td>
 </tr>
-<tr>
-  <td><code>kcachegrind</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Run a debug build under
-  <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then
-  open the profile in
-  <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
-</tr>
-<tr>
-  <td><code>kcov</code></td>
-  <td></td>
-  <td>Generate a statement coverage report in <code>target/cov/</code></td>
-</tr>
-<tr>
-  <td><code>run</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>cargo run -- {{args}}</code></td>
-</tr>
-<tr>
-  <td><code>test</code></td>
-  <td><sub>&dagger;</sub></td>
-  <td>Run all installed static analysis, plus <code>cargo test</code></td>
-</tr>
 </table>
 </html>
 
@@ -248,6 +281,22 @@ one or more of the variables listed above.
 * You can use `just` from any subdirectory in your project. It's like `git` that way.
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
+
+* The simplest way to activate the bash completion installed by `just install`
+  is to add this to your `.bashrc`:
+
+  ```sh
+  for script in ~/.bash_completion.d/*; do
+    . "$script"
+  done
+  ```
+
+* The simplest way to activate the zsh completion installed by `just install`
+  is to add this to your `.zshrc`:
+
+  ```zsh
+  fpath=(~/.zsh/functions(:A) $fpath)
+  ```
 
 * Only use Clap/StructOpt validators for references like filesystem paths (as opposed to
   self-contained data like set sizes) as a way to bail out early on bad data,
@@ -353,11 +402,11 @@ kcov
         just install-cargo-deps
 
         # ...and now manually install the following optional tools:
-        #  - strip (from binutils)
-        #  - upx
-        #  - sstrip (from ELFkickers)
         #  - kcachegrind
         #  - kcov (version 31 or higher with --verify support)
+        #  - strip (from binutils)
+        #  - sstrip (from ELFkickers)
+        #  - upx
         #  - valgrind
 
 ## TODO
