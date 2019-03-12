@@ -11,6 +11,7 @@ trim_trailing_whitespace = true
 # justfile uses Makefile-like significant indentation
 [justfile]
 indent_style = tab
+trim_trailing_whitespace = false
 
 # If I have a TODO file, I want the outline lists to line up nicely and
 # .travis.yml just uses 2-space indentation by convention
