@@ -76,6 +76,12 @@ dist-supplemental:
 	@# Generate fish completion in dist/
 	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
 		-- --dump-completions fish > dist/{{ zz_pkgname }}.fish
+	@# Generate elvish completion in dist/
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
+		-- --dump-completions elvish > dist/{{ zz_pkgname }}.elvish
+	@# Generate fish completion in dist/
+	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
+		-- --dump-completions powershell > dist/{{ zz_pkgname }}.powershell
 	@# Generate manpage and store it gzipped in dist/
 	help2man dist/{{ zz_pkgname }} | gzip -9 > dist/{{ zz_pkgname }}.1.gz || true
 
