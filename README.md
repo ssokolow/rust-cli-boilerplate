@@ -279,16 +279,26 @@ are defined:
 
 ### If built via `just build-release`:
 
-1. Unless otherwise noted, all optimizations listed above.
+1. Unless otherwise noted, all [optimizations
+   ](https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html)
+   listed above.
 2. The binary will be statically linked against
    [musl-libc](http://www.musl-libc.org/) for maximum portability.
-3. The binary will be stripped with `--strip-unneeded` and then with
+3. The binary will be stripped with [`--strip-unneeded`
+   ](https://www.technovelty.org/linux/stripping-shared-libraries.html)
+   and then with
    [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
-   (a more aggressive companion used in embedded development) to produce the
-   smallest possible pre-compression size.
+   (a [more aggressive](https://github.com/BR903/ELFkickers/tree/master/sstrip)
+   companion used in embedded development) to produce the smallest possible
+   pre-compression size.
 4. The binary will be compressed via
    [`upx --ultra-brute`](https://upx.github.io/).
    In my experience, this makes a file about 1/3rd the size of the input.
+
+**NOTE:** `--strip-unneeded` removes all symbols that `readelf --syms` sees
+   from the `just build` output, so it's not different from `--strip-all` in
+   this case, but it's a good idea to get in the habit of using the safe option
+   that's smart enough to just Do What I Mean™.
 
 ## Dependencies
 
@@ -352,6 +362,17 @@ kcov
 
 ## TODO
 
+* Get a feel for the workflow surrounding building a project with
+  [Failure](https://github.com/rust-lang-nursery/failure) and decide whether to
+  rebase this template on top of it.
+* Investigate how flexible [QuiCLI](https://github.com/killercup/quicli) and
+    its dependency on env_logger are and whether it'd be useful to rebase on it
+    or whether I'd just be reinventing most of it anyway to force the exact
+    look and feel I achieved with stderrlog.
+    (eg. The `Verbosity` struct doesn't implement "`-v` and `-q` are
+    mirrors of each other" and I'm rather fond of stderrlog's approach to
+    timestamp toggling.)
+  * What effect does quicli have on the final binary size? (not a huge concern)
 * Figure out whether StructOpt or Clap is to blame for doubling the leading
   newline when `about` is specified via the doc comment and then report the bug.
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
