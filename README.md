@@ -140,6 +140,13 @@ license of choice. You can replace this</td>
 </tr>
 <tr><th colspan="3"><code>install</code> and <code>uninstall</code></th></tr>
 <tr>
+  <td><code>manpage_dir</code></td>
+  <td><code>~/.cargo/share/man/man1</code></td>
+  <td>Where to install manpages. As long as <code>~/.cargo/bin</code> is in
+  your <code>PATH</code>, <code>man</code> should automatically pick up this
+  location.</td>
+</tr>
+<tr>
   <td><code>bash_completion_dir</code></td>
   <td><code>~/.bash_completion.d</code></td>
   <td>Where to <code>install</code> bash completions. <strong>You'll need to
@@ -242,9 +249,15 @@ one or more of the variables listed above.
   </td>
 </tr>
 <tr>
+  <td><code>dist</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and
+  store the results in <code>dist/</code></td>
+</tr>
+<tr>
   <td><code>dist-supplemental</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Generate shell completions in <code>dist/</code></td>
+  <td>Generate shell completions and a manpage in <code>dist/</code></td>
 </tr>
 <tr><th colspan="3">Dependencies</th></tr>
 <tr>
@@ -369,6 +382,9 @@ following dependencies must be installed:
   * (`rustup toolchain install nightly`)
   * [rustfmt](https://github.com/rust-lang/rustfmt) for the nightly toolchain
     (`rustup component add rustfmt --toolchain nightly`)
+* `just dist-supplemental`:
+   * [help2man](https://www.gnu.org/software/help2man/)
+     (`sudo apt-get install help2man`)
 * `just kcachegrind`:
    * [Valgrind](http://valgrind.org/) (`sudo apt-get install valgrind`)
    * [KCachegrind](https://kcachegrind.github.io/) (`sudo apt-get install kcachegrind`)
@@ -402,6 +418,7 @@ kcov
         just install-cargo-deps
 
         # ...and now manually install the following optional tools:
+        #  - help2man
         #  - kcachegrind
         #  - kcov (version 31 or higher with --verify support)
         #  - strip (from binutils)

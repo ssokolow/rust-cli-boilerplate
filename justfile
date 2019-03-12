@@ -17,6 +17,8 @@ callgrind_out_file = "callgrind.out.justfile"
 bash_completion_dir = "~/.bash_completion.d"
 fish_completion_dir = "~/.config/fish/completions"
 zsh_completion_dir = "~/.zsh/functions"
+manpage_dir = "~/.cargo/share/man/man1"
+
 # Examples for OpenPandora cross-compilation
 # target = "arm-unknown-linux-gnueabi"
 # strip_bin = `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
@@ -74,6 +76,13 @@ dist-supplemental:
 	@# Generate fish completion in dist/
 	cargo "+{{channel}}" run --target="{{target}}" --features="{{features}}" {{build_flags}} \
 		-- --dump-completions fish > dist/{{ zz_pkgname }}.fish
+	@# Generate manpage and store it gzipped in dist/
+	help2man dist/{{ zz_pkgname }} | gzip -9 > dist/{{ zz_pkgname }}.1.gz || true
+
+# Call `dist` and `build-release` and copy the packed binary to dist/
+dist: build-release dist-supplemental
+	@# Copy the packed command to dist/
+	cp  "{{ zz_target_path }}.packed" dist/{{ zz_pkgname }}
 
 # alias for `cargo doc --document-private-items {{args}}` with the default toolchain
 doc +args="":
@@ -89,7 +98,7 @@ fmt-check +args="":
 
 # Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
 install-apt-deps:
-	sudo apt-get install binutils kcachegrind upx valgrind
+	sudo apt-get install binutils help2man kcachegrind upx valgrind
 
 # `install-rustup-deps` and then `cargo install` tools
 install-cargo-deps: install-rustup-deps
