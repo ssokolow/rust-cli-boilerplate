@@ -96,6 +96,32 @@ fmt +args="":
 fmt-check +args="":
 	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
 
+# Install the binary, shell completions, and a help file
+install: dist-supplemental
+	@# Install bash completion (requires additional setup to source a non-root dir)
+	mkdir -p {{bash_completion_dir}}
+	cp dist/{{ zz_pkgname }}.bash {{ bash_completion_dir }}/{{ zz_pkgname }}
+	@# Install zsh completion (requires additional setup to add a non-root fpath entry)
+	mkdir -p {{zsh_completion_dir}}
+	cp dist/{{ zz_pkgname }}.zsh {{ zsh_completion_dir }}/_{{ zz_pkgname }}
+	@# Install fish completion
+	mkdir -p {{ fish_completion_dir }}
+	cp dist/{{ zz_pkgname }}.fish {{ fish_completion_dir }}/{{ zz_pkgname }}.fish
+	@# Generate and install the manpage
+	mkdir -p {{ manpage_dir }}
+	cp dist/{{ zz_pkgname }}.1.gz {{ manpage_dir }}/{{ zz_pkgname }}.1.gz || true
+	@# Install the command to ~/.cargo/bin
+	cargo "+{{channel}}" install --path . --force --target="{{target}}" --features="{{features}}"
+
+# Remove any files installed by the `install` task (but leave any parent directories created)
+uninstall:
+	@# TODO: Implement the proper fallback chain from `cargo install`
+	rm ~/.cargo/bin/{{ zz_pkgname }} || true
+	rm {{ manpage_dir }}/{{ zz_pkgname }}.1.gz || true
+	rm {{ bash_completion_dir }}/{{ zz_pkgname }} || true
+	rm {{ fish_completion_dir }}/{{ zz_pkgname }}.fish || true
+	rm {{ zsh_completion_dir }}/_{{ zz_pkgname }} || true
+
 # Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
 install-apt-deps:
 	sudo apt-get install binutils help2man kcachegrind upx valgrind

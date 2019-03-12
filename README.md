@@ -25,7 +25,8 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   [clippy](https://github.com/rust-lang/rust-clippy) lints without making
   clippy mandatory.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
-  customized via variables. (eg. for cross-compilation)
+  customized via variables (eg. for cross-compilation), including `install` and
+  `uninstall`, which also take care of shell completions and a manpage.
 * `just build-release` for a 100% static i686 binary totalling roughly `236KiB`
   (`212KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
@@ -235,6 +236,18 @@ one or more of the variables listed above.
   <td><code>build</code></td>
   <td><sub>&dagger;</sub></td>
   <td>Build the binary with <code>--release</code></td>
+</tr>
+<tr>
+  <td><code>install</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Build and install an un-packed binary, shell completions, and a
+manpage</td>
+</tr>
+<tr>
+  <td><code>uninstall</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Remove files installed by <code>install</code> (but leave any parent
+directories that may or may not have had to be created)</td>
 </tr>
 <tr>
   <td><code>run</code></td>
