@@ -20,15 +20,17 @@ const DEFAULT_VERBOSITY: usize = 1;
 
 // stdlib imports
 use std::io;
-use std::ffi::{OsStr, OsString};
-use std::fs::File;
-use std::path::{Component::CurDir, Path, PathBuf};
+use std::path::{Component::CurDir, PathBuf};
 
 // `error_chain`, `structopt`, and logging imports
 mod errors;
 use crate::errors::*;
 use log::{debug, error, info, trace, warn};
 use structopt::{clap, StructOpt};
+
+// Local imports
+mod validators;
+use validators::path_readable;
 
 /// Command-line argument schema
 ///
@@ -57,13 +59,6 @@ struct Opt {
     #[structopt(parse(from_os_str),
                 raw(validator_os = "path_readable", default_value_os = "CurDir.as_os_str()"))]
     inpath: Vec<PathBuf>,
-}
-
-/// Clap/StructOpt validator for testing that the given path can be opened for reading
-fn path_readable(value: &OsStr) -> std::result::Result<(), OsString> {
-    File::open(&value)
-        .map(|_| ())
-        .map_err(|e| format!("{}: {}", Path::new(value).display(), e).into())
 }
 
 /// Boilerplate to parse command-line arguments, set up logging, and handle bubbled-up `Error`s.
@@ -129,9 +124,8 @@ mod tests {
     #[test]
     /// Test something
     fn test_something() {
-        unimplemented!();
+        // TODO: Test something
     }
-    // TODO: Unit tests
 }
 
 // vim: set sw=4 sts=4 expandtab :
