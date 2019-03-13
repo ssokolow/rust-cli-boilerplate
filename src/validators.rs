@@ -17,13 +17,37 @@ const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
 
 /// The given path can be opened for reading
 ///
-/// **IMPORTANT:** This will momentarily open the given path for reading to verify that it is
-/// readable. However, relying on this remaining true will introduce a race condition, so this
-/// validator is intended only to allow your program to exit as quickly as possible in the case of
-/// obviously bad input.
+/// ## Use For:
+///  * Input file paths
 ///
-/// **TODO:** Determine why `File::open` has no problem with directory paths and decide how to
+/// ## Relevant Conventions:
+///  * Commands which read from `stdin` by default should use `-f` to specify the
+///    input path. [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///  * Commands which read from files by default should use positional arguments to
+///    specify input paths.
+///  * Allow an arbitrary number of input paths if feasible.
+///  * Interpret a value of `-` to mean "read from `stdin`" if feasible.
+///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
+///
+/// **Note:** The following command-lines, which interleave files and `stdin`, are a good test of
+/// how the above conventions should interact:
+///
+///     data_source | my_utility_a header.dat - footer.dat > output.dat
+///     data_source | my_utility_b -f header.dat -f - -f footer.dat > output.dat
+///
+/// ## Cautions:
+///  * This will momentarily open the given path for reading to verify that it is
+///    readable. However, relying on this to remain true will introduce a race condition. This
+///    validator is intended only to allow your program to exit as quickly as possible in the case
+///    of obviously bad input.
+///  * As a more reliable validity check, you are advised to open a handle to the file in question
+///    as early in your program's operation as possible and keep it open until you are finished.
+///    This will both verify its validity and minimize the window in which another process could
+///    render the path invalid.
+///
+/// **TODO:** Determine why `File::open` has no problem opening directory paths and decide how to
 /// adjust this.
+///
 pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<(), OsString> {
     let path = value.as_ref();
     File::open(path)
@@ -33,28 +57,46 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 
 /// The given path is valid on all major filesystems and OSes
 ///
-/// **IMPORTANT:**
-/// * This validator is intended to ensure that paths you plan to **create** can be copied
-///   from one type of filesystem to another without error.
-/// * Applying this validator to input paths could prevent your program from accessing files
-///   which do exist, but have names which would not be valid on other filesystems.
-/// * This validator cannot guarantee that a given filename will be valid once other considerations
-///   are taken into account, such as short paths containing symbolic links to longer paths.
+/// ## Use For:
+///  * Output file or directory paths
 ///
-/// **COMPROMISES:**
+/// ## Relevant Conventions:
+///  * Use `-o` to specify the output path.
+///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///  * Interpret a value of `-` to mean "Write output to stdout".
+///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
+///  * Because `-o` does not inherently indicate whether it expects a file or a directory, consider
+///    also providing a GNU-style long version with a name like `--outfile` to allow scripts which
+///    depend on your tool to be more self-documenting.
 ///
-/// * Many popular Linux filesystems impose no total length limit
-/// * This function imposes a 32,760-character limit for compatibility with flash drives formatted
-///   FAT32 or exFAT.
-/// * Many Linux programs written in C or C++ rely on the `PATH_MAX` constant, which typically
-///   specifies a length of 4096 bytes including terminal `NUL`, but this can usually be worked
-///   around by changing the working directory and using relative paths.
-/// * The UDF filesystem used on DVDs imposes a 1023-byte length limit but this is so low compared
-///   to the other options that an exception is being made despite UDF's ubiquity.
+/// ## Cautions:
+///  * To ensure files can be copied/moved without issue, this validator may impose stricter
+///    restrictions on filenames than your filesystem. Do *not* use it for input paths.
+///  * Other considerations, such as paths containing symbolic links with longer target names, may
+///    still cause your system to reject paths which pass this check.
+///  * As a more reliable validity check, you are advised to open a handle to the file in question
+///    as early in your program's operation as possible and keep it open until you are finished.
+///    This will both verify its validity and minimize the window in which another process could
+///    render the path invalid.
 ///
-/// If feasible, you are advised to accomplish your early validation of paths by opening a file
-/// handle and keeping it open until you're finished with it. This will also prevent various kinds
-/// of race conditions by reserving the name for you.
+/// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
+///  * Many popular Linux filesystems impose no total length limit
+///  * This function imposes a 32,760-character limit for compatibility with flash drives formatted
+///    FAT32 or exFAT.
+///  * Some POSIX API functions, such as `getcwd()` and `realpath()` rely on the `PATH_MAX`
+///    constant, which typically specifies a length of 4096 bytes including terminal `NUL`, but
+///    this is not enforced by the filesystem itself.
+///    [[4]](https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html)
+///
+///    Programs which rely on libc for this functionality but do not attempt to canonicalize paths
+///    will usually work if you change the working directory and use relative paths.
+///  * The following lengths were considered too limiting to be enforced by this function:
+///    * The UDF filesystem used on DVDs imposes a 1023-byte length limit on paths
+///    * When not using the `\?\` prefix to disable legacy compatibility, Windows paths  are
+///      limited to 260 characters, which was arrived at as `A:\MAX_FILENAME_LENGTH<NULL>`.
+///      [[5]](https://stackoverflow.com/a/1880453/435253)
+///
+///  **TODO:** Validate that each path component is short enough to be valid.
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms, clippy::decimal_literal_representation)]
     let path = value.as_ref();
@@ -94,34 +136,41 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 
 /// The string is a valid file/folder name on all major filesystems and OSes
 ///
-/// **IMPORTANT:**
-/// * This validator is intended to ensure that filenames you plan to **create** can be copied
-///   from one type of filesystem to another without error.
-/// * Applying this validator to input filenames could prevent your program from accessing files
-///   which do exist, but have names which would not be valid on other filesystems.
-/// * This validator cannot guarantee that a given filename will be valid once other considerations
-///   such as overall path length limits are taken into account.
+/// ## Use For:
+///  * Output file or directory names within a parent directory specified through other means.
 ///
-/// **COMPROMISES:**
+/// ## Relevant Conventions:
+///  * Most of the time, you want to let users specify a full path via `path_valid_portable`
+///    instead.
 ///
+/// ## Cautions:
+///  * To ensure files can be copied/moved without issue, this validator may impose stricter
+///    restrictions on filenames than your filesystem. Do *not* use it for input filenames.
+///  * This validator cannot guarantee that a given filename will be valid once other
+///    considerations such as overall path length limits are taken into account.
+///  * As a more reliable validity check, you are advised to open a handle to the file in question
+///    as early in your program's operation as possible and keep it open until you are finished.
+///    This will both verify its validity and minimize the window in which another process could
+///    render the path invalid.
+///
+/// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
 ///  * In the interest of not inconveniencing users in the most common case, this validator imposes
-///  a 255-character length limit.
-///  * The eCryptFS home directory encryption offered by Ubuntu Linux imposes a [143-character
-///  length limit](https://bugs.launchpad.net/ecryptfs/+bug/344878) when filename encryption is
-///  enabled.
+///    a 255-character length limit.
+///  * The eCryptFS home directory encryption offered by Ubuntu Linux imposes a 143-character
+///    length limit when filename encryption is enabled.
+///    [[4]](https://bugs.launchpad.net/ecryptfs/+bug/344878)
 ///  * the Joliet extensions for ISO 9660 are specified to support only 64-character filenames and
-///  tested to support either 103 or 110 characters depending whether you ask the mkisofs developers
-///  or Microsoft.
+///    tested to support either 103 or 110 characters depending whether you ask the mkisofs
+///    developers or Microsoft. [[5]](https://en.wikipedia.org/wiki/Joliet_(file_system))
 ///
-/// If feasible, you are advised to accomplish your early validation of paths by opening a file
-/// handle and keeping it open until you're finished with it. This will also prevent various kinds
-/// of race conditions by reserving the name for you.
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms)]
     let path = value.as_ref();
 
     // Anything that's invalid in a path is invalid in a path component
     path_valid_portable(path)?;
+
+    // TODO: Probably a good idea to disallow `.` and `..`
 
     if path.as_os_str().len() > 255 {
         Err(format!("File/folder name is too long ({} chars): {:?}",
