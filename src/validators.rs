@@ -14,6 +14,8 @@ use std::path::Path;
 const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"];
+// TODO: Add the rest of the disallowed names from
+// https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
 /// The given path can be opened for reading
 ///
@@ -104,6 +106,8 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
     // TODO: Should I refuse incorrect Unicode normalization since Finder doesn't like it?
     // Source: https://news.ycombinator.com/item?id=16993687
 
+    // TODO: Rework filename_valid_portable into an internal function which doesn't call this and
+    //       then apply it to each path component.
     if path.as_os_str().len() > 32760 {
         // Limit length to fit on VFAT/exFAT when using the `\?\` prefix to disable legacy limits
         // Source: https://en.wikipedia.org/wiki/Comparison_of_file_systems
@@ -163,6 +167,9 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///    tested to support either 103 or 110 characters depending whether you ask the mkisofs
 ///    developers or Microsoft. [[5]](https://en.wikipedia.org/wiki/Joliet_(file_system))
 ///
+/// **TODO:** Consider retiring this in favour of more specialized validators for filename
+/// patterns, prefixes, and/or suffixes, to properly account for how "you can specify a name but
+/// not a path" generally comes about.
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms)]
     let path = value.as_ref();
