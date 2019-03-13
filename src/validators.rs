@@ -11,9 +11,13 @@ use std::path::Path;
 ///
 /// (Unless your app uses the `\?\` path prefix to bypass legacy Win32 API compatibility
 /// limitations)
+///
+/// Source: [Boost Path Name Portability Guide
+/// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"];
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    "CLOCK$" ]; // https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
 // TODO: Add the rest of the disallowed names from
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
@@ -82,7 +86,7 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///    render the path invalid.
 ///
 /// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
-///  * Many popular Linux filesystems impose no total length limit
+///  * Many popular Linux filesystems impose no total length limit.
 ///  * This function imposes a 32,760-character limit for compatibility with flash drives formatted
 ///    FAT32 or exFAT.
 ///  * Some POSIX API functions, such as `getcwd()` and `realpath()` rely on the `PATH_MAX`
@@ -93,18 +97,26 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///    Programs which rely on libc for this functionality but do not attempt to canonicalize paths
 ///    will usually work if you change the working directory and use relative paths.
 ///  * The following lengths were considered too limiting to be enforced by this function:
-///    * The UDF filesystem used on DVDs imposes a 1023-byte length limit on paths
+///    * The UDF filesystem used on DVDs imposes a 1023-byte length limit on paths.
 ///    * When not using the `\?\` prefix to disable legacy compatibility, Windows paths  are
 ///      limited to 260 characters, which was arrived at as `A:\MAX_FILENAME_LENGTH<NULL>`.
 ///      [[5]](https://stackoverflow.com/a/1880453/435253)
+///    * ISO 9660 without Joliet or Rock Ridge extensions does not permit periods in directory
+///      names, directory trees more than 8 levels deep, or filenames longer than 32 characters.
+///      [[6]](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 ///
-///  **TODO:** Validate that each path component is short enough to be valid.
+///  **TODO:**
+///   * Validate that each path component is short enough to be valid.
+///   * Write another function for enforcing the limits imposed by targeting optical media.
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms, clippy::decimal_literal_representation)]
     let path = value.as_ref();
 
     // TODO: Should I refuse incorrect Unicode normalization since Finder doesn't like it?
     // Source: https://news.ycombinator.com/item?id=16993687
+
+    // TODO: Windows does not permit period as the last character.
+    // Source: https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
 
     // TODO: Rework filename_valid_portable into an internal function which doesn't call this and
     //       then apply it to each path component.
