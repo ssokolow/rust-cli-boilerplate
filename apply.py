@@ -125,8 +125,11 @@ def template_file(path, template_vars):
         try:
             return template_vars[keyword]
         except KeyError:
-            log.critical("No such template variable: %r", match_obj.group(1))
-            raise
+            log.critical("No such template variable: %r\n"
+                         "Valid variables are:\n\t{{ %s }}\n\t"
+                         '{{ "now" | date: "<strftime string>" }}',
+                         match_obj.group(1), ' }}\n\t{{ '.join(template_vars))
+            sys.exit(1)
 
     with open(path) as fobj:
         templated = re.sub(r'{{\s*(.*?)\s*}}', match, fobj.read()).split('\n')
