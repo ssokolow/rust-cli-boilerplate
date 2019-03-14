@@ -25,8 +25,9 @@ use std::path::{Component::CurDir, PathBuf};
 // `error_chain`, `structopt`, and logging imports
 mod errors;
 use crate::errors::*;
-use log::{debug, error, info, trace, warn};
 use structopt::{clap, StructOpt};
+
+use log::{debug, error, info, trace, warn};
 
 // Local imports
 mod validators;
