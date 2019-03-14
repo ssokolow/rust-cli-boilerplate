@@ -157,8 +157,8 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///  * Output file or directory names within a parent directory specified through other means.
 ///
 /// ## Relevant Conventions:
-///  * Most of the time, you want to let users specify a full path via `path_valid_portable`
-///    instead.
+///  * Most of the time, you want to let users specify a full path via [`path_valid_portable`
+///    ](fn.path_valid_portable.html)instead.
 ///
 /// ## Cautions:
 ///  * To ensure files can be copied/moved without issue, this validator may impose stricter

@@ -34,9 +34,21 @@ use validators::path_readable;
 
 /// Command-line argument schema
 ///
-/// **NOTE:** The top-level `about` should begin with a newline (`\n`) or the resulting `--help`
-///           won't comply with platform conventions and tools like help2man will treat the
-///           "<name> <version>" line as part of `about`.
+/// ## Relevant Conventions:
+///  * The top-level `long_about` attribute should begin with `\n` or the `--help` output won't
+///    comply with the platform conventions that `help2man` depends on to generate your manpage.
+///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
+///  * StructOpt's default behaviour of including the author name in the `--help` output is an
+///    oddity among Linux commands and, if you don't disable it with `author=""`, you run the risk
+///    of people unfamiliar with StructOpt assuming that you are an egotistical person who made a
+///    conscious choice to add it.
+///
+/// ## Cautions:
+///  * If you use `about` rather than `long_about`, this docstring will be displayed in your
+///  `--help` output.
+///  * As of this writing, there is a bug which will cause you to either have no leading `\n` or a
+///    doubled leading `\n` if you write your `--help` description as a doc comment rather than
+///    using `long_about`.
 #[derive(StructOpt, Debug)]
 #[structopt(author="", rename_all = "kebab-case",
             long_about = "\nTODO: Replace me with the description text for the command",
