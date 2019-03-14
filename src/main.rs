@@ -27,6 +27,7 @@ mod errors;
 use crate::errors::*;
 use structopt::{clap, StructOpt};
 
+#[allow(unused_imports)] // TEMPLATE:REMOVE
 use log::{debug, error, info, trace, warn};
 
 // Local imports
@@ -41,7 +42,7 @@ use validators::path_readable;
 ///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
 ///  * StructOpt's default behaviour of including the author name in the `--help` output is an
 ///    oddity among Linux commands and, if you don't disable it with `author=""`, you run the risk
-///    of people unfamiliar with StructOpt assuming that you are an egotistical person who made a
+///    of people unfamiliar with `StructOpt` assuming that you are an egotistical person who made a
 ///    conscious choice to add it.
 ///
 /// ## Cautions:
@@ -122,6 +123,7 @@ fn main() {
 
 /// The actual `main()`
 fn run(opts: CliOpts) -> Result<()> {
+    #[allow(unused_variables,clippy::unimplemented)] // TEMPLATE:REMOVE
     for inpath in opts.inpath {
         unimplemented!()
     }

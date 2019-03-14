@@ -129,7 +129,14 @@ def template_file(path, template_vars):
             raise
 
     with open(path) as fobj:
-        templated = re.sub(r'{{\s*(.*?)\s*}}', match, fobj.read())
+        templated = re.sub(r'{{\s*(.*?)\s*}}', match, fobj.read()).split('\n')
+        prepared = []
+        for line in templated:
+            if not line.strip().endswith('// TEMPLATE:REMOVE'):
+                prepared.append(line)
+
+        templated = '\n'.join(prepared)
+        del prepared
     with open(path, 'w') as fobj:
         fobj.write(templated)
 

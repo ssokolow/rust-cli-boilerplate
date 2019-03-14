@@ -14,6 +14,7 @@ use std::path::Path;
 ///
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
+#[allow(dead_code)] // TEMPLATE:REMOVE
 const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
@@ -110,6 +111,7 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///  **TODO:**
 ///   * Validate that each path component is short enough to be valid.
 ///   * Write another function for enforcing the limits imposed by targeting optical media.
+#[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms, clippy::decimal_literal_representation)]
     let path = value.as_ref();
@@ -185,6 +187,7 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 /// **TODO:** Consider retiring this in favour of more specialized validators for filename
 /// patterns, prefixes, and/or suffixes, to properly account for how "you can specify a name but
 /// not a path" generally comes about.
+#[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms)]
     let path = value.as_ref();
