@@ -54,7 +54,7 @@ use validators::path_readable;
 #[structopt(author="", rename_all = "kebab-case",
             long_about = "\nTODO: Replace me with the description text for the command",
             raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
-struct Opt {
+struct CliOpts {
     /// Decrease verbosity (-q, -qq, -qqq, etc.)
     #[structopt(short, long, parse(from_occurrences))]
     quiet: usize,
@@ -83,7 +83,7 @@ struct Opt {
 ///           having to put the error message pretty-printing inside main()
 fn main() {
     // Parse command-line arguments (exiting on parse error, --version, or --help)
-    let opts = Opt::from_args();
+    let opts = CliOpts::from_args();
 
     // Configure logging output so that -q is "decrease verbosity" rather than instant silence
     let verbosity = (opts.verbose.saturating_add(DEFAULT_VERBOSITY)).saturating_sub(opts.quiet);
@@ -97,8 +97,8 @@ fn main() {
 
     // If requested, generate shell completions and then exit with status of "success"
     if let Some(shell) = opts.dump_completions {
-        Opt::clap().gen_completions_to(
-            Opt::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
+        CliOpts::clap().gen_completions_to(
+            CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
             shell,
             &mut io::stdout());
         std::process::exit(0);
@@ -121,7 +121,7 @@ fn main() {
 }
 
 /// The actual `main()`
-fn run(opts: Opt) -> Result<()> {
+fn run(opts: CliOpts) -> Result<()> {
     for inpath in opts.inpath {
         unimplemented!()
     }
@@ -132,7 +132,7 @@ fn run(opts: Opt) -> Result<()> {
 // Tests go below the code where they'll be out of the way when not the target of attention
 #[cfg(test)]
 mod tests {
-    // use super::Opt;
+    // use super::CliOpts;
 
     #[test]
     /// Test something
