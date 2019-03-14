@@ -2,3 +2,4 @@
 /LICENSE.mit
 /LICENSE.apache2
 /test_justfile.py
+/xdg-terminal

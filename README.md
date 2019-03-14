@@ -75,7 +75,7 @@ license of choice. You can replace this</td>
 </tr>
 <tr><th colspan="2">Development Automation</th></tr>
 <tr>
-  <td><code>apply.sh</code></td>
+  <td><code>apply.py</code></td>
   <td>Run this to generate new projects as a workaround for cargo-generate's
   incompatibility with justfile syntax</td>
 </tr>
