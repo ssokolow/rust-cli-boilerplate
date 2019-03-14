@@ -69,8 +69,9 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 /// ## Relevant Conventions:
 ///  * Use `-o` to specify the output path.
 ///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///    [[2]](http://tldp.org/LDP/abs/html/standard-options.html)
 ///  * Interpret a value of `-` to mean "Write output to stdout".
-///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
+///    [[3]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
 ///  * Because `-o` does not inherently indicate whether it expects a file or a directory, consider
 ///    also providing a GNU-style long version with a name like `--outfile` to allow scripts which
 ///    depend on your tool to be more self-documenting.
@@ -85,7 +86,7 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///    This will both verify its validity and minimize the window in which another process could
 ///    render the path invalid.
 ///
-/// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
+/// ## Design Considerations: [[4]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
 ///  * Many popular Linux filesystems impose no total length limit.
 ///  * This function imposes a 32,760-character limit for compatibility with flash drives formatted
 ///    FAT32 or exFAT.
