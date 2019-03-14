@@ -47,7 +47,8 @@ const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
 ///    validator is intended only to allow your program to exit as quickly as possible in the case
 ///    of obviously bad input.
 ///  * As a more reliable validity check, you are advised to open a handle to the file in question
-///    as early in your program's operation as possible and keep it open until you are finished.
+///    as early in your program's operation as possible, use it for all your interactions with the
+///    file, and keep it open until you are finished.
 ///    This will both verify its validity and minimize the window in which another process could
 ///    render the path invalid.
 ///
@@ -166,7 +167,8 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///  * This validator cannot guarantee that a given filename will be valid once other
 ///    considerations such as overall path length limits are taken into account.
 ///  * As a more reliable validity check, you are advised to open a handle to the file in question
-///    as early in your program's operation as possible and keep it open until you are finished.
+///    as early in your program's operation as possible, use it for all your interactions with the
+///    file, and keep it open until you are finished.
 ///    This will both verify its validity and minimize the window in which another process could
 ///    render the path invalid.
 ///
