@@ -38,10 +38,13 @@ def get_author():
 
         # TODO: Make this encoding configurable?
         user, email = user.decode('utf8'), email.decode('utf8')
-    except (OSError, subprocess.CalledProcessError, UnicodeDecodeError):
+    except UnicodeDecodeError:
+        log.error("Could not decode name/email from git as UTF-8")
+        user, email = None, None
+    except (OSError, subprocess.CalledProcessError):
         user, email = None, None
 
-    # If on a UNIXy system, fall back to the "Real Name" field in the account
+    # If on a Unixy system, fall back to the "Real Name" field in the account
     if pwd and not user:
         # Query the GECOS field as a fallback
         try:
