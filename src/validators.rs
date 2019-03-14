@@ -5,7 +5,7 @@ Copyright 2017-2019, Stephan Sokolow
 
 use std::ffi::OsString;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Component, Path};
 
 /// Special filenames which cannot be used for real files under Win32
 ///
@@ -109,47 +109,25 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///      [[6]](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 ///
 ///  **TODO:**
-///   * Validate that each path component is short enough to be valid.
 ///   * Write another function for enforcing the limits imposed by targeting optical media.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     #![allow(clippy::match_same_arms, clippy::decimal_literal_representation)]
     let path = value.as_ref();
 
-    // TODO: Should I refuse incorrect Unicode normalization since Finder doesn't like it?
-    // Source: https://news.ycombinator.com/item?id=16993687
-
-    // TODO: Windows does not permit period as the last character.
-    // Source: https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
-
-    // TODO: Rework filename_valid_portable into an internal function which doesn't call this and
-    //       then apply it to each path component.
-    if path.as_os_str().len() > 32760 {
+    if path.as_os_str().is_empty() {
+        Err("Path is empty".into())
+    } else if path.as_os_str().len() > 32760 {
         // Limit length to fit on VFAT/exFAT when using the `\?\` prefix to disable legacy limits
         // Source: https://en.wikipedia.org/wiki/Comparison_of_file_systems
         Err(format!("Path is too long ({} chars): {:?}",
                     path.as_os_str().len(), path).into())
-    } else if path.to_string_lossy().as_bytes().iter().any(|c| match c {
-        // invalid on all APIs which don't use counted strings like inside the NT kernel
-        b'\0' => true,
-        // invalid under FAT*, VFAT, exFAT, and NTFS
-        0x0..=0x1f | 0x7f | b'"' | b'*' | b'<' | b'>' | b'?' | b'|' => true,
-        // let everything else through
-        _ => false,
-    }) {
-        #[allow(clippy::use_debug)]
-        Err(format!("Path contains invalid characters: {:?}", path).into())
-    } else if path.as_os_str().is_empty() {
-        Err("Path is empty".into())
-    } else if let Some(file_stem) = path.file_stem() {
-        // Reserved DOS filenames that still can't be used on modern Windows for compatibility
-        let stem = file_stem.to_string_lossy().to_uppercase();
-        if RESERVED_DOS_FILENAMES.iter().any(|&x| x == stem) {
-            return Err(format!("Filename is reserved on Windows: {:?}", file_stem).into());
-        } else {
-            Ok(())
-        }
     } else {
+        for component in path.components() {
+            if let Component::Normal(string) = component {
+                filename_valid_portable(string)?
+            }
+        }
         Ok(())
     }
 }
@@ -184,23 +162,40 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///    tested to support either 103 or 110 characters depending whether you ask the mkisofs
 ///    developers or Microsoft. [[5]](https://en.wikipedia.org/wiki/Joliet_(file_system))
 ///
-/// **TODO:** Consider retiring this in favour of more specialized validators for filename
-/// patterns, prefixes, and/or suffixes, to properly account for how "you can specify a name but
-/// not a path" generally comes about.
+/// **TODO:** Consider converting this to a private function that just exists as a helper for the
+/// path validator in favour of more specialized validators for filename patterns, prefixes, and/or
+/// suffixes, to properly account for how "you can specify a name bu not a path" generally
+/// comes about.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
-    #![allow(clippy::match_same_arms)]
+    #![allow(clippy::match_same_arms, clippy::else_if_without_else)]
     let path = value.as_ref();
 
-    // Anything that's invalid in a path is invalid in a path component
-    path_valid_portable(path)?;
+    // TODO: Should I refuse incorrect Unicode normalization since Finder doesn't like it or just
+    //       advise users to run a normalization pass?
+    // Source: https://news.ycombinator.com/item?id=16993687
 
-    // TODO: Probably a good idea to disallow `.` and `..`
+    // Check that the length is within range
+    let os_str = path.as_os_str();
+    if os_str.len() > 255 {
+        return Err(format!("File/folder name is too long ({} chars): {:?}",
+                    path.as_os_str().len(), path).into());
+    } else if os_str.is_empty() {
+        return Err("Path component is empty".into());
+    }
 
-    if path.as_os_str().len() > 255 {
-        Err(format!("File/folder name is too long ({} chars): {:?}",
-                    path.as_os_str().len(), path).into())
-    } else if path.to_string_lossy().as_bytes().iter().any(|c| match c {
+    // Check for invalid characters
+    let lossy_str = os_str.to_string_lossy();
+    let last_char = lossy_str.chars().last().expect("getting last character");
+    if [' ', '.'].iter().any(|&x| x == last_char) {
+        // The Windows shell and UI don't support component names ending in periods or spaces
+        // Source: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
+        return Err("Windows forbids path components ending with spaces/periods".into());
+    } else if lossy_str.as_bytes().iter().any(|c| match c {
+        // invalid on all APIs which don't use counted strings like inside the NT kernel
+        b'\0' => true,
+        // invalid under FAT*, VFAT, exFAT, and NTFS
+        0x0..=0x1f | 0x7f | b'"' | b'*' | b'<' | b'>' | b'?' | b'|' => true,
         // POSIX path separator (invalid on Unixy platforms like Linux and BSD)
         b'/' => true,
         // HFS/Carbon path separator (invalid in filenames on MacOS and Mac filesystems)
@@ -208,11 +203,21 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         b':' => true,
         // DOS/Windows path separator (invalid in filenames on Windows and Windows filesystems)
         b'\\' => true,
-        // Let everything else through
+        // let everything else through
         _ => false,
     }) {
         #[allow(clippy::use_debug)]
-        Err(format!("File/folder names cannot contain path separators: {:?}", path).into())
+        return Err(format!("Path component contains invalid characters: {:?}", path).into());
+    }
+
+    // Reserved DOS filenames that still can't be used on modern Windows for compatibility
+    if let Some(file_stem) = path.file_stem() {
+        let stem = file_stem.to_string_lossy().to_uppercase();
+        if RESERVED_DOS_FILENAMES.iter().any(|&x| x == stem) {
+            return Err(format!("Filename is reserved on Windows: {:?}", file_stem).into());
+        } else {
+            Ok(())
+        }
     } else {
         Ok(())
     }
@@ -232,7 +237,7 @@ mod tests {
     fn path_readable_basic_functionality() {
         // Existing paths
         assert!(path_readable(OsStr::new("/")).is_ok());                       // OK Folder
-        assert!(path_readable(OsStr::new("/etc/passwd")).is_ok());             // OK File
+        assert!(path_readable(OsStr::new("/bin/sh")).is_ok());             // OK File
         assert!(path_readable(OsStr::new("/bin/../etc/.././.")).is_ok());      // Not canonicalized
         assert!(path_readable(OsStr::new("/../../../..")).is_ok());            // Above root
 
@@ -257,27 +262,33 @@ mod tests {
     // ---- filename_valid_portable ----
 
     const VALID_FILENAMES: &[&str] = &[
-        // regular, space, leading, and trailing periods
-        "test1", "te st", ".test", "test.",
+        // regular, space, and leading period
+        "test1", "te st", ".test",
         // Stuff which would break if the DOS reserved names check is doing dumb pattern matching
         "lpt", "lpt0", "lpt10",
     ];
 
-    const PATHS_WITH_SEPARATORS: &[&str] = &[
-        "t:est\\sss", // DOS drive separator
-        "te\\stssss", // DOS path separator
-        "te/stsssss", // POSIX path separator
+    // Paths which should pass because std::path::Path will recognize the separators
+    // TODO: cfg(...) up alternative versions for Windows and possibly OSX
+    const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &["re/lative", "/ab/solute"];
 
-        // Absolute paths
-        "\\\\lo\\ca", // UNC
-        "\\te\\stss", // DOS path separator
-        "/te/stssss", // POSIX path separator
+    // Paths which should fail because std::path::Path won't recognize the separators and we don't
+    // want them showing up in the components.
+    const PATHS_WITH_FOREIGN_SEPARATORS: &[&str] = &[
+        "relative\\win32",
+        "C:\\absolute\\win32",
+        "\\drive\\relative\\win32",
+        "\\\\unc\\path\\for\\win32",
+        "Classic Mac HD:Folder Name:File",
     ];
 
+    // Source: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
     const INVALID_PORTABLE_FILENAMES: &[&str] = &[
         "test\x03", "test\x07", "test\x08", "test\x0B", "test\x7f",  // Control characters (VFAT)
         "\"test\"", "<testsss", "testsss>", "testsss|", "testsss*", "testsss?", "?estsss", // VFAT
-        "CON", "Con", "coN", "cOn", "CoN", "con", "lpt1", "com9", // DOS/Win32 API
+        "ends with space ", "ends_with_period.", // DOS/Win32
+        "CON", "Con", "coN", "cOn", "CoN", "con", "lpt1", "com9", // Reserved names (DOS/Win32)
+        "con.txt", "lpt1.dat", // DOS/Win32 API (Reserved names are extension agnostic)
         "", "\0"]; // POSIX
 
     #[test]
@@ -289,7 +300,10 @@ mod tests {
 
     #[test]
     fn filename_valid_portable_refuses_path_separators() {
-        for path in PATHS_WITH_SEPARATORS {
+        for path in PATHS_WITH_NATIVE_SEPARATORS {
+            assert!(filename_valid_portable(OsStr::new(path)).is_err(), "{:?}", path);
+        }
+        for path in PATHS_WITH_FOREIGN_SEPARATORS {
             assert!(filename_valid_portable(OsStr::new(path)).is_err(), "{:?}", path);
         }
     }
@@ -299,6 +313,11 @@ mod tests {
         for fname in INVALID_PORTABLE_FILENAMES {
             assert!(filename_valid_portable(OsStr::new(fname)).is_err(), "{:?}", fname);
         }
+    }
+
+    #[test]
+    fn filename_valid_portable_refuses_empty_strings() {
+        assert!(filename_valid_portable(OsStr::new("")).is_err());
     }
 
     #[test]
@@ -334,9 +353,20 @@ mod tests {
     }
 
     #[test]
-    fn path_valid_portable_accepts_path_separators() {
-        for path in PATHS_WITH_SEPARATORS {
+    fn path_valid_portable_accepts_native_path_separators() {
+        for path in PATHS_WITH_NATIVE_SEPARATORS {
             assert!(path_valid_portable(OsStr::new(path)).is_ok(), "{:?}", path);
+        }
+
+        // Verify that repeated separators are getting collapsed before filename_valid_portable
+        // sees them.
+        assert!(path_valid_portable(OsStr::new("/path//with/repeated//separators")).is_ok());
+    }
+
+    #[test]
+    fn path_valid_portable_refuses_foreign_path_separators() {
+        for path in PATHS_WITH_FOREIGN_SEPARATORS {
+            assert!(path_valid_portable(OsStr::new(path)).is_err(), "{:?}", path);
         }
     }
 
@@ -349,13 +379,27 @@ mod tests {
 
     #[test]
     fn path_valid_portable_enforces_length_limits() {
-        // 32761 characters
-        let mut test_str = std::str::from_utf8(&[b'X'; 32761]).expect("parsing constant");
-        assert!(path_valid_portable(OsStr::new(test_str)).is_err());
+        let mut test_string = String::with_capacity(255 * 130);
+        while test_string.len() < 32761 {
+            test_string.push_str(std::str::from_utf8(&[b'X'; 255]).expect("utf8 from literal"));
+            test_string.push('/');
+        }
+
+        // >32760 characters
+        assert!(path_valid_portable(OsStr::new(&test_string)).is_err());
 
         // 32760 characters (maximum for FAT32/VFAT/exFAT)
-        test_str = std::str::from_utf8(&[b'X'; 32760]).expect("parsing constant");
-        assert!(path_valid_portable(OsStr::new(test_str)).is_ok());
+        test_string.truncate(32760);
+        assert!(path_valid_portable(OsStr::new(&test_string)).is_ok());
+
+        // 256 characters with no path separators
+        test_string.truncate(255);
+        test_string.push('X');
+        assert!(path_valid_portable(OsStr::new(&test_string)).is_err());
+
+        // 255 characters with no path separators
+        test_string.truncate(255);
+        assert!(path_valid_portable(OsStr::new(&test_string)).is_ok());
     }
 
     #[cfg(not(windows))]
