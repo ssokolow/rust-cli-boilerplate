@@ -323,6 +323,9 @@ mod tests {
         for path in VALID_FILENAMES {
             assert!(path_valid_portable(OsStr::new(path)).is_ok(), "{:?}", path);
         }
+
+        // No filename (.file_stem() returns None)
+        assert!(path_valid_portable(OsStr::new("foo/..")).is_ok());
     }
 
     #[test]
