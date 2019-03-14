@@ -1,7 +1,5 @@
-/*! Validator functions suitable for use with `Clap` and `StructOpt`
-
-Copyright 2017-2019, Stephan Sokolow
-*/
+/*! Validator functions suitable for use with `Clap` and `StructOpt` */
+// Copyright 2017-2019, Stephan Sokolow
 
 use std::ffi::OsString;
 use std::fs::File;

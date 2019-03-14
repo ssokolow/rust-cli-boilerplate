@@ -1,7 +1,5 @@
-/*! `error-chain` boilerplate and custom `Error` types
-
-Copyright {{ "now" | date: "%Y" }}, {{ authors }}
-*/
+/*! `error-chain` boilerplate and custom `Error` types */
+// Copyright {{ "now" | date: "%Y" }}, {{ authors }}
 
 use error_chain::*;
 
