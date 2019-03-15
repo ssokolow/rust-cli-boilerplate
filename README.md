@@ -148,6 +148,11 @@ license of choice. You can replace this</td>
   <td><code>callgrind.out.justfile</code></td>
   <td>Temporary file used by <code>just kcachegrind</code></td>
 </tr>
+<tr>
+  <td><code>kcachegrind</code></td>
+  <td><code>kcachegrind</code></td>
+  <td>Set this to override how <code>kcachegrind</code> is called</td>
+</tr>
 <tr><th colspan="3"><code>install</code> and <code>uninstall</code></th></tr>
 <tr>
   <td><code>bash_completion_dir</code></td>

@@ -15,23 +15,40 @@ __license__ = "MIT or Apache 2.0"
 import logging, os, re, shutil, subprocess, unittest
 from gzip import GzipFile
 
+from gen_justfile_reference import get_evaluated_variables
+
 log = logging.getLogger(__name__)
 
-# TODO: Extract this from the justfile rather than hard-coding it
-CARGO_BUILD_TARGET = "i686-unknown-linux-musl"
 
 class TestJustfile(unittest.TestCase):
     """Test suite for rust-cli-boilerplate justfile"""
-    outpath = "target/{}/release/boilerplate".format(CARGO_BUILD_TARGET)
+
+    def __init__(self, methodName='runTest'):
+        super(TestJustfile, self).__init__(methodName=methodName)
+        self.vars = get_evaluated_variables(include_private=True)
 
     def _assert_task(self, task, regex):
-        """Helper to avoid duplication-related typos
+        """Run a just task and assert the exit code and output printed"""
+        output = subprocess.check_output(['just'] + task,
+                                         stderr=subprocess.STDOUT)
+        self.assertRegex(output, regex)
+        return output
 
-        (Checks both the exit code and the output printed)
-        """
-        self.assertRegex(
-            subprocess.check_output(['just'] + task, stderr=subprocess.STDOUT),
-            regex)
+    def _assert_file_contains(self, path, substr, count=None):
+        """Check that a given file contains a string `count` times"""
+        opener = GzipFile if os.path.splitext(path)[1] == '.gz' else open
+        with opener(path) as fobj:
+            found = fobj.read().count(substr)
+
+            # Quick hack to support "any number is OK"
+            if count is None:
+                count = found = min(found, 1)
+                count_str = "at least 1"
+            else:
+                count_str = count
+
+            self.assertEqual(count, found, "Expected %s occurrence(s) of %r "
+                             "(got %s)" % (count_str, substr, found))
 
     def test_bloat(self):
         """just bloat"""
@@ -40,23 +57,23 @@ class TestJustfile(unittest.TestCase):
 
     def test_build(self):
         """just build"""
-        if os.path.exists(self.outpath):
-            os.remove(self.outpath)
+        if os.path.exists(self.vars['_target_path']):
+            os.remove(self.vars['_target_path'])
 
         self._assert_task(['build'], br'Finished release \[optimized\]')
-        self.assertTrue(os.path.isfile(self.outpath))
+        self.assertTrue(os.path.isfile(self.vars['_target_path']))
 
     def test_build_release(self):
         """just build-dist"""
         for ext in ('', '.stripped', '.packed'):
-            if os.path.exists(self.outpath):
-                os.remove(self.outpath + ext)
+            if os.path.exists(self.vars['_target_path']):
+                os.remove(self.vars['_target_path'] + ext)
 
         self._assert_task(['build-dist', '--set', 'upx_flags', ''],
                           b'--== Final Result ==--')
 
         for ext in ('', '.stripped', '.packed'):
-            self.assertTrue(os.path.isfile(self.outpath + ext))
+            self.assertTrue(os.path.isfile(self.vars['_target_path'] + ext))
 
     def test_check(self):
         """just check"""
@@ -64,9 +81,25 @@ class TestJustfile(unittest.TestCase):
         self._assert_task(['check', '--', '--message-format', 'json'],
                           br'\s*"target"\s*:\s*{')
 
+    def test_clean(self):
+        """just clean
+
+        NOTE: Overrides _cargo to test what matters quickly.
+        """
+        self._assert_task(['clean', '--set', '_cargo', 'echo'],
+            b'echo clean -v \nclean -v\n'
+            b'export CARGO_TARGET_DIR="target/kcov" && echo clean -v\n'
+            b'clean -v\nrm -rf dist\n')
+        self._assert_task(['clean', '--set', '_cargo',
+                           'echo', '--', '--release'],
+            b'echo clean -v --release\nclean -v --release\n'
+            b'export CARGO_TARGET_DIR="target/kcov" && '
+            b'echo clean -v\n'
+            b'clean -v\nrm -rf dist\n')
+
     def test_dist(self):
         """just dist"""
-        outpath = 'dist/{}'.format(os.path.basename(self.outpath))
+        outpath = 'dist/{}'.format(self.vars['_pkgname'])
         if os.path.exists(outpath):
             os.remove(outpath)
 
@@ -89,9 +122,22 @@ class TestJustfile(unittest.TestCase):
         for fname in artifacts:
             self.assertTrue(os.path.isfile('dist/' + fname))
 
-        with GzipFile('dist/boilerplate.1.gz') as fobj:
-            self.assertEqual(1, fobj.read().count(b'\n.SS "USAGE:"\n'))
-        # TODO: Test for some distinctive fragment in each completion script
+        # Trust that help2man and clap will do their own testing and just
+        # verify that we're successfully invoking the proper functionality
+        # (count=1 on the manpage to account for how help2man fails
+        #  if you accidentally include --help in the base command)
+        self._assert_file_contains('dist/boilerplate.1.gz',
+                                   b'\n.SS "USAGE:"\n', count=1)
+        self._assert_file_contains('dist/boilerplate.bash',
+                                   'COMPREPLY=()')
+        self._assert_file_contains('dist/boilerplate.elvish',
+                                   'edit:complex-candidate')
+        self._assert_file_contains('dist/boilerplate.fish',
+                                   '__fish_use_subcommand')
+        self._assert_file_contains('dist/boilerplate.powershell',
+                                   '[CompletionResult]::new')
+        self._assert_file_contains('dist/boilerplate.zsh',
+                                   'typeset -A opt_args')
 
     def test_doc(self):
         """just doc"""
@@ -102,7 +148,8 @@ class TestJustfile(unittest.TestCase):
 
             # Save time by trusting that, if `cargo doc` regenerates
             # part of the docs, it's indicative of full proper function
-            outpath = "target/{}/doc/log/index.html".format(CARGO_BUILD_TARGET)
+            outpath = ("target/{}/doc/log/index.html"
+                       .format(self.vars['CARGO_BUILD_TARGET']))
             if os.path.exists(outpath):
                 os.remove(outpath)
 
@@ -119,10 +166,32 @@ class TestJustfile(unittest.TestCase):
         self._assert_task(['fmt-check', '--', '-V'],
                           br'\nrustfmt \S+-nightly \(\S+ 2\d\d\d-\d\d-\d\d\)')
 
-    # TODO: The following commands need to be tested in a less destructive way
-    # - clean +args=''
-    # - fmt +args=''
-    # TODO: Assert that echo'd kcachegrind command didn't contain --release
+    # TODO: The following commands need to be tested by overriding the commands
+    #       to simulate --dry-run:
+    # - fmt, install, install-cargo-deps, install-rustup-deps, uninstall,
+    #   install-deps, install-apt-deps
+
+    def test_kcachegrind(self):
+        """just kcachegrind
+
+        NOTE: Overrides _cargo to test what matters quickly.
+        """
+        callgrind_temp = self.vars['callgrind_out_file']
+        if os.path.exists(callgrind_temp):
+            os.remove(callgrind_temp)
+
+        # The justfile echoing and the command output are both checked
+        # to ensure a --release can't sneak in.
+        self._assert_task(['kcachegrind', '--set', 'kcachegrind',
+                           'echo kcachegrind-foo'],
+            b'\necho kcachegrind-foo \'callgrind.out.justfile\'\n'
+            b'kcachegrind-foo callgrind.out.justfile\n')
+        self.assertTrue(os.path.isfile(callgrind_temp))
+        os.remove(callgrind_temp)
+
+        self._assert_task(['kcachegrind', '--set', 'kcachegrind',
+            'echo kcachegrind-bar', '--', '--help'], b'.*USAGE:.*')
+        self.assertTrue(os.path.isfile(callgrind_temp))
 
     def test_kcov(self):
         """just kcov"""
@@ -131,15 +200,20 @@ class TestJustfile(unittest.TestCase):
         if os.path.exists(outdir):
             shutil.rmtree(outdir)
 
-        self._assert_task(['kcov'], br'\ntest result:')
-        # TODO: Assert that echo'd kcov command didn't contain --release
+        output = self._assert_task(['kcov'], br'\ntest result:')
+        self.assertNotIn(b'--release', output)
         self.assertTrue(os.path.isdir(outdir))
 
     def test_run(self):
         """just run"""
-        # TODO: Test argument-less operation by verifying that the failure
-        #       is due to the called binary panicking at unimplemented!
         self._assert_task(['run', '--', '--help'], br'\nUSAGE:')
+
+        try:
+            subprocess.check_output(['just', 'run'], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            self.assertIn(b"panicked at 'not yet implemented'", err.output)
+        else:
+            self.fail("Called process should have panic'd at `unimplemented!`")
 
     def test_test(self):
         """just test (and the default command)"""
@@ -148,17 +222,6 @@ class TestJustfile(unittest.TestCase):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
-    print("Commands I'm reticent to auto-test in an open-source script "
-          "because they'll modify things outside the project directory "
-          "and are only safe to run automatically in certain circumstances:\n"
-          "\t install, install-cargo-deps, install-rustup-deps, uninstall\n")
-
-    print("""Commands which can't be auto-tested as currently written:
-    install-apt-deps      (Because it calls sudo)
-    install-deps          (Because it depends on install-apt-deps)
-    kcachegrind +args=''  (Because it opens KCachegrind for interactive use)
-    """)
-
     unittest.main()
 
 

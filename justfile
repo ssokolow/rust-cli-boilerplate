@@ -43,6 +43,9 @@ callgrind_args = ""
 # Temporary file used by `just kcachegrind`
 callgrind_out_file = "callgrind.out.justfile"
 
+# Set this to override how `kcachegrind` is called
+kcachegrind = "kcachegrind"
+
 # -- `install` and `uninstall` --
 
 # Where to `install` bash completions.
@@ -117,7 +120,7 @@ kcachegrind +args="":
 	rm -rf '{{ callgrind_out_file }}'
 	valgrind --tool=callgrind --callgrind-out-file='{{ callgrind_out_file }}' {{ callgrind_args }} 'target/debug/{{ _pkgname }}' '{{ args }}' || true
 	test -e '{{ callgrind_out_file }}'
-	kcachegrind '{{ callgrind_out_file }}'
+	{{kcachegrind}} '{{ callgrind_out_file }}'
 
 # Generate a statement coverage report in `target/cov/`
 kcov:

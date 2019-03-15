@@ -41,12 +41,12 @@ class Row(list):
     """List subclass which can also have attributes as a convenience"""
     uses_variables = False
 
-def get_evaluated_variables():
+def get_evaluated_variables(include_private=False):
     """Call `just --evaluate` and parse it into a list of tuples"""
     results = {}
     for line in subprocess.check_output(['just', '--evaluate']).split(b'\n'):
         line = line.decode('utf8').strip()
-        if not line or line.startswith('_'):
+        if not line or (line.startswith('_') and not include_private):
             continue  # Skip "private" variables
 
         match = RE_VARIABLE.match(line)
