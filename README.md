@@ -189,28 +189,30 @@ one or more of the variables listed above.
 <tr>
   <td><code>DEFAULT</code></td>
   <td></td>
-  <td>Defines <code>just</code> as shorthand for <code>just test</code></td>
+  <td>Shorthand for <code>just test</code></td>
 </tr>
 <tr><th colspan="3">Development</th></tr>
 <tr>
   <td><code>bloat</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>cargo bloat --release</code></td>
+  <td>Alias for <code>cargo bloat</code></td>
 </tr>
 <tr>
   <td><code>check</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>cargo check {{args}}</code></td>
+  <td>Alias for <code>cargo check</code></td>
 </tr>
 <tr>
   <td><code>clean</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>cargo clean -v {{args}}</code></td>
+  <td>Superset of <code>cargo clean -v</code> which deletes other stuff this justfile
+  builds</td>
 </tr>
 <tr>
   <td><code>doc</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>cargo doc --document-private-items {{args}}</code></td>
+  <td>Run rustdoc with <code>--document-private-items</code> and then run
+  cargo-deadlinks</td>
 </tr>
 <tr>
   <td><code>fmt</code></td>
@@ -220,7 +222,8 @@ one or more of the variables listed above.
 <tr>
   <td><code>fmt-check</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Alias for <code>just fmt -- --check</code> which un-bloats TODO/FIXME warnings</td>
+  <td>Alias for <code>cargo +nightly fmt -- --check {{args}}</code> which un-bloats
+  TODO/FIXME warnings</td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
@@ -243,12 +246,12 @@ one or more of the variables listed above.
 <tr>
   <td><code>build</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Build the binary with <code>--release</code></td>
+  <td>Alias for <code>cargo build</code></td>
 </tr>
 <tr>
   <td><code>install</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Build and install an un-packed binary, shell completions, and a manpage</td>
+  <td>Install the un-packed binary, shell completions, and a manpage</td>
 </tr>
 <tr>
   <td><code>run</code></td>
@@ -258,8 +261,8 @@ one or more of the variables listed above.
 <tr>
   <td><code>uninstall</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Remove files installed by <code>install</code> (but leave any parent directories
-  that may or may not have been created)</td>
+  <td>Remove any files installed by the <code>install</code> task (but leave any
+  parent directories created)</td>
 </tr>
 <tr><th colspan="3">Release Builds</th></tr>
 <tr>
@@ -270,13 +273,13 @@ one or more of the variables listed above.
 <tr>
   <td><code>dist</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and store the
-  results in <code>dist/</code></td>
+  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and copy the
+  packed binary to <code>dist/</code></td>
 </tr>
 <tr>
   <td><code>dist-supplemental</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Generate shell completions and a manpage in <code>dist/</code></td>
+  <td>Build the shell completions and a manpage, and put them in <code>dist/</code></td>
 </tr>
 <tr><th colspan="3">Dependencies</th></tr>
 <tr>

@@ -77,26 +77,26 @@ _build_flags = "--features=\"" + features + "\" " + build_flags
 export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
 export _target_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
 
-# Defines `just` as shorthand for `just test`
+# Shorthand for `just test`
 DEFAULT: test
 
 # -- Development --
 
-# Alias for `cargo bloat --release`
+# Alias for `cargo bloat`
 bloat +args="":
 	{{_cargo}} bloat {{_build_flags}} {{args}}
 
-# Alias for `cargo check {{args}}`
+# Alias for `cargo check`
 check +args="":
 	{{_cargo}} check {{_build_flags}} {{args}}
 
-# Alias for `cargo clean -v {{args}}`
+# Superset of `cargo clean -v` which deletes other stuff this justfile builds
 clean +args="":
 	{{_cargo}} clean -v {{args}}
 	export CARGO_TARGET_DIR="target/kcov" && {{_cargo}} clean -v
 	rm -rf dist
 
-# Alias for `cargo doc --document-private-items {{args}}`
+# Run rustdoc with `--document-private-items` and then run cargo-deadlinks
 doc +args="":
 	{{_cargo}} doc --document-private-items {{_build_flags}} {{args}} && \
 	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
@@ -105,7 +105,7 @@ doc +args="":
 fmt +args="":
 	cargo +nightly fmt -- {{args}}
 
-# Alias for `just fmt -- --check` which un-bloats TODO/FIXME warnings
+# Alias for `cargo +nightly fmt -- --check {{args}}` which un-bloats TODO/FIXME warnings
 fmt-check +args="":
 	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
 
@@ -170,12 +170,12 @@ test:
 
 # -- Local Builds --
 
-# Build the binary with `--release`
+# Alias for `cargo build`
 build:
 	@echo "\n--== Building with {{channel}} for {{CARGO_BUILD_TARGET}} (features: {{features}}) ==--\n"
 	{{_cargo}} build {{_build_flags}}
 
-# Build and install an un-packed binary, shell completions, and a manpage
+# Install the un-packed binary, shell completions, and a manpage
 install: dist-supplemental
 	@# Install completions
 	@# NOTE: bash and zsh completion requires additional setup to source a non-root dir
@@ -188,8 +188,7 @@ install: dist-supplemental
 	@# Install the command to ~/.cargo/bin
 	{{_cargo}} install --path . --force --features="{{features}}"
 
-# Remove files installed by `install` (but leave any parent directories that may or may not have
-# been created)
+# Remove any files installed by the `install` task (but leave any parent directories created)
 uninstall:
 	@# TODO: Implement the proper fallback chain from `cargo install`
 	rm ~/.cargo/bin/{{ _pkgname }} || true
@@ -224,7 +223,7 @@ build-release: build
 	@printf "\n"
 
 
-# Generate shell completions and a manpage in `dist/`
+# Build the shell completions and a manpage, and put them in `dist/`
 dist-supplemental:
 	mkdir -p dist
 	@# Generate completions and store them in dist/
@@ -238,7 +237,7 @@ dist-supplemental:
 	help2man -N '{{_cargo}} run {{_build_flags}} -- --help' \
 		| gzip -9 > dist/{{ _pkgname }}.1.gz || true
 
-# Call `dist-supplemental` and `build-release` and store the results in `dist/`
+# Call `dist-supplemental` and `build-release` and copy the packed binary to `dist/`
 dist: build-release dist-supplemental
 	@# Copy the packed command to dist/
 	cp  "{{ _target_path }}.packed" dist/{{ _pkgname }}
