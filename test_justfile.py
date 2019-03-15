@@ -13,6 +13,8 @@ __version__ = "0.1"
 __license__ = "MIT or Apache 2.0"
 
 import logging, os, re, shutil, subprocess, unittest
+from gzip import GzipFile
+
 log = logging.getLogger(__name__)
 
 # TODO: Extract this from the justfile rather than hard-coding it
@@ -74,10 +76,21 @@ class TestJustfile(unittest.TestCase):
 
     def test_dist_supplemental(self):
         """just dist-supplemental"""
+        artifacts = ['boilerplate.1.gz', 'boilerplate.bash', 'boilerplate.zsh',
+                     'boilerplate.elvish', 'boilerplate.powershell',
+                     'boilerplate.fish']
+        for fname in artifacts:
+            if os.path.exists('dist/' + fname):
+                os.remove('dist/' + fname)
+
         self._assert_task(['dist-supplemental'],
                           br'Finished release \[optimized\]')
-        # TODO: Remove build artifact before and test for it after
-        # TODO: Test that help2man actually generated a valid manpage
+
+        for fname in artifacts:
+            self.assertTrue(os.path.isfile('dist/' + fname))
+
+        with GzipFile('dist/boilerplate.1.gz') as fobj:
+            self.assertEqual(1, fobj.read().count(b'\n.SS "USAGE:"\n'))
         # TODO: Test for some distinctive fragment in each completion script
 
     def test_doc(self):
@@ -133,14 +146,8 @@ class TestJustfile(unittest.TestCase):
         for subcommand in ([], ['test']):
             self._assert_task(subcommand, br'\ntest result: ')
 
-"""
-    install # Install the binary, shell completions, and a help file
-    install-cargo-deps # `install-rustup-deps` and then `cargo install` tools
-    install-rustup-deps # Install (don't update) nightly `channel` toolchains, plus `CARGO_BUILD_TARGET`, clippy, and rustfmt
-    uninstall # Remove any files installed by the `install` task (but leave any parent directories created)
-"""
-
 if __name__ == '__main__':
+    os.chdir(os.path.dirname(__file__))
     print("Commands I'm reticent to auto-test in an open-source script "
           "because they'll modify things outside the project directory "
           "and are only safe to run automatically in certain circumstances:\n"

@@ -76,6 +76,7 @@ _build_flags = "--features=\"" + features + "\" " + build_flags
 # Source: http://stackoverflow.com/a/40778047/435253
 export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
 export _target_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
+# FIXME: _target_path will break if --release is removed from the build flags
 
 # Shorthand for `just test`
 DEFAULT: test
@@ -234,7 +235,7 @@ dist-supplemental:
 	{{_cargo}} run {{_build_flags}} -- --dump-completions powershell > dist/{{ _pkgname }}.powershell
 	@# Generate manpage and store it gzipped in dist/
 	@# (This comes last so the earlier calls to `cargo run` will get the compiler warnings out)
-	help2man -N '{{_cargo}} run {{_build_flags}} -- --help' \
+	help2man -N '{{_cargo}} run {{_build_flags}} --' \
 		| gzip -9 > dist/{{ _pkgname }}.1.gz || true
 
 # Call `dist-supplemental` and `build-dist` and copy the packed binary to `dist/`
