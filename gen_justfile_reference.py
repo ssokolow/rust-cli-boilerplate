@@ -156,8 +156,8 @@ def render_table(headers, groups):
                         cell = '\n  '.join(
                             x.strip() for x in wrapper.wrap(cell))
 
-                if idx == 1 and row.uses_variables:
-                    cell += "<sub>&dagger;</sub>"
+                #if idx == 1 and row.uses_variables:
+                #    cell += "<sub>&dagger;</sub>"
                 result += "  <td>{}</td>\n".format(cell)
             result += "</tr>\n"
     result += "</table>"

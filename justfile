@@ -3,7 +3,7 @@
 
 # --== Variables to be customized/overridden by the user ==--
 
-# Used for `cargo` commands and installed by `install-rustup-deps`
+# The target for `cargo` commands to use and `install-rustup-deps` to install
 export CARGO_BUILD_TARGET = "i686-unknown-linux-musl"
 
 # An easy way to override the `cargo` channel for just this project
@@ -26,7 +26,7 @@ strip_bin = "strip"
 # Flags passed to `strip_bin`
 strip_flags = "--strip-unneeded"
 
-# Set this if you need to override for a cross-compiling `sstrip`
+# Set this if you need to override it for a cross-compiling `sstrip`
 sstrip_bin = "sstrip"
 
 # Flags passed to [UPX](https://upx.github.io/)

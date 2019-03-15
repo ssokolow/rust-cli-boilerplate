@@ -60,7 +60,7 @@ license of choice. You can replace this</td>
 <tr><th colspan="2">Configuration</th></tr>
 <tr>
   <td><code>.gitignore</code></td>
-  <td>Just ignore <code>/target</code> since that's where Cargo puts everything</td>
+  <td>Ignore <code>/target</code> and other generated files</td>
 </tr>
 <tr>
   <td><code>clippy.toml</code></td>
@@ -97,8 +97,8 @@ license of choice. You can replace this</td>
 <tr>
   <td><code>CARGO_BUILD_TARGET</code></td>
   <td><code>i686-unknown-linux-musl</code></td>
-  <td>Used for <code>cargo</code> commands and installed by
-  <code>install-rustup-deps</code></td>
+  <td>The target for <code>cargo</code> commands to use and
+  <code>install-rustup-deps</code> to install</td>
 </tr>
 <tr>
   <td><code>build_flags</code></td>
@@ -119,7 +119,7 @@ license of choice. You can replace this</td>
 <tr>
   <td><code>sstrip_bin</code></td>
   <td><code>sstrip</code></td>
-  <td>Set this if you need to override for a cross-compiling <code>sstrip</code></td>
+  <td>Set this if you need to override it for a cross-compiling <code>sstrip</code></td>
 </tr>
 <tr>
   <td><code>strip_bin</code></td>
@@ -180,9 +180,6 @@ license of choice. You can replace this</td>
 
 ### Commands (`just --list`)
 
-**NOTE:** Commands marked with &dagger; will have their behaviour affected by
-one or more of the variables listed above.
-
 <html>
 <!-- BEGIN JUSTFILE TABLE: commands -->
 <table>
@@ -195,91 +192,91 @@ one or more of the variables listed above.
 <tr><th colspan="3">Development</th></tr>
 <tr>
   <td><code>bloat</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo bloat</code></td>
 </tr>
 <tr>
   <td><code>check</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo check</code></td>
 </tr>
 <tr>
   <td><code>clean</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Superset of <code>cargo clean -v</code> which deletes other stuff this justfile
   builds</td>
 </tr>
 <tr>
   <td><code>doc</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Run rustdoc with <code>--document-private-items</code> and then run
   cargo-deadlinks</td>
 </tr>
 <tr>
   <td><code>fmt</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo +nightly fmt -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>fmt-check</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo +nightly fmt -- --check {{args}}</code> which un-bloats
   TODO/FIXME warnings</td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Run a debug build under <a
   href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then open
   the profile in <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
 </tr>
 <tr>
   <td><code>kcov</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
 <tr>
   <td><code>test</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Run all installed static analysis, plus <code>cargo test</code></td>
 </tr>
 <tr><th colspan="3">Local Builds</th></tr>
 <tr>
   <td><code>build</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Alias for <code>cargo build</code></td>
 </tr>
 <tr>
   <td><code>install</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Install the un-packed binary, shell completions, and a manpage</td>
 </tr>
 <tr>
   <td><code>run</code></td>
-  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo run -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>uninstall</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Remove any files installed by the <code>install</code> task (but leave any
   parent directories created)</td>
 </tr>
 <tr><th colspan="3">Release Builds</th></tr>
 <tr>
   <td><code>build-release</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
   <td><code>dist</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Call <code>dist-supplemental</code> and <code>build-release</code> and copy the
   packed binary to <code>dist/</code></td>
 </tr>
 <tr>
   <td><code>dist-supplemental</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Build the shell completions and a manpage, and put them in <code>dist/</code></td>
 </tr>
 <tr><th colspan="3">Dependencies</th></tr>
@@ -291,7 +288,7 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>install-cargo-deps</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td><code>install-rustup-deps</code> and then <code>cargo install</code> tools</td>
 </tr>
 <tr>
@@ -302,7 +299,7 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
-  <td><sub>&dagger;</sub></td>
+  <td></td>
   <td>Install (don't update) nightly and <code>channel</code> toolchains, plus
   <code>CARGO_BUILD_TARGET</code>, clippy, and rustfmt</td>
 </tr>
