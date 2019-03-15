@@ -17,7 +17,7 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   parsing.
 * Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
   unified error handling.
-* Presents a `run(opts: Opt)` function for you to use as your `main()` to
+* Presents a `run(opts: CliOpts)` function for you to use as your `main()` to
   keep the boilerplate cleanly separated from the specific logic.
 * Exposes Clap's support for generating shell completions by providing a
   `--dump-completions <shell>` option.
@@ -69,9 +69,10 @@ license of choice. You can replace this</td>
 </tr>
 <tr>
   <td><code>rustfmt.toml</code></td>
-  <td>A custom rustfmt configuration which shows TODO/FIXME comments and
-  attempts to make it conform to the style I'm willing to enforce at the
-  expense of not using rustfmt if necessary.</td>
+  <td>A custom rustfmt configuration which shows
+  <code>TODO</code>/<code>FIXME</code> comments and attempts to make it conform
+  to the style I'm willing to enforce at the expense of not using rustfmt if
+  necessary.</td>
 </tr>
 <tr><th colspan="2">Development Automation</th></tr>
 <tr>
