@@ -27,8 +27,8 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables (eg. for cross-compilation), including `install` and
   `uninstall`, which also take care of shell completions and a manpage.
-* `just build-release` for a 100% static i686 binary totalling roughly `236KiB`
-  (`212KiB` with `panic="abort"`) in new projects
+* `just build-release` for a 100% static i686 binary totalling roughly `252KiB`
+  (`228KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
@@ -90,8 +90,15 @@ license of choice. You can replace this</td>
 
 ### Variables (`just --evaluate`)
 <html>
+<!-- BEGIN JUSTFILE TABLE: variables -->
 <table>
 <tr><th>Variable</th><th>Default Value</th><th>Description</th></tr>
+<tr>
+  <td><code>CARGO_BUILD_TARGET</code></td>
+  <td><code>i686-unknown-linux-musl</code></td>
+  <td>Used for <code>cargo</code> commands and installed by
+  <code>install-rustup-deps</code></td>
+</tr>
 <tr>
   <td><code>build_flags</code></td>
   <td><code>--release</code></td>
@@ -99,20 +106,20 @@ license of choice. You can replace this</td>
 </tr>
 <tr>
   <td><code>channel</code></td>
-  <td><code>stable</code></code></td>
-  <td><code>rustc</code> channel used for <code>build</code> and dependent commands</td>
+  <td><code>stable</code></td>
+  <td>An easy way to override the <code>cargo</code> channel for just this project</td>
 </tr>
 <tr>
   <td><code>features</code></td>
   <td></td>
   <td>Extra cargo features to enable</td>
 </tr>
-<tr>
-  <td><code>target</code></td>
-  <td><code>i686-unknown-linux-musl</code></td>
-  <td>Used for <code>build</code> and additionally installed by <code>install-rustup-deps</code></td>
-</tr>
 <tr><th colspan="3"><code>build-release</code></th></tr>
+<tr>
+  <td><code>sstrip_bin</code></td>
+  <td><code>sstrip</code></td>
+  <td>Set this if you need to override for a cross-compiling <code>sstrip</code></td>
+</tr>
 <tr>
   <td><code>strip_bin</code></td>
   <td><code>strip</code></td>
@@ -132,7 +139,8 @@ license of choice. You can replace this</td>
 <tr>
   <td><code>callgrind_args</code></td>
   <td></td>
-  <td>Extra arguments to pass to <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>.</td>
+  <td>Extra arguments to pass to <a
+  href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>.</td>
 </tr>
 <tr>
   <td><code>callgrind_out_file</code></td>
@@ -141,31 +149,32 @@ license of choice. You can replace this</td>
 </tr>
 <tr><th colspan="3"><code>install</code> and <code>uninstall</code></th></tr>
 <tr>
-  <td><code>manpage_dir</code></td>
-  <td><code>~/.cargo/share/man/man1</code></td>
-  <td>Where to install manpages. As long as <code>~/.cargo/bin</code> is in
-  your <code>PATH</code>, <code>man</code> should automatically pick up this
-  location.</td>
-</tr>
-<tr>
   <td><code>bash_completion_dir</code></td>
   <td><code>~/.bash_completion.d</code></td>
-  <td>Where to <code>install</code> bash completions. <strong>You'll need to
-  manually add some lines to source these files in <code>.bashrc</code>.</td>
+  <td>Where to <code>install</code> bash completions. <strong>You'll need to manually
+  add some lines to source these files in <code>.bashrc.</code></strong></td>
 </tr>
 <tr>
   <td><code>fish_completion_dir</code></td>
   <td><code>~/.config/fish/completions</code></td>
-  <td>Where to <code>install</code> fish completions. You'll probably never
-      need to change this.</td>
+  <td>Where to <code>install</code> fish completions. You'll probably never need to
+  change this.</td>
+</tr>
+<tr>
+  <td><code>manpage_dir</code></td>
+  <td><code>~/.cargo/share/man/man1</code></td>
+  <td>Where to <code>install</code> manpages. As long as <code>~/.cargo/bin</code> is
+  in your <code>PATH</code>, <code>man</code> should automatically pick up this
+  location.</td>
 </tr>
 <tr>
   <td><code>zsh_completion_dir</code></td>
-  <td><code>~/.zsh/functions</code>
-  <td>Where to install zsh completions. <strong>You'll need to add this to your
-  <code>fpath</code> manually</strong></td>
+  <td><code>~/.zsh/functions</code></td>
+  <td>Where to <code>install</code> zsh completions. <strong>You'll need to add this
+  to your <code>fpath</code> manually</strong></td>
 </tr>
 </table>
+<!-- END JUSTFILE TABLE: variables -->
 </html>
 
 ### Commands (`just --list`)
@@ -174,6 +183,7 @@ license of choice. You can replace this</td>
 one or more of the variables listed above.
 
 <html>
+<!-- BEGIN JUSTFILE TABLE: commands -->
 <table>
 <tr><th>Command</th><th>Arguments</th><th>Description</th></tr>
 <tr>
@@ -184,7 +194,7 @@ one or more of the variables listed above.
 <tr><th colspan="3">Development</th></tr>
 <tr>
   <td><code>bloat</code></td>
-  <td>args (optional)</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Alias for <code>cargo bloat --release</code></td>
 </tr>
 <tr>
@@ -194,7 +204,7 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>clean</code></td>
-  <td>args (optional)</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Alias for <code>cargo clean -v {{args}}</code></td>
 </tr>
 <tr>
@@ -204,22 +214,20 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>fmt</code></td>
-  <td>args (optional)</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Alias for <code>cargo +nightly fmt -- {{args}}</code></td>
 </tr>
 <tr>
   <td><code>fmt-check</code></td>
-  <td>args (optional)</td>
-  <td>Alias for <code>just fmt -- --check</code> which un-bloats TODO/FIXME
-  warnings</td>
+  <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
+  <td>Alias for <code>just fmt -- --check</code> which un-bloats TODO/FIXME warnings</td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
-  <td>Run a debug build under
-  <a href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then
-  open the profile in
-  <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
+  <td>Run a debug build under <a
+  href="http://valgrind.org/docs/manual/cl-manual.html">callgrind</a>, then open
+  the profile in <a href="https://kcachegrind.github.io/">KCachegrind</a></td>
 </tr>
 <tr>
   <td><code>kcov</code></td>
@@ -240,32 +248,30 @@ one or more of the variables listed above.
 <tr>
   <td><code>install</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Build and install an un-packed binary, shell completions, and a
-manpage</td>
-</tr>
-<tr>
-  <td><code>uninstall</code></td>
-  <td><sub>&dagger;</sub></td>
-  <td>Remove files installed by <code>install</code> (but leave any parent
-directories that may or may not have had to be created)</td>
+  <td>Build and install an un-packed binary, shell completions, and a manpage</td>
 </tr>
 <tr>
   <td><code>run</code></td>
   <td>args&nbsp;(optional)<sub>&dagger;</sub></td>
   <td>Alias for <code>cargo run -- {{args}}</code></td>
 </tr>
+<tr>
+  <td><code>uninstall</code></td>
+  <td><sub>&dagger;</sub></td>
+  <td>Remove files installed by <code>install</code> (but leave any parent directories
+  that may or may not have been created)</td>
+</tr>
 <tr><th colspan="3">Release Builds</th></tr>
 <tr>
   <td><code>build-release</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary
-  </td>
+  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
   <td><code>dist</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and
-  store the results in <code>dist/</code></td>
+  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and store the
+  results in <code>dist/</code></td>
 </tr>
 <tr>
   <td><code>dist-supplemental</code></td>
@@ -282,22 +288,22 @@ directories that may or may not have had to be created)</td>
 <tr>
   <td><code>install-cargo-deps</code></td>
   <td><sub>&dagger;</sub></td>
-  <td><code>install-rustup-deps</code> and then <code>cargo install</code>
-  tools</td>
+  <td><code>install-rustup-deps</code> and then <code>cargo install</code> tools</td>
+</tr>
+<tr>
+  <td><code>install-deps</code></td>
+  <td></td>
+  <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>. List what
+  remains.</td>
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
   <td><sub>&dagger;</sub></td>
-  <td>Install (don't update) nightly and <code>channel</code>
-  toolchains, plus <code>target</code>, clippy, and rustfmt</td>
-</tr>
-<tr>
-  <td><code>install-deps</code></td>
-  <td><sub>&dagger;</sub></td>
-  <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>,
-  list what remains</td>
+  <td>Install (don't update) nightly and <code>channel</code> toolchains, plus
+  <code>CARGO_BUILD_TARGET</code>, clippy, and rustfmt</td>
 </tr>
 </table>
+<!-- END JUSTFILE TABLE: commands -->
 </html>
 
 

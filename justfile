@@ -3,22 +3,61 @@
 
 # --== Variables to be customized/overridden by the user ==--
 
+# Used for `cargo` commands and installed by `install-rustup-deps`
 export CARGO_BUILD_TARGET = "i686-unknown-linux-musl"
 
+# An easy way to override the `cargo` channel for just this project
 channel = "stable"
+
+# Extra cargo features to enable
 features = ""
 
+# An easy place to modify the build flags used
 build_flags = "--release"
+
+# Example for OpenPandora cross-compilation
+# export CARGO_BUILD_TARGET = "arm-unknown-linux-gnueabi"
+
+# -- `build-release` --
+
+# Set this to the cross-compiler's `strip` when cross-compiling
 strip_bin = "strip"
+
+# Flags passed to `strip_bin`
 strip_flags = "--strip-unneeded"
+
+# Set this if you need to override for a cross-compiling `sstrip`
 sstrip_bin = "sstrip"
+
+# Flags passed to [UPX](https://upx.github.io/)
 upx_flags = "--ultra-brute"
+
+# Example for OpenPandora cross-compilation
+# strip_bin = `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
+
+# -- `kcachegrind` --
+
+# Extra arguments to pass to [callgrind](http://valgrind.org/docs/manual/cl-manual.html).
 callgrind_args = ""
+
+# Temporary file used by `just kcachegrind`
 callgrind_out_file = "callgrind.out.justfile"
 
+# -- `install` and `uninstall` --
+
+# Where to `install` bash completions.
+# **You'll need to manually add some lines to source these files in `.bashrc.`**
 bash_completion_dir = "~/.bash_completion.d"
+
+# Where to `install` fish completions. You'll probably never need to change this.
 fish_completion_dir = "~/.config/fish/completions"
+
+# Where to `install` zsh completions.
+# **You'll need to add this to your `fpath` manually**
 zsh_completion_dir = "~/.zsh/functions"
+
+# Where to `install` manpages. As long as `~/.cargo/bin` is in your `PATH`, `man` should
+# automatically pick up this location.
 manpage_dir = "~/.cargo/share/man/man1"
 
 # Examples for OpenPandora cross-compilation
@@ -38,66 +77,26 @@ _build_flags = "--features=\"" + features + "\" " + build_flags
 export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
 export _target_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
 
-# Shorthand for `just test`
+# Defines `just` as shorthand for `just test`
 DEFAULT: test
 
-# Alias for `cargo bloat`
+# -- Development --
+
+# Alias for `cargo bloat --release`
 bloat +args="":
 	{{_cargo}} bloat {{_build_flags}} {{args}}
 
-# Alias for `cargo build`
-build:
-	@echo "\n--== Building with {{channel}} for {{CARGO_BUILD_TARGET}} (features: {{features}}) ==--\n"
-	{{_cargo}} build {{_build_flags}}
-
-# Call `build` and then strip and compress the resulting binary
-build-release: build
-	@# Don't modify the original "cargo" output. That confuses cargo somehow.
-	cp "{{_target_path}}" "{{_target_path}}.stripped"
-	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
-	{{strip_bin}} {{strip_flags}} "{{_target_path}}.stripped"
-	@# Allow sstrip to fail because it can't be installed via "just install-deps"
-	{{sstrip_bin}} "{{_target_path}}.stripped" || true
-	@# Allow upx to fail in case the user wants to force no UPXing by leaving it uninstalled
-	cp "{{_target_path}}.stripped" "{{_target_path}}.packed"
-	upx {{upx_flags}} "{{_target_path}}.packed" || true
-	@# Display the resulting file sizes so we can keep an eye on them
-	@# (Separate `ls` invocations are used to force the display ordering)
-	@printf "\n--== Final Result ==--\n"
-	@ls -1sh "{{_target_path}}"
-	@ls -1sh "{{_target_path}}.stripped"
-	@ls -1sh "{{_target_path}}.packed"
-	@printf "\n"
-
-# Alias for `cargo check`
+# Alias for `cargo check {{args}}`
 check +args="":
 	{{_cargo}} check {{_build_flags}} {{args}}
 
-# Superset of `cargo clean -v` which deletes other stuff this justfile builds
+# Alias for `cargo clean -v {{args}}`
 clean +args="":
 	{{_cargo}} clean -v {{args}}
 	export CARGO_TARGET_DIR="target/kcov" && {{_cargo}} clean -v
 	rm -rf dist
-# Build the shell completions and a help file, and put them in a "dist" folder
-dist-supplemental:
-	mkdir -p dist
-	@# Generate completions and store them in dist/
-	{{_cargo}} run {{_build_flags}} -- --dump-completions bash > dist/{{ _pkgname }}.bash
-	{{_cargo}} run {{_build_flags}} -- --dump-completions zsh > dist/{{ _pkgname }}.zsh
-	{{_cargo}} run {{_build_flags}} -- --dump-completions fish > dist/{{ _pkgname }}.fish
-	{{_cargo}} run {{_build_flags}} -- --dump-completions elvish > dist/{{ _pkgname }}.elvish
-	{{_cargo}} run {{_build_flags}} -- --dump-completions powershell > dist/{{ _pkgname }}.powershell
-	@# Generate manpage and store it gzipped in dist/
-	@# (This comes last so the earlier calls to `cargo run` will get the compiler warnings out)
-	help2man -N '{{_cargo}} run {{_build_flags}} -- --help' \
-		| gzip -9 > dist/{{ _pkgname }}.1.gz || true
 
-# Call `dist` and `build-release` and copy the packed binary to dist/
-dist: build-release dist-supplemental
-	@# Copy the packed command to dist/
-	cp  "{{ _target_path }}.packed" dist/{{ _pkgname }}
-
-# Run rustdoc with `--document-private-items` and then run cargo-deadlinks
+# Alias for `cargo doc --document-private-items {{args}}`
 doc +args="":
 	{{_cargo}} doc --document-private-items {{_build_flags}} {{args}} && \
 	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
@@ -106,62 +105,12 @@ doc +args="":
 fmt +args="":
 	cargo +nightly fmt -- {{args}}
 
-# Alias for `cargo +nightly fmt -- --check {{args}} which un-bloats TODO/FIXME warnings
+# Alias for `just fmt -- --check` which un-bloats TODO/FIXME warnings
 fmt-check +args="":
 	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
 
-# Install the binary, shell completions, and a help file
-install: dist-supplemental
-	@# Install completions
-	@# NOTE: bash and zsh completion requires additional setup to source a non-root dir
-	mkdir -p {{bash_completion_dir}} {{zsh_completion_dir}} {{ fish_completion_dir }} {{ manpage_dir }}
-	cp dist/{{ _pkgname }}.bash {{ bash_completion_dir }}/{{ _pkgname }}
-	cp dist/{{ _pkgname }}.zsh {{ zsh_completion_dir }}/_{{ _pkgname }}
-	cp dist/{{ _pkgname }}.fish {{ fish_completion_dir }}/{{ _pkgname }}.fish
-	@# Install the manpage
-	cp dist/{{ _pkgname }}.1.gz {{ manpage_dir }}/{{ _pkgname }}.1.gz || true
-	@# Install the command to ~/.cargo/bin
-	{{_cargo}} install --path . --force --features="{{features}}"
-
-# Remove any files installed by the `install` task (but leave any parent directories created)
-uninstall:
-	@# TODO: Implement the proper fallback chain from `cargo install`
-	rm ~/.cargo/bin/{{ _pkgname }} || true
-	rm {{ manpage_dir }}/{{ _pkgname }}.1.gz || true
-	rm {{ bash_completion_dir }}/{{ _pkgname }} || true
-	rm {{ fish_completion_dir }}/{{ _pkgname }}.fish || true
-	rm {{ zsh_completion_dir }}/_{{ _pkgname }} || true
-
-# Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
-install-apt-deps:
-	sudo apt-get install binutils help2man kcachegrind upx valgrind
-
-# `install-rustup-deps` and then `cargo install` tools
-install-cargo-deps: install-rustup-deps
-	@# Prevent "already installed" from causing a failure
-	cargo install cargo-deadlinks || true
-	cargo install cargo-bloat || true
-	cargo install cargo-outdated || true
-
-# Install (don't update) nightly `channel` toolchains, plus `CARGO_BUILD_TARGET`, clippy, and rustfmt
-install-rustup-deps:
-	@# Prevent this from gleefully doing an unwanted "rustup update"
-	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
-	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
-	rustup target list | grep -q '{{CARGO_BUILD_TARGET}} (' || rustup target add '{{CARGO_BUILD_TARGET}}'
-	rustup component list | grep -q 'clippy-\S* (' || rustup component add clippy
-	rustup component list --toolchain nightly | grep 'rustfmt-\S* (' || rustup component add rustfmt --toolchain nightly
-
-# Run `install-apt-deps` and `install-cargo-deps`, list what remains.
-@install-deps: install-apt-deps install-cargo-deps
-	echo
-	echo "-----------------------------------------------------------"
-	echo "IMPORTANT: You will need to install the following manually:"
-	echo "-----------------------------------------------------------"
-	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
-	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
-
-# Run a debug build under callgrind, then open the profile in KCachegrind.
+# Run a debug build under [callgrind](http://valgrind.org/docs/manual/cl-manual.html), then open the
+# profile in [KCachegrind](https://kcachegrind.github.io/)
 kcachegrind +args="":
 	{{_cargo}} build
 	rm -rf '{{ callgrind_out_file }}'
@@ -205,11 +154,7 @@ kcov:
 		fi
 	done
 
-# Alias for `cargo run -- {{args}}`
-run +args="":
-	{{_cargo}} run {{_build_flags}} -- {{args}}
-
-# Run all installed static analysis, plus `cargo test`.
+# Run all installed static analysis, plus `cargo test`
 test:
 	@echo "--== Outdated Packages ==--"
 	{{_cargo}} outdated
@@ -222,6 +167,114 @@ test:
 	{{_cargo}} test {{_build_flags}}
 
 	# TODO: https://users.rust-lang.org/t/howto-sanitize-your-rust-code/9378
+
+# -- Local Builds --
+
+# Build the binary with `--release`
+build:
+	@echo "\n--== Building with {{channel}} for {{CARGO_BUILD_TARGET}} (features: {{features}}) ==--\n"
+	{{_cargo}} build {{_build_flags}}
+
+# Build and install an un-packed binary, shell completions, and a manpage
+install: dist-supplemental
+	@# Install completions
+	@# NOTE: bash and zsh completion requires additional setup to source a non-root dir
+	mkdir -p {{bash_completion_dir}} {{zsh_completion_dir}} {{ fish_completion_dir }} {{ manpage_dir }}
+	cp dist/{{ _pkgname }}.bash {{ bash_completion_dir }}/{{ _pkgname }}
+	cp dist/{{ _pkgname }}.zsh {{ zsh_completion_dir }}/_{{ _pkgname }}
+	cp dist/{{ _pkgname }}.fish {{ fish_completion_dir }}/{{ _pkgname }}.fish
+	@# Install the manpage
+	cp dist/{{ _pkgname }}.1.gz {{ manpage_dir }}/{{ _pkgname }}.1.gz || true
+	@# Install the command to ~/.cargo/bin
+	{{_cargo}} install --path . --force --features="{{features}}"
+
+# Remove files installed by `install` (but leave any parent directories that may or may not have
+# been created)
+uninstall:
+	@# TODO: Implement the proper fallback chain from `cargo install`
+	rm ~/.cargo/bin/{{ _pkgname }} || true
+	rm {{ manpage_dir }}/{{ _pkgname }}.1.gz || true
+	rm {{ bash_completion_dir }}/{{ _pkgname }} || true
+	rm {{ fish_completion_dir }}/{{ _pkgname }}.fish || true
+	rm {{ zsh_completion_dir }}/_{{ _pkgname }} || true
+
+# Alias for `cargo run -- {{args}}`
+run +args="":
+	{{_cargo}} run {{_build_flags}} -- {{args}}
+
+# -- Release Builds --
+
+# Call `build` and then strip and compress the resulting binary
+build-release: build
+	@# Don't modify the original "cargo" output. That confuses cargo somehow.
+	cp "{{_target_path}}" "{{_target_path}}.stripped"
+	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
+	{{strip_bin}} {{strip_flags}} "{{_target_path}}.stripped"
+	@# Allow sstrip to fail because it can't be installed via "just install-deps"
+	{{sstrip_bin}} "{{_target_path}}.stripped" || true
+	@# Allow upx to fail in case the user wants to force no UPXing by leaving it uninstalled
+	cp "{{_target_path}}.stripped" "{{_target_path}}.packed"
+	upx {{upx_flags}} "{{_target_path}}.packed" || true
+	@# Display the resulting file sizes so we can keep an eye on them
+	@# (Separate `ls` invocations are used to force the display ordering)
+	@printf "\n--== Final Result ==--\n"
+	@ls -1sh "{{_target_path}}"
+	@ls -1sh "{{_target_path}}.stripped"
+	@ls -1sh "{{_target_path}}.packed"
+	@printf "\n"
+
+
+# Generate shell completions and a manpage in `dist/`
+dist-supplemental:
+	mkdir -p dist
+	@# Generate completions and store them in dist/
+	{{_cargo}} run {{_build_flags}} -- --dump-completions bash > dist/{{ _pkgname }}.bash
+	{{_cargo}} run {{_build_flags}} -- --dump-completions zsh > dist/{{ _pkgname }}.zsh
+	{{_cargo}} run {{_build_flags}} -- --dump-completions fish > dist/{{ _pkgname }}.fish
+	{{_cargo}} run {{_build_flags}} -- --dump-completions elvish > dist/{{ _pkgname }}.elvish
+	{{_cargo}} run {{_build_flags}} -- --dump-completions powershell > dist/{{ _pkgname }}.powershell
+	@# Generate manpage and store it gzipped in dist/
+	@# (This comes last so the earlier calls to `cargo run` will get the compiler warnings out)
+	help2man -N '{{_cargo}} run {{_build_flags}} -- --help' \
+		| gzip -9 > dist/{{ _pkgname }}.1.gz || true
+
+# Call `dist-supplemental` and `build-release` and store the results in `dist/`
+dist: build-release dist-supplemental
+	@# Copy the packed command to dist/
+	cp  "{{ _target_path }}.packed" dist/{{ _pkgname }}
+
+# -- Dependencies --
+
+# Use `apt-get` to install dependencies `cargo` can't (except `kcov` and `sstrip`)
+install-apt-deps:
+	sudo apt-get install binutils help2man kcachegrind upx valgrind
+
+# `install-rustup-deps` and then `cargo install` tools
+install-cargo-deps: install-rustup-deps
+	@# Prevent "already installed" from causing a failure
+	_cargo install cargo-edit || true
+	{{_cargo}} install cargo-deadlinks || true
+	{{_cargo}} install cargo-bloat || true
+	{{_cargo}} install cargo-outdated || true
+	cargo +nightly install cargo-cov || true
+
+# Install (don't update) nightly and `channel` toolchains, plus `CARGO_BUILD_TARGET`, clippy, and rustfmt
+install-rustup-deps:
+	@# Prevent this from gleefully doing an unwanted "rustup update"
+	rustup toolchain list | grep -q '{{channel}}' || rustup toolchain install '{{channel}}'
+	rustup toolchain list | grep -q nightly || rustup toolchain install nightly
+	rustup target list | grep -q '{{CARGO_BUILD_TARGET}} (' || rustup target add '{{CARGO_BUILD_TARGET}}'
+	rustup component list | grep -q 'clippy-\S* (' || rustup component add clippy
+	rustup component list --toolchain nightly | grep 'rustfmt-\S* (' || rustup component add rustfmt --toolchain nightly
+
+# Run `install-apt-deps` and `install-cargo-deps`. List what remains.
+@install-deps: install-apt-deps install-cargo-deps
+	echo
+	echo "-----------------------------------------------------------"
+	echo "IMPORTANT: You will need to install the following manually:"
+	echo "-----------------------------------------------------------"
+	echo " * Rust-compatible kcov (http://sunjay.ca/2016/07/25/rust-code-coverage)"
+	echo " * sstrip (http://www.muppetlabs.com/%7Ebreadbox/software/elfkickers.html)"
 
 # Local Variables:
 # mode: makefile
