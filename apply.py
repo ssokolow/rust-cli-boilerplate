@@ -224,13 +224,17 @@ def main():
         if destdir:
             args.destdir.append(destdir)
 
+    # TODO: If this is a first run and just isn't installed, offer to
+    #       `cargo install` it.
+
     # TODO: Support the project name being relative to a config-file-specified
     #       parent directory.
 
     for path in args.destdir:
         new_project(path)
 
-        # TODO: Modulo a config file, open the preferred editing environment
+        # TODO: Modulo a config file, ensure that ~/.cargo/bin is in the PATH
+        #       and then open the preferred editing environment.
 
 if __name__ == '__main__':
     main()
