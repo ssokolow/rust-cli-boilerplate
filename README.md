@@ -234,7 +234,7 @@ one or more of the variables listed above.
 </tr>
 <tr>
   <td><code>kcov</code></td>
-  <td></td>
+  <td><sub>&dagger;</sub></td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
 <tr>

@@ -117,7 +117,8 @@ def parse_justfile(justfile, evaluated=None):
                 last_command)
             continue
 
-        if last_command and line.startswith('\t') and '{{' in line:
+        if last_command and line.startswith('\t') and (
+                '{{' in line or '$' in line):
             last_command.uses_variables = True
 
     # Keep the groups in the order they were discovered, but sort the entries
