@@ -45,12 +45,12 @@ class TestJustfile(unittest.TestCase):
         self.assertTrue(os.path.isfile(self.outpath))
 
     def test_build_release(self):
-        """just build-release"""
+        """just build-dist"""
         for ext in ('', '.stripped', '.packed'):
             if os.path.exists(self.outpath):
                 os.remove(self.outpath + ext)
 
-        self._assert_task(['build-release', '--set', 'upx_flags', ''],
+        self._assert_task(['build-dist', '--set', 'upx_flags', ''],
                           b'--== Final Result ==--')
 
         for ext in ('', '.stripped', '.packed'):

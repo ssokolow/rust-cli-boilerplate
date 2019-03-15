@@ -27,7 +27,7 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables (eg. for cross-compilation), including `install` and
   `uninstall`, which also take care of shell completions and a manpage.
-* `just build-release` for a 100% static i686 binary totalling roughly `252KiB`
+* `just build-dist` for a 100% static i686 binary totalling roughly `252KiB`
   (`228KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
@@ -115,7 +115,7 @@ license of choice. You can replace this</td>
   <td></td>
   <td>Extra cargo features to enable</td>
 </tr>
-<tr><th colspan="3"><code>build-release</code></th></tr>
+<tr><th colspan="3"><code>build-dist</code></th></tr>
 <tr>
   <td><code>sstrip_bin</code></td>
   <td><code>sstrip</code></td>
@@ -264,14 +264,14 @@ license of choice. You can replace this</td>
 </tr>
 <tr><th colspan="3">Release Builds</th></tr>
 <tr>
-  <td><code>build-release</code></td>
+  <td><code>build-dist</code></td>
   <td></td>
   <td>Call <code>build</code> and then strip and compress the resulting binary</td>
 </tr>
 <tr>
   <td><code>dist</code></td>
   <td></td>
-  <td>Call <code>dist-supplemental</code> and <code>build-release</code> and copy the
+  <td>Call <code>dist-supplemental</code> and <code>build-dist</code> and copy the
   packed binary to <code>dist/</code></td>
 </tr>
 <tr>
@@ -359,7 +359,7 @@ are defined:
    unwinding to allow backtrace code to be pruned away by dead code
    optimization.
 
-### If built via `just build-release`:
+### If built via `just build-dist`:
 
 1. Unless otherwise noted, all [optimizations
    ](https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html)
@@ -384,7 +384,7 @@ are defined:
 
 ### If built by `just dist`:
 
-1. A packed binary will be built via `build-release` and copied into `dist/`
+1. A packed binary will be built via `build-dist` and copied into `dist/`
 2. Shell completion files and a manpage will also be built and saved into
    `dist/`
 
@@ -396,7 +396,7 @@ following dependencies must be installed:
 * `just bloat`:
   * [cargo-bloat](https://github.com/RazrFalcon/cargo-bloat)
     (`cargo install cargo-bloat`)
-* `just build-release`:
+* `just build-dist`:
   * The toolchain specified by the <code>channel</code> variable.
   * The target specified by the <code>target</code> variable.
   * `strip` (Included with binutils)

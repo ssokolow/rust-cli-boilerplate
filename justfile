@@ -18,7 +18,7 @@ build_flags = "--release"
 # Example for OpenPandora cross-compilation
 # export CARGO_BUILD_TARGET = "arm-unknown-linux-gnueabi"
 
-# -- `build-release` --
+# -- `build-dist` --
 
 # Set this to the cross-compiler's `strip` when cross-compiling
 strip_bin = "strip"
@@ -204,7 +204,7 @@ run +args="":
 # -- Release Builds --
 
 # Call `build` and then strip and compress the resulting binary
-build-release: build
+build-dist: build
 	@# Don't modify the original "cargo" output. That confuses cargo somehow.
 	cp "{{_target_path}}" "{{_target_path}}.stripped"
 	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
@@ -237,8 +237,8 @@ dist-supplemental:
 	help2man -N '{{_cargo}} run {{_build_flags}} -- --help' \
 		| gzip -9 > dist/{{ _pkgname }}.1.gz || true
 
-# Call `dist-supplemental` and `build-release` and copy the packed binary to `dist/`
-dist: build-release dist-supplemental
+# Call `dist-supplemental` and `build-dist` and copy the packed binary to `dist/`
+dist: build-dist dist-supplemental
 	@# Copy the packed command to dist/
 	cp  "{{ _target_path }}.packed" dist/{{ _pkgname }}
 
