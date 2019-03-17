@@ -9,8 +9,8 @@
 
 // Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration so
 // we see new lints as they get written (We'll opt back out selectively)
-#![warn(warnings, clippy::all, clippy::complexity, clippy::correctness, clippy::pedantic,
-        clippy::perf, clippy::style, clippy::restriction)]
+#![warn(warnings, rust_2018_idioms, clippy::all, clippy::complexity, clippy::correctness,
+        clippy::pedantic, clippy::perf, clippy::style, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
 #![allow(clippy::float_arithmetic)]
