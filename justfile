@@ -63,10 +63,6 @@ zsh_completion_dir = "~/.zsh/functions"
 # automatically pick up this location.
 manpage_dir = "~/.cargo/share/man/man1"
 
-# Examples for OpenPandora cross-compilation
-# export CARGO_BUILD_TARGET = "arm-unknown-linux-gnueabi"
-# strip_bin = `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
-
 # --== Code Begins ==--
 
 # Internal variables
