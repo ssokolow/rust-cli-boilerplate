@@ -11,7 +11,7 @@ use_try_shorthand = true
 # and rigorously enforce by using `git gui` to only commit rustfmt changes
 # I approve of.
 brace_style = "PreferSameLine"
-comment_width = 100
+comment_width = 99
 enum_discrim_align_threshold = 10
 format_strings = true
 fn_args_density = "Compressed"
