@@ -63,10 +63,10 @@ struct CliOpts {
     #[structopt(short, long, parse(from_occurrences))]
     verbose: usize,
     /// Display timestamps on log messages (sec, ms, ns, none)
-    #[structopt(short, long, value_name="resolution")]
+    #[structopt(short, long, value_name = "resolution")]
     timestamp: Option<stderrlog::Timestamp>,
     /// Write a completion definition for the specified shell to stdout (bash, zsh, etc.)
-    #[structopt(long, value_name="shell")]
+    #[structopt(long, value_name = "shell")]
     dump_completions: Option<clap::Shell>,
 
     /// File(s) to use as input
@@ -123,7 +123,7 @@ fn main() {
 
 /// The actual `main()`
 fn run(opts: CliOpts) -> Result<()> {
-    #[allow(unused_variables,clippy::unimplemented)] // TEMPLATE:REMOVE
+    #[allow(unused_variables, clippy::unimplemented)] // TEMPLATE:REMOVE
     for inpath in opts.inpath {
         unimplemented!()
     }

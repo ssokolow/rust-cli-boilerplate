@@ -7,15 +7,15 @@ use std::path::{Component, Path};
 
 /// Special filenames which cannot be used for real files under Win32
 ///
-/// (Unless your app uses the `\?\` path prefix to bypass legacy Win32 API compatibility
+/// (Unless your app uses the `\\?\` path prefix to bypass legacy Win32 API compatibility
 /// limitations)
 ///
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 #[allow(dead_code)] // TEMPLATE:REMOVE
-const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
-    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
+    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
     "CLOCK$" ]; // https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
 // TODO: Add the rest of the disallowed names from
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
@@ -26,10 +26,10 @@ const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
 ///  * Input file paths
 ///
 /// ## Relevant Conventions:
-///  * Commands which read from `stdin` by default should use `-f` to specify the
-///    input path. [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
-///  * Commands which read from files by default should use positional arguments to
-///    specify input paths.
+///  * Commands which read from `stdin` by default should use `-f` to specify the input path.
+///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///  * Commands which read from files by default should use positional arguments to specify input
+///    paths.
 ///  * Allow an arbitrary number of input paths if feasible.
 ///  * Interpret a value of `-` to mean "read from `stdin`" if feasible.
 ///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
@@ -41,24 +41,20 @@ const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
 ///     data_source | my_utility_b -f header.dat -f - -f footer.dat > output.dat
 ///
 /// ## Cautions:
-///  * This will momentarily open the given path for reading to verify that it is
-///    readable. However, relying on this to remain true will introduce a race condition. This
-///    validator is intended only to allow your program to exit as quickly as possible in the case
-///    of obviously bad input.
+///  * This will momentarily open the given path for reading to verify that it is readable.
+///    However, relying on this to remain true will introduce a race condition. This validator is
+///    intended only to allow your program to exit as quickly as possible in the case of obviously
+///    bad input.
 ///  * As a more reliable validity check, you are advised to open a handle to the file in question
 ///    as early in your program's operation as possible, use it for all your interactions with the
-///    file, and keep it open until you are finished.
-///    This will both verify its validity and minimize the window in which another process could
-///    render the path invalid.
+///    file, and keep it open until you are finished. This will both verify its validity and
+///    minimize the window in which another process could render the path invalid.
 ///
 /// **TODO:** Determine why `File::open` has no problem opening directory paths and decide how to
 /// adjust this.
-///
 pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<(), OsString> {
     let path = value.as_ref();
-    File::open(path)
-        .map(|_| ())
-        .map_err(|e| format!("{}: {}", path.display(), e).into())
+    File::open(path).map(|_| ()).map_err(|e| format!("{}: {}", path.display(), e).into())
 }
 
 /// The given path is valid on all major filesystems and OSes
@@ -99,7 +95,7 @@ pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<
 ///    will usually work if you change the working directory and use relative paths.
 ///  * The following lengths were considered too limiting to be enforced by this function:
 ///    * The UDF filesystem used on DVDs imposes a 1023-byte length limit on paths.
-///    * When not using the `\?\` prefix to disable legacy compatibility, Windows paths  are
+///    * When not using the `\\?\` prefix to disable legacy compatibility, Windows paths  are
 ///      limited to 260 characters, which was arrived at as `A:\MAX_FILENAME_LENGTH<NULL>`.
 ///      [[5]](https://stackoverflow.com/a/1880453/435253)
 ///    * ISO 9660 without Joliet or Rock Ridge extensions does not permit periods in directory
@@ -116,10 +112,9 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
     if path.as_os_str().is_empty() {
         Err("Path is empty".into())
     } else if path.as_os_str().len() > 32760 {
-        // Limit length to fit on VFAT/exFAT when using the `\?\` prefix to disable legacy limits
+        // Limit length to fit on VFAT/exFAT when using the `\\?\` prefix to disable legacy limits
         // Source: https://en.wikipedia.org/wiki/Comparison_of_file_systems
-        Err(format!("Path is too long ({} chars): {:?}",
-                    path.as_os_str().len(), path).into())
+        Err(format!("Path is too long ({} chars): {:?}", path.as_os_str().len(), path).into())
     } else {
         for component in path.components() {
             if let Component::Normal(string) = component {
@@ -146,9 +141,8 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///    considerations such as overall path length limits are taken into account.
 ///  * As a more reliable validity check, you are advised to open a handle to the file in question
 ///    as early in your program's operation as possible, use it for all your interactions with the
-///    file, and keep it open until you are finished.
-///    This will both verify its validity and minimize the window in which another process could
-///    render the path invalid.
+///    file, and keep it open until you are finished. This will both verify its validity and
+///    minimize the window in which another process could render the path invalid.
 ///
 /// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
 ///  * In the interest of not inconveniencing users in the most common case, this validator imposes
@@ -224,9 +218,9 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt;
-    use super::*;
 
     // ---- path_readable ----
 
