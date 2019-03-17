@@ -50,6 +50,17 @@ class TestJustfile(unittest.TestCase):
             self.assertEqual(count, found, "Expected %s occurrence(s) of %r "
                              "(got %s)" % (count_str, substr, found))
 
+    def test_a_invariants(self):
+        """invariants required by tests
+
+        (The _a_ in the name is just to make it run first)
+        """
+        variables = get_evaluated_variables(include_private=True)
+
+        # As written, some tests currently depend on --release being in the
+        # build flags to test that it's properly ignored
+        self.assertRegex(variables['_build_flags'], '(^|[ ])--release([ ]|$)')
+
     def test_bloat(self):
         """just bloat"""
         self._assert_task(['bloat'], b'Crate Name\n')
@@ -182,15 +193,17 @@ class TestJustfile(unittest.TestCase):
 
         # The justfile echoing and the command output are both checked
         # to ensure a --release can't sneak in.
-        self._assert_task(['kcachegrind', '--set', 'kcachegrind',
+        output = self._assert_task(['kcachegrind', '--set', 'kcachegrind',
                            'echo kcachegrind-foo'],
             b'\necho kcachegrind-foo \'callgrind.out.justfile\'\n'
             b'kcachegrind-foo callgrind.out.justfile\n')
+        self.assertNotIn(b'--release', output)
         self.assertTrue(os.path.isfile(callgrind_temp))
         os.remove(callgrind_temp)
 
-        self._assert_task(['kcachegrind', '--set', 'kcachegrind',
+        output = self._assert_task(['kcachegrind', '--set', 'kcachegrind',
             'echo kcachegrind-bar', '--', '--help'], b'.*USAGE:.*')
+        self.assertNotIn(b'--release', output)
         self.assertTrue(os.path.isfile(callgrind_temp))
 
     def test_kcov(self):
@@ -200,6 +213,8 @@ class TestJustfile(unittest.TestCase):
         if os.path.exists(outdir):
             shutil.rmtree(outdir)
 
+        # The justfile echoing and the command output are both checked
+        # to ensure a --release can't sneak in.
         output = self._assert_task(['kcov'], br'\ntest result:')
         self.assertNotIn(b'--release', output)
         self.assertTrue(os.path.isdir(outdir))
