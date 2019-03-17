@@ -67,7 +67,8 @@ manpage_dir = "~/.cargo/share/man/man1"
 
 # Internal variables
 # TODO: Look up that GitHub issues post on whitespace handling
-_cargo = "cargo \"+" + channel + "\""
+_cargo_cmd = "cargo"  # Used for --dry-run simulation
+_cargo = _cargo_cmd + " \"+" + channel + "\""
 _build_flags = "--features=\"" + features + "\" " + build_flags
 
 # Parse the value of the "name" key in the [package] section of Cargo.toml
@@ -103,7 +104,7 @@ doc +args="":
 
 # Alias for `cargo +nightly fmt -- {{args}}`
 fmt +args="":
-	cargo +nightly fmt -- {{args}}
+	{{_cargo_cmd}} +nightly fmt -- {{args}}
 
 # Alias for `cargo +nightly fmt -- --check {{args}}` which un-bloats TODO/FIXME warnings
 fmt-check +args="":

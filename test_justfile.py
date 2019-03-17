@@ -168,6 +168,16 @@ class TestJustfile(unittest.TestCase):
             self.assertTrue(os.path.isfile(outpath),
                 '%s not a file (%s)' % (outpath, command))
 
+    def test_fmt(self):
+        """just fmt"""
+        # Avoid having to save and restore the un-formatted versions by only
+        # testing that the expected command gets emitted without error
+        self._assert_task(['fmt', '--set', '_cargo_cmd', 'echo'],
+                          b'(^|\n)echo [+]nightly fmt --\s*(\n|$)')
+        self._assert_task(['fmt', '--set', '_cargo_cmd', 'echo', '--', '-V'],
+                          b'(^|\n)echo [+]nightly fmt -- -V\s*(\n|$)')
+        # TODO: Decide how to actually test that the files would be modified
+
     def test_fmt_check(self):
         """just fmt-check"""
         self._assert_task(['fmt-check'],
@@ -176,10 +186,11 @@ class TestJustfile(unittest.TestCase):
             br')?found TODO')
         self._assert_task(['fmt-check', '--', '-V'],
                           br'\nrustfmt \S+-nightly \(\S+ 2\d\d\d-\d\d-\d\d\)')
+        # TODO: Assert that the files were not modified
 
     # TODO: The following commands need to be tested by overriding the commands
     #       to simulate --dry-run:
-    # - fmt, install, install-cargo-deps, install-rustup-deps, uninstall,
+    # - install, install-cargo-deps, install-rustup-deps, uninstall,
     #   install-deps, install-apt-deps
 
     def test_kcachegrind(self):
