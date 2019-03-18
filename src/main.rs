@@ -1,8 +1,8 @@
 /*! TODO: Application description here
 
+This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cli-boilerplate)
 */
-// Copyright {{ "now" | date: "%Y" }}, {{ authors }}
-// Parts Copyright 2017-2019, Stephan Sokolow
+// Copyright 2017-2019, Stephan Sokolow
 
 // `error_chain` recursion adjustment
 #![recursion_limit = "1024"]
@@ -15,79 +15,35 @@
 // Opt out of the lints I've seen and don't want
 #![allow(clippy::float_arithmetic)]
 
-/// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
-const DEFAULT_VERBOSITY: usize = 1;
-
 // stdlib imports
 use std::io;
-use std::path::{Component::CurDir, PathBuf};
 
-// `error_chain`, `structopt`, and logging imports
+// 3rd-party imports
 mod errors;
-use crate::errors::*;
 use structopt::{clap, StructOpt};
-
-#[allow(unused_imports)] // TEMPLATE:REMOVE
-use log::{debug, error, info, trace, warn};
+use log::error;
 
 // Local imports
+mod app;
 mod validators;
-use validators::path_readable;
-
-/// Command-line argument schema
-///
-/// ## Relevant Conventions:
-///  * The top-level `long_about` attribute should begin with `\n` or the `--help` output won't
-///    comply with the platform conventions that `help2man` depends on to generate your manpage.
-///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
-///  * StructOpt's default behaviour of including the author name in the `--help` output is an
-///    oddity among Linux commands and, if you don't disable it with `author=""`, you run the risk
-///    of people unfamiliar with `StructOpt` assuming that you are an egotistical person who made a
-///    conscious choice to add it.
-///
-/// ## Cautions:
-///  * If you use `about` rather than `long_about`, this docstring will be displayed in your
-///  `--help` output.
-///  * As of this writing, there is a bug which will cause you to either have no leading `\n` or a
-///    doubled leading `\n` if you write your `--help` description as a doc comment rather than
-///    using `long_about`.
-#[derive(StructOpt, Debug)]
-#[structopt(author="", rename_all = "kebab-case",
-            long_about = "\nTODO: Replace me with the description text for the command",
-            raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
-struct CliOpts {
-    /// Decrease verbosity (-q, -qq, -qqq, etc.)
-    #[structopt(short, long, parse(from_occurrences))]
-    quiet: usize,
-    /// Increase verbosity (-v, -vv, -vvv, etc.)
-    #[structopt(short, long, parse(from_occurrences))]
-    verbose: usize,
-    /// Display timestamps on log messages (sec, ms, ns, none)
-    #[structopt(short, long, value_name = "resolution")]
-    timestamp: Option<stderrlog::Timestamp>,
-    /// Write a completion definition for the specified shell to stdout (bash, zsh, etc.)
-    #[structopt(long, value_name = "shell")]
-    dump_completions: Option<clap::Shell>,
-
-    /// File(s) to use as input
-    #[structopt(parse(from_os_str),
-                raw(validator_os = "path_readable", default_value_os = "CurDir.as_os_str()"))]
-    inpath: Vec<PathBuf>,
-}
 
 /// Boilerplate to parse command-line arguments, set up logging, and handle bubbled-up `Error`s.
 ///
 /// Based on the `StructOpt` example from stderrlog and the suggested error-chain harness from
 /// [quickstart.rs](https://github.com/brson/error-chain/blob/master/examples/quickstart.rs).
 ///
+/// See `app::main` for the application-specific logic.
+///
 /// **TODO:** Consider switching to Failure and look into `impl Termination` as a way to avoid
 ///           having to put the error message pretty-printing inside main()
 fn main() {
     // Parse command-line arguments (exiting on parse error, --version, or --help)
-    let opts = CliOpts::from_args();
+    let opts = app::CliOpts::from_args();
 
     // Configure logging output so that -q is "decrease verbosity" rather than instant silence
-    let verbosity = (opts.verbose.saturating_add(DEFAULT_VERBOSITY)).saturating_sub(opts.quiet);
+    let verbosity = opts.verbose
+                        .saturating_add(app::DEFAULT_VERBOSITY)
+                        .saturating_sub(opts.quiet);
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
@@ -98,14 +54,14 @@ fn main() {
 
     // If requested, generate shell completions and then exit with status of "success"
     if let Some(shell) = opts.dump_completions {
-        CliOpts::clap().gen_completions_to(
-            CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
+        app::CliOpts::clap().gen_completions_to(
+            app::CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
             shell,
             &mut io::stdout());
         std::process::exit(0);
     };
 
-    if let Err(ref e) = run(opts) {
+    if let Err(ref e) = app::main(opts) {
         // Write the top-level error message, then chained errors, then backtrace if available
         error!("error: {}", e);
         for e in e.iter().skip(1) {
@@ -118,28 +74,6 @@ fn main() {
         // Exit with a nonzero exit code
         // TODO: Decide how to allow code to set this to something other than 1
         std::process::exit(1);
-    }
-}
-
-/// The actual `main()`
-fn run(opts: CliOpts) -> Result<()> {
-    #[allow(unused_variables, clippy::unimplemented)] // TEMPLATE:REMOVE
-    for inpath in opts.inpath {
-        unimplemented!()
-    }
-
-    Ok(())
-}
-
-// Tests go below the code where they'll be out of the way when not the target of attention
-#[cfg(test)]
-mod tests {
-    // use super::CliOpts;
-
-    #[test]
-    /// Test something
-    fn test_something() {
-        // TODO: Test something
     }
 }
 

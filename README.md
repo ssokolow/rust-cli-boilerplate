@@ -17,8 +17,9 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
   parsing.
 * Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
   unified error handling.
-* Presents a `run(opts: CliOpts)` function for you to use as your `main()` to
-  keep the boilerplate cleanly separated from the specific logic.
+* Presents an `app::main(opts: CliOpts) -> Result<()>` function to keep your
+  application logic cleanly separated from argument parsing and handling of
+  terminal errors.
 * Exposes Clap's support for generating shell completions by providing a
   `--dump-completions <shell>` option.
 * Enables almost all rustc and
@@ -37,6 +38,16 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * The `fmt` just command always calls the nightly version of rustfmt to ensure
   access to the excessive number of customization options which are gated away
   as unstable.
+
+## Usage
+
+1. Clone/download a copy of the boilerplate
+2. Run `apply.py path/to/new/project`
+3. Edit `src/app.rs` to implement your application logic
+
+The boilerplate is currently being refactored, but you should always get a
+usable project skeleton by running `apply.py` regardless of how much the
+resulting skeleton may vary from revision to revision.
 
 ## Supplementary Files
 
