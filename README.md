@@ -330,6 +330,8 @@ license of choice. You can replace this</td>
 * You can use `just` from any subdirectory in your project. It's like `git` that way.
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
+* `just install-cargo-deps` will install `cargo-edit` so you can use `cargo
+  add`, `cargo rm`, and `cargo upgrade` to easily manage your dependencies.
 
 * The simplest way to activate the bash completion installed by `just install`
   is to add this to your `.bashrc`:

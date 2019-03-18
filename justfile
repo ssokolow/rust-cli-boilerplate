@@ -252,7 +252,7 @@ install-apt-deps:
 # `install-rustup-deps` and then `cargo install` tools
 install-cargo-deps: install-rustup-deps
 	@# Prevent "already installed" from causing a failure
-	_cargo install cargo-edit || true
+	{{_cargo}} install cargo-edit || true
 	{{_cargo}} install cargo-deadlinks || true
 	{{_cargo}} install cargo-bloat || true
 	{{_cargo}} install cargo-outdated || true
