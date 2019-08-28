@@ -10,10 +10,12 @@ use std::path::{Component, Path};
 /// (Unless your app uses the `\\?\` path prefix to bypass legacy Win32 API compatibility
 /// limitations)
 ///
+/// **NOTE:** These are still reserved if you append an extension to them.
+///
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 #[allow(dead_code)] // TEMPLATE:REMOVE
-const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
+pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
     "CLOCK$" ]; // https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
@@ -52,6 +54,7 @@ const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comment
 ///
 /// **TODO:** Determine why `File::open` has no problem opening directory paths and decide how to
 /// adjust this.
+#[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<(), OsString> {
     let path = value.as_ref();
     File::open(path).map(|_| ()).map_err(|e| format!("{}: {}", path.display(), e).into())
@@ -153,6 +156,9 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///  * the Joliet extensions for ISO 9660 are specified to support only 64-character filenames and
 ///    tested to support either 103 or 110 characters depending whether you ask the mkisofs
 ///    developers or Microsoft. [[5]](https://en.wikipedia.org/wiki/Joliet_(file_system))
+///  * The [POSIX Portable Filename Character Set
+///    ](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282)
+///    is too restrictive to be baked into a general-purpose validator.
 ///
 /// **TODO:** Consider converting this to a private function that just exists as a helper for the
 /// path validator in favour of more specialized validators for filename patterns, prefixes, and/or
@@ -325,7 +331,7 @@ mod tests {
 
     #[cfg(not(windows))]
     #[test]
-    fn filename_valid_portable_accepts_valid_but_malformed_names() {
+    fn filename_valid_portable_accepts_non_utf8_bytes() {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
         assert!(filename_valid_portable(OsStr::from_bytes(b"\xff")).is_ok());
     }
@@ -396,7 +402,7 @@ mod tests {
 
     #[cfg(not(windows))]
     #[test]
-    fn path_valid_portable_accepts_valid_but_malformed_names() {
+    fn path_valid_portable_accepts_non_utf8_bytes() {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
         assert!(path_valid_portable(OsStr::from_bytes(b"/\xff/foo")).is_ok());
     }

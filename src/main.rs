@@ -25,6 +25,7 @@ use log::error;
 
 // Local imports
 mod app;
+mod helpers;
 mod validators;
 
 /// Boilerplate to parse command-line arguments, set up logging, and handle bubbled-up `Error`s.
@@ -41,19 +42,19 @@ fn main() {
     let opts = app::CliOpts::from_args();
 
     // Configure logging output so that -q is "decrease verbosity" rather than instant silence
-    let verbosity = opts.verbose
+    let verbosity = opts.boilerplate.verbose
                         .saturating_add(app::DEFAULT_VERBOSITY)
-                        .saturating_sub(opts.quiet);
+                        .saturating_sub(opts.boilerplate.quiet);
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
         .verbosity(verbosity.saturating_sub(1))
-        .timestamp(opts.timestamp.unwrap_or(stderrlog::Timestamp::Off))
+        .timestamp(opts.boilerplate.timestamp.unwrap_or(stderrlog::Timestamp::Off))
         .init()
         .expect("initializing logging output");
 
     // If requested, generate shell completions and then exit with status of "success"
-    if let Some(shell) = opts.dump_completions {
+    if let Some(shell) = opts.boilerplate.dump_completions {
         app::CliOpts::clap().gen_completions_to(
             app::CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
             shell,

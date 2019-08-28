@@ -5,13 +5,14 @@
 use std::path::{Component::CurDir, PathBuf};
 
 // 3rd-party crate imports
-use structopt::{clap, StructOpt};
+use structopt::StructOpt;
 
 #[allow(unused_imports)] // TEMPLATE:REMOVE
 use log::{debug, error, info, trace, warn};
 
 // Local Imports
 use crate::errors::*;
+use crate::helpers::{BoilerplateOpts, HELP_TEMPLATE};
 use crate::validators::path_readable;
 
 /// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
@@ -20,37 +21,38 @@ pub const DEFAULT_VERBOSITY: usize = 1;
 /// Command-line argument schema
 ///
 /// ## Relevant Conventions:
-///  * The top-level `long_about` attribute should begin with `\n` or the `--help` output won't
-///    comply with the platform conventions that `help2man` depends on to generate your manpage.
+///
+///  * Make sure that there is a blank space between the `<name>` `<version>` line and the
+///    description text or the `--help` output won't comply with the platform conventions that
+///    `help2man` depends on to generate your manpage.
 ///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
 ///  * StructOpt's default behaviour of including the author name in the `--help` output is an
-///    oddity among Linux commands and, if you don't disable it with `author=""`, you run the risk
-///    of people unfamiliar with `StructOpt` assuming that you are an egotistical person who made a
-///    conscious choice to add it.
+///    oddity among Linux commands and, if you don't disable it, you run the risk of people
+///    unfamiliar with `StructOpt` assuming that you are an egotistical person who made a conscious
+///    choice to add it.
+///
+///    The proper standardized location for author information is the `AUTHOR` section which you
+///    can read about by typing `man help2man`.
 ///
 /// ## Cautions:
-///  * If you use `about` rather than `long_about`, this docstring will be displayed in your
-///  `--help` output.
-///  * As of this writing, there is a bug which will cause you to either have no leading `\n` or a
-///    doubled leading `\n` if you write your `--help` description as a doc comment rather than
-///    using `long_about`.
+///  * Subcommands do not inherit `template` and it must be re-specified for each one.
+///    ([clap-rs/clap#1184](https://github.com/clap-rs/clap/issues/1184))
+///  * Double-check that your choice of `about` or `long_about` is actually overriding this
+///    doc comment. The precedence is affected by things you wouldn't expect, such as the presence
+///    or absence of `template` and it's easy to wind up with this doc-comment as your `--help`
+///    ([TeXitoi/structopt#173](https://github.com/TeXitoi/structopt/issues/173))
+///  * Do not begin the description text for subcommands with `\n`. It will break the formatting
+///    in the top-level help output's list of subcommands.
 #[derive(StructOpt, Debug)]
-#[structopt(author="", rename_all = "kebab-case",
-            long_about = "\nTODO: Replace me with the description text for the command",
-            raw(setting = "structopt::clap::AppSettings::ColoredHelp"))]
+#[structopt(raw(template = "HELP_TEMPLATE"),
+            about = "TODO: Replace me with the description text for the command",
+            raw(global_setting = "structopt::clap::AppSettings::ColoredHelp"))]
 pub struct CliOpts {
-    /// Decrease verbosity (-q, -qq, -qqq, etc.)
-    #[structopt(short, long, parse(from_occurrences))]
-    pub quiet: usize,
-    /// Increase verbosity (-v, -vv, -vvv, etc.)
-    #[structopt(short, long, parse(from_occurrences))]
-    pub verbose: usize,
-    /// Display timestamps on log messages (sec, ms, ns, none)
-    #[structopt(short, long, value_name = "resolution")]
-    pub timestamp: Option<stderrlog::Timestamp>,
-    /// Write a completion definition for the specified shell to stdout (bash, zsh, etc.)
-    #[structopt(long, value_name = "shell")]
-    pub dump_completions: Option<clap::Shell>,
+    #[allow(clippy::missing_docs_in_private_items)] // StructOpt won't let us document this
+    #[structopt(flatten)]
+    pub boilerplate: BoilerplateOpts,
+
+    // -- Arguments used by application-specific logic --
 
     /// File(s) to use as input
     #[structopt(parse(from_os_str),
@@ -73,6 +75,9 @@ pub fn main(opts: CliOpts) -> Result<()> {
 mod tests {
     #[allow(unused_imports)] // TEMPLATE:REMOVE
     use super::CliOpts;
+
+    // TODO: Unit test to verify that the doc comment on `CliOpts` isn't overriding the intended
+    // about string.
 
     #[test]
     /// Test something
