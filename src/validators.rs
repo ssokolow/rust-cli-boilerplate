@@ -22,6 +22,93 @@ pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Com
 // TODO: Add the rest of the disallowed names from
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
+/// Module to contain the unsafety of an `unsafe` call to `access()`
+mod access {
+    /// TODO: Make this wrapper portable
+    ///       <https://doc.rust-lang.org/book/conditional-compilation.html>
+    /// TODO: Consider making `wrapped_access` typesafe using the `bitflags`
+    ///       crate `clap` pulled in
+    use libc::{access, c_int, W_OK};
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+    use std::path::Path;
+
+    /// Lower-level safety wrapper shared by all probably_* functions I define
+    /// TODO: Unit test **HEAVILY** (Has unsafe block. Here be dragons!)
+    fn wrapped_access(abs_path: &Path, mode: c_int) -> bool {
+        // Debug-time check that we're using the API properly
+        // (Debug-only because relying on it in a release build grants a false
+        // sense of security and, besides, access() is only really safe to use
+        // as a way to abort early for convenience on errors that would still
+        // be safe anyway.)
+        debug_assert!(abs_path.is_absolute());
+
+        // Make a null-terminated copy of the path for libc
+        match CString::new(abs_path.as_os_str().as_bytes()) {
+            // If we succeed, call access(2), convert the result into bool, and return it
+            Ok(cstr) => unsafe { access(cstr.as_ptr(), mode) == 0 },
+            // If we fail, return false because it can't be an access()ible path
+            Err(_) => false,
+        }
+    }
+
+    /// API suitable for a lightweight "fail early" check for whether a target
+    /// directory is writable without worry that a fancy filesystem may be
+    /// configured to allow write but deny deletion for the resulting test file.
+    /// (It's been seen in the wild)
+    ///
+    /// Uses a name which helps to drive home the security hazard in access()
+    /// abuse and hide the mode flag behind an abstraction so the user can't
+    /// mess up unsafe{} (eg. On my system, "/" erroneously returns success)
+    pub fn probably_writable<P: AsRef<Path> + ?Sized>(path: &P) -> bool {
+        wrapped_access(path.as_ref(), W_OK)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt; // TODO: Find a better way to produce invalid UTF-8
+        use super::probably_writable;
+
+        #[test]
+        fn probably_writable_basic_functionality() {
+            assert!(probably_writable(OsStr::new("/tmp")));                    // OK Folder
+            assert!(probably_writable(OsStr::new("/dev/null")));               // OK File
+            assert!(!probably_writable(OsStr::new("/etc/shadow")));            // Denied File
+            assert!(!probably_writable(OsStr::new("/etc/ssl/private")));       // Denied Folder
+            assert!(!probably_writable(OsStr::new("/nonexistant_test_path"))); // Missing Path
+            assert!(!probably_writable(OsStr::new("/tmp\0with\0null")));       // Bad CString
+            assert!(!probably_writable(OsStr::from_bytes(b"/not\xffutf8")));   // Bad UTF-8
+            assert!(!probably_writable(OsStr::new("/")));                      // Root
+            // TODO: Relative path
+            // TODO: Non-UTF8 path that actually does exist and is writable
+        }
+    }
+}
+
+/// Test that the given path **should** be writable
+#[allow(dead_code)] // TEMPLATE:REMOVE
+pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
+    let path = value.as_ref();
+
+    // Test that the path is a directory
+    // (Check before, not after, as an extra safety guard on the unsafe block)
+    if !path.is_dir() {
+        return Err(format!("Not a directory: {}", path.display()).into());
+    }
+
+    // TODO: Think about how to code this more elegantly (try! perhaps?)
+    if let Ok(abs_pathbuf) = path.canonicalize() {
+        if let Some(abs_path) = abs_pathbuf.to_str() {
+            if self::access::probably_writable(abs_path) {
+                return Ok(());
+            }
+        }
+    }
+
+    Err(format!("Would be unable to write to destination directory: {}", path.display()).into())
+}
+
 /// The given path can be opened for reading
 ///
 /// ## Use For:
@@ -226,7 +313,27 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 mod tests {
     use super::*;
     use std::ffi::OsStr;
+
+    #[cfg(not(windows))]
     use std::os::unix::ffi::OsStrExt;
+    #[cfg(windows)]
+    use std::os::windows::ffi::OsStringExt;
+
+    #[test]
+    fn path_output_dir_basic_functionality() {
+        assert!(path_output_dir(OsStr::new("/")).is_err());                      // Root
+        assert!(path_output_dir(OsStr::new("/tmp")).is_ok());                    // OK Folder
+        assert!(path_output_dir(OsStr::new("/dev/null")).is_err());              // OK File
+        assert!(path_output_dir(OsStr::new("/etc/shadow")).is_err());            // Denied File
+        assert!(path_output_dir(OsStr::new("/etc/ssl/private")).is_err());       // Denied Folder
+        assert!(path_output_dir(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
+        assert!(path_output_dir(OsStr::new("/tmp\0with\0null")).is_err());       // Invalid CString
+        // TODO: is_dir but fails to canonicalize()
+        // TODO: Not-already-canonicalized paths
+
+        assert!(path_output_dir(OsStr::from_bytes(b"/not\xffutf8")).is_err());   // Invalid UTF-8
+        // TODO: Non-UTF8 path that actually does exist and is writable
+    }
 
     // ---- path_readable ----
 
@@ -254,8 +361,12 @@ mod tests {
         assert!(path_readable(OsStr::from_bytes(b"/not\xffutf8")).is_err());   // Invalid UTF-8
         // TODO: Non-UTF8 path that actually IS valid
     }
-
-    // TODO: #[cfg(windows) test with un-paired UTF-16 surrogates
+    #[cfg(windows)]
+    #[test]
+    fn path_readable_unpaired_surrogates() {
+        unimplemented!()
+        // TODO: #[cfg(windows) test with un-paired UTF-16 surrogates
+    }
 
     // ---- filename_valid_portable ----
 
@@ -267,11 +378,18 @@ mod tests {
     ];
 
     // Paths which should pass because std::path::Path will recognize the separators
-    // TODO: cfg(...) up alternative versions for Windows and possibly OSX
+    // TODO: Actually run the tests on Windows to make sure they work
+    #[cfg(windows)]
+    const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &[
+        "re/lative", "/ab/solute", "re\\lative", "\\ab\\solute"];
+    #[cfg(not(windows))]
     const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &["re/lative", "/ab/solute"];
 
     // Paths which should fail because std::path::Path won't recognize the separators and we don't
     // want them showing up in the components.
+    #[cfg(windows)]
+    const PATHS_WITH_FOREIGN_SEPARATORS: &[&str] = &["Classic Mac HD:Folder Name:File"];
+    #[cfg(not(windows))]
     const PATHS_WITH_FOREIGN_SEPARATORS: &[&str] = &[
         "relative\\win32",
         "C:\\absolute\\win32",
@@ -335,8 +453,12 @@ mod tests {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
         assert!(filename_valid_portable(OsStr::from_bytes(b"\xff")).is_ok());
     }
-
-    // TODO: #[cfg(windows) test with un-paired UTF-16 surrogates
+    #[cfg(windows)]
+    #[test]
+    fn filename_valid_portable_accepts_unpaired_surrogates() {
+        unimplemented!()
+        // TODO: Test with un-paired UTF-16 surrogates
+    }
 
     // ---- path_valid_portable ----
 
@@ -406,6 +528,11 @@ mod tests {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
         assert!(path_valid_portable(OsStr::from_bytes(b"/\xff/foo")).is_ok());
     }
+    #[cfg(windows)]
+    #[test]
+    fn filename_valid_portable_accepts_unpaired_surrogates() {
+        unimplemented!()
+        // TODO: Test with un-paired UTF-16 surrogates
+    }
 
-    // TODO: #[cfg(windows) test with un-paired UTF-16 surrogates
 }

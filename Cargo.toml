@@ -8,6 +8,7 @@ edition = "2018"
 log = "0.4"
 stderrlog = "0.4"
 structopt = "0.2"
+libc = "0.2"
 
 [dependencies.error-chain]
 version = "0.12"
