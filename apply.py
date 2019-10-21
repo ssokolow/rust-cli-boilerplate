@@ -19,6 +19,11 @@ try:
 except ImportError:
     pwd = None
 
+# Since this script is currently for a POSIX-only project, just following
+# XDG conventions for where to look for config files is sufficient for now.
+# TODO: Actually use this
+XDG_CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
+                                os.path.expanduser('~/.config'))
 def ensure_terminal():
     """Re-exec self in the user's preferred terminal if stdin is not a tty."""
     if not os.isatty(sys.stdin.fileno()):
@@ -138,6 +143,7 @@ def template_file(path, template_vars):
         templated = re.sub(r'{{\s*(.*?)\s*}}', match, fobj.read()).split('\n')
         prepared = []
         for line in templated:
+            # TODO: Also support #-style comments
             if not line.strip().endswith('// TEMPLATE:REMOVE'):
                 prepared.append(line)
 
@@ -148,6 +154,8 @@ def template_file(path, template_vars):
 
 def new_project(dest_dir):
     """Apply the template to create a new project in the given folder"""
+    # TODO: Move the template into a subdirectory so files like LICENSE can be
+    # different for the repo and the template and .genignore is less necessary.
     src_dir, self_name = os.path.split(__file__)
 
     # Avoid corrupting source copy
@@ -231,6 +239,9 @@ def main():
     #       parent directory.
 
     for path in args.destdir:
+        # TODO: Make new_project conditional on the project not already having
+        # been initialized so this can be aliased to a generic `workon`-like
+        # command which initializes only if the project doesn't exist.
         new_project(path)
 
         # TODO: Modulo a config file, ensure that ~/.cargo/bin is in the PATH
