@@ -473,8 +473,13 @@ kcov
 ## TODO
 
 * Get a feel for the workflow surrounding building a project with
-  [Failure](https://github.com/rust-lang-nursery/failure) and decide whether to
-  rebase this template on top of it.
+  [Failure](https://github.com/rust-lang-nursery/failure),
+  [quick-error](https://github.com/tailhook/quick-error),
+  [thiserror](https://github.com/dtolnay/thiserror),
+  [error](https://github.com/reem/rust-error),
+  [snafu](https://crates.io/crates/snafu), and
+  [anyhow](https://github.com/dtolnay/anyhow) and decide whether to
+  rebase this template on top of one of them.
 * Investigate how flexible [QuiCLI](https://github.com/killercup/quicli) and
     its dependency on env_logger are and whether it'd be useful to rebase on it
     or whether I'd just be reinventing most of it anyway to force the exact
