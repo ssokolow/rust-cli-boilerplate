@@ -247,11 +247,9 @@ def main():
     #       parent directory.
 
     for path in args.destdir:
-        # TODO: Make new_project conditional on the project not already having
-        # been initialized so this can be aliased to a generic `workon`-like
-        # command which initializes only if the project doesn't exist.
-        new_project(path)
-        init_git_history(path)
+        if not os.path.exists(path):
+            new_project(path)
+            init_git_history(path)
 
         # TODO: Modulo a config file, ensure that ~/.cargo/bin is in the PATH
         #       and then open the preferred editing environment.
