@@ -27,6 +27,10 @@ XDG_CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
 
 # Extensions to apply template processing to
 TEMPLATABLE_EXTS = ['.rs', '.toml']
+
+# Matcher for marking lines as to be omitted from generated project files
+TEMPLATE_REMOVE_RE = re.compile(r"(#|//) TEMPLATE:REMOVE\s*$")
+
 def ensure_terminal():
     """Re-exec self in the user's preferred terminal if stdin is not a tty."""
     if not os.isatty(sys.stdin.fileno()):
@@ -146,8 +150,7 @@ def template_file(path, template_vars):
         templated = re.sub(r'{{\s*(.*?)\s*}}', match, fobj.read()).split('\n')
         prepared = []
         for line in templated:
-            # TODO: Also support #-style comments
-            if not line.strip().endswith('// TEMPLATE:REMOVE'):
+            if not TEMPLATE_REMOVE_RE.search(line):
                 prepared.append(line)
 
         templated = '\n'.join(prepared)
