@@ -247,7 +247,9 @@ class TestJustfile(unittest.TestCase):
             self._assert_task(subcommand, br'\ntest result: ')
 
 if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
+    print("NOTE: This test suite will currently fail unless you manually edit "
+          "Cargo.toml to set a valid package name.")
+    os.chdir(os.path.join(os.path.dirname(__file__), 'template'))
     unittest.main()
 
 

@@ -11,7 +11,7 @@ __appname__ = "Simple Project Template Applicator"
 __version__ = "0.1"
 __license__ = "MIT or Apache 2.0"
 
-import logging, os, re, shutil, subprocess, sys, time
+import json, logging, os, re, shutil, subprocess, sys, tempfile, time
 log = logging.getLogger(__name__)
 
 try:
@@ -24,6 +24,9 @@ except ImportError:
 # TODO: Actually use this
 XDG_CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                                 os.path.expanduser('~/.config'))
+
+# Extensions to apply template processing to
+TEMPLATABLE_EXTS = ['.rs', '.toml']
 def ensure_terminal():
     """Re-exec self in the user's preferred terminal if stdin is not a tty."""
     if not os.isatty(sys.stdin.fileno()):
@@ -101,13 +104,13 @@ def parse_ignores(path, base):
 
     return results
 
-def reset_git_history(repo_dir):
+def init_git_history(repo_dir):
     """Delete .git if present, re-initialize, & create a new initial commit"""
-    shutil.rmtree(os.path.join(repo_dir, '.git'))
     subprocess.check_call(['git', 'init', '-q'], cwd=repo_dir)
     subprocess.check_call(['git', 'add', '.'], cwd=repo_dir)
     subprocess.check_call(['git', 'commit', '-qm',
                            'Created new project from template'], cwd=repo_dir)
+    log.info("Initialized git history at %s", repo_dir)
 
 def rmpath(path):
     """Wrapper for os.remove or shutil.rmtree as appropriate"""
@@ -154,52 +157,54 @@ def template_file(path, template_vars):
 
 def new_project(dest_dir):
     """Apply the template to create a new project in the given folder"""
-    # TODO: Move the template into a subdirectory so files like LICENSE can be
-    # different for the repo and the template and .genignore is less necessary.
-    src_dir, self_name = os.path.split(__file__)
-
-    # Avoid corrupting source copy
-    if os.path.realpath(src_dir) == os.path.realpath(dest_dir):
-        raise ValueError("Template directory and new project directory cannot"
-                         "be the same location")
-
-    # Ensure both paths are absolute and refuse to corrupt existing dest_dir
-    src_dir = os.path.abspath(src_dir)
+    # Make absolute paths because we're going to chdir
     dest_dir = os.path.abspath(dest_dir)
-    if os.path.exists(dest_dir):
-        raise ValueError("Path already exists: {}".format(dest_dir))
+    src_dir = os.path.abspath(os.path.dirname(__file__))
 
-    # -- Clone the template repo --
-    subprocess.check_call(['git', 'clone', '-q', '--', src_dir, dest_dir])
+    assert not os.path.exists(dest_dir)
 
-    # -- Remove blacklisted files --
-    # (Use the committed copy of .genignore for consistenct)
-    genignore = os.path.join(dest_dir, '.genignore')
-    remove = [os.path.join(dest_dir, self_name), genignore]
-    remove += parse_ignores(genignore, dest_dir)
+    cur_wd = os.getcwd()
+    temp_dir = tempfile.mkdtemp(dir=os.path.dirname(dest_dir))
+    temp_inner = os.path.join(temp_dir, 'repo')
+    try:
+        # Do a local clone of the template repo, keep only the working copy
+        #
+        # This requires that the template be a valid git repo, but it greatly
+        # simplifies ensuring that scratch files in my local copy of the
+        # boilerplate repo don't wind up in newly generated projects
+        subprocess.check_call(['git', 'clone', '-qq', '--',
+                               src_dir, temp_inner])
+        os.rename(os.path.join(temp_inner, 'template'), dest_dir)
 
-    os.chdir(dest_dir)  # Safety check
-    for path in remove:
-        rmpath(path)
+        # Safety guard against modifying the source dir via relative paths
+        os.chdir(dest_dir)
 
-    project_name = os.path.basename(dest_dir)
-    tmpl_vars = {
-        'authors': get_author(),
-        'project-name': project_name.replace('_', '-'),
-        'crate_name': project_name.replace('-', '_'),
-    }
-    for parent, _, files in os.walk(dest_dir):
-        for fname in files:
-            # Skip non-Rust, non-TOML files
-            # TODO: Make this configurable
-            if not os.path.splitext(fname)[1].lower() in ['.toml', '.rs']:
-                continue
+        # Process templatable files
+        project_name = os.path.basename(dest_dir)
+        tmpl_vars = {
+            'authors': get_author(),
+            'project-name': project_name.replace('_', '-'),
+            'crate_name': project_name.replace('-', '_'),
+        }
+        for parent, _, files in os.walk(dest_dir):
+            for fname in files:
+                if not os.path.splitext(fname)[1].lower() in TEMPLATABLE_EXTS:
+                    continue
 
-            template_file(os.path.join(parent, fname), tmpl_vars)
+                template_file(os.path.join(parent, fname), tmpl_vars)
 
-    # -- Reset to a fresh git history and consider it done --
-    reset_git_history(dest_dir)
-    log.info("Created new project at %s", dest_dir)
+        # Assert that we're not just generating the same crate over and over
+        manifest = json.loads(subprocess.check_output(
+            ['cargo', 'read-manifest'], cwd=dest_dir).decode('utf8'))
+        manifest_name = manifest.get('name')
+        assert (tmpl_vars['project-name'] in manifest_name or
+                tmpl_vars['crate_name'] in manifest_name), (
+            "Generated project's Cargo.toml did not contain project name")
+
+        log.info("Created new project at %s", dest_dir)
+    finally:
+        shutil.rmtree(temp_dir)
+        os.chdir(cur_wd)
 
 def main():
     """The main entry point, compatible with setuptools entry points."""
@@ -243,6 +248,7 @@ def main():
         # been initialized so this can be aliased to a generic `workon`-like
         # command which initializes only if the project doesn't exist.
         new_project(path)
+        init_git_history(path)
 
         # TODO: Modulo a config file, ensure that ~/.cargo/bin is in the PATH
         #       and then open the preferred editing environment.

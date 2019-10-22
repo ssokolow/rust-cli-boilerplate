@@ -5,10 +5,16 @@
 A base project template for building small but reliable utilities in the
 [Rust](https://rust-lang.org/) programming language.
 
-**NOTE:** While the `LICENSE` file must contain my preferred choice for
-starting new projects (the GNU GPLv3), **you may use the contents of this
-repository under your choice of the [MIT](http://opensource.org/licenses/MIT)
-and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
+## License
+
+This repository is licensed under your choice of the
+[MIT](http://opensource.org/licenses/MIT) or
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses with the
+exception of the license texts themselves. Please replace the `LICENSE` file in
+the `template` folder with your preferred license if you do not habitually start
+your new projects under the GNU GPLv3.
+
+<!-- SPDX-License-Identifier: Apache-2.0 OR MIT -->
 
 ## Features
 
@@ -28,14 +34,14 @@ and/or [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) licenses**.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables (eg. for cross-compilation), including `install` and
   `uninstall`, which also take care of shell completions and a manpage.
-* `just build-dist` for a 100% static i686 binary totalling roughly `252KiB`
-  (`228KiB` with `panic="abort"`) in new projects
+* `just build-dist` for a 100% static i686 binary totalling roughly `260KiB`
+  (`236KiB` with `panic="abort"`) in new projects
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
 * A basic `.travis.yml` for use with [Travis-CI](https://travis-ci.org/) and
   [Nightli.es](https://nightli.es/).
-* The `fmt` just command always calls the nightly version of rustfmt to ensure
+* The `just fmt` command always calls the nightly version of rustfmt to ensure
   access to the excessive number of customization options which are gated away
   as unstable.
 
