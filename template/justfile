@@ -13,7 +13,7 @@ channel = "stable"
 features = ""
 
 # An easy place to modify the build flags used
-build_flags = "--release"
+build_flags = ""
 
 # Example for OpenPandora cross-compilation
 # export CARGO_BUILD_TARGET = "arm-unknown-linux-gnueabi"
@@ -70,13 +70,14 @@ manpage_dir = "~/.cargo/share/man/man1"
 _cargo_cmd = "cargo"  # Used for --dry-run simulation
 _cargo = _cargo_cmd + " \"+" + channel + "\""
 _build_flags = "--features=\"" + features + "\" " + build_flags
+_doc_flags = "--document-private-items --features=\"" + features + "\""
 
 # Parse the value of the "name" key in the [package] section of Cargo.toml
 # using only the commands any POSIX-compliant platform should have
 # Source: http://stackoverflow.com/a/40778047/435253
 export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
-export _target_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
-# FIXME: _target_path will break if --release is removed from the build flags
+export _rls_bin_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
+export _dbg_bin_path="target/" + CARGO_BUILD_TARGET  + "/debug/" + _pkgname
 
 # Shorthand for `just test`
 DEFAULT: test
@@ -99,7 +100,7 @@ clean +args="":
 
 # Run rustdoc with `--document-private-items` and then run cargo-deadlinks
 doc +args="":
-	{{_cargo}} doc --document-private-items {{_build_flags}} {{args}} && \
+	{{_cargo}} doc {{_doc_flags}} {{args}} && \
 	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
 
 # Alias for `cargo +nightly fmt -- {{args}}`
@@ -189,6 +190,10 @@ install: dist-supplemental
 	@# Install the command to ~/.cargo/bin
 	{{_cargo}} install --path . --force --features="{{features}}"
 
+# Alias for `cargo run -- {{args}}`
+run +args="":
+	{{_cargo}} run {{_build_flags}} -- {{args}}
+
 # Remove any files installed by the `install` task (but leave any parent directories created)
 uninstall:
 	@# TODO: Implement the proper fallback chain from `cargo install`
@@ -198,29 +203,28 @@ uninstall:
 	rm {{ fish_completion_dir }}/{{ _pkgname }}.fish || true
 	rm {{ zsh_completion_dir }}/_{{ _pkgname }} || true
 
-# Alias for `cargo run -- {{args}}`
-run +args="":
-	{{_cargo}} run {{_build_flags}} -- {{args}}
-
 # -- Release Builds --
 
 # Call `build` and then strip and compress the resulting binary
-build-dist: build
+build-dist:
+	@echo "\n--== Building with {{channel}} for {{CARGO_BUILD_TARGET}} (features: {{features}}) ==--\n"
+	{{_cargo}} build --release {{_build_flags}}
+
 	@# Don't modify the original "cargo" output. That confuses cargo somehow.
-	cp "{{_target_path}}" "{{_target_path}}.stripped"
+	cp "{{_rls_bin_path}}" "{{_rls_bin_path}}.stripped"
 	@printf "\n--== Stripping, SStripping, and Compressing With UPX ==--\n"
-	{{strip_bin}} {{strip_flags}} "{{_target_path}}.stripped"
+	{{strip_bin}} {{strip_flags}} "{{_rls_bin_path}}.stripped"
 	@# Allow sstrip to fail because it can't be installed via "just install-deps"
-	{{sstrip_bin}} "{{_target_path}}.stripped" || true
+	{{sstrip_bin}} "{{_rls_bin_path}}.stripped" || true
 	@# Allow upx to fail in case the user wants to force no UPXing by leaving it uninstalled
-	cp "{{_target_path}}.stripped" "{{_target_path}}.packed"
-	upx {{upx_flags}} "{{_target_path}}.packed" || true
+	cp "{{_rls_bin_path}}.stripped" "{{_rls_bin_path}}.packed"
+	upx {{upx_flags}} "{{_rls_bin_path}}.packed" || true
 	@# Display the resulting file sizes so we can keep an eye on them
 	@# (Separate `ls` invocations are used to force the display ordering)
 	@printf "\n--== Final Result ==--\n"
-	@ls -1sh "{{_target_path}}"
-	@ls -1sh "{{_target_path}}.stripped"
-	@ls -1sh "{{_target_path}}.packed"
+	@ls -1sh "{{_rls_bin_path}}"
+	@ls -1sh "{{_rls_bin_path}}.stripped"
+	@ls -1sh "{{_rls_bin_path}}.packed"
 	@printf "\n"
 
 
@@ -228,11 +232,11 @@ build-dist: build
 dist-supplemental:
 	mkdir -p dist
 	@# Generate completions and store them in dist/
-	{{_cargo}} run {{_build_flags}} -- --dump-completions bash > dist/{{ _pkgname }}.bash
-	{{_cargo}} run {{_build_flags}} -- --dump-completions zsh > dist/{{ _pkgname }}.zsh
-	{{_cargo}} run {{_build_flags}} -- --dump-completions fish > dist/{{ _pkgname }}.fish
-	{{_cargo}} run {{_build_flags}} -- --dump-completions elvish > dist/{{ _pkgname }}.elvish
-	{{_cargo}} run {{_build_flags}} -- --dump-completions powershell > dist/{{ _pkgname }}.powershell
+	{{_cargo}} run --release {{_build_flags}} -- --dump-completions bash > dist/{{ _pkgname }}.bash
+	{{_cargo}} run --release {{_build_flags}} -- --dump-completions zsh > dist/{{ _pkgname }}.zsh
+	{{_cargo}} run --release {{_build_flags}} -- --dump-completions fish > dist/{{ _pkgname }}.fish
+	{{_cargo}} run --release {{_build_flags}} -- --dump-completions elvish > dist/{{ _pkgname }}.elvish
+	{{_cargo}} run --release {{_build_flags}} -- --dump-completions powershell > dist/{{ _pkgname }}.powershell
 	@# Generate manpage and store it gzipped in dist/
 	@# (This comes last so the earlier calls to `cargo run` will get the compiler warnings out)
 	help2man -N '{{_cargo}} run {{_build_flags}} --' \
@@ -241,7 +245,7 @@ dist-supplemental:
 # Call `dist-supplemental` and `build-dist` and copy the packed binary to `dist/`
 dist: build-dist dist-supplemental
 	@# Copy the packed command to dist/
-	cp  "{{ _target_path }}.packed" dist/{{ _pkgname }}
+	cp  "{{ _rls_bin_path }}.packed" dist/{{ _pkgname }}
 
 # -- Dependencies --
 

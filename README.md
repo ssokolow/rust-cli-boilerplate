@@ -119,7 +119,7 @@ license of choice. You can replace this</td>
 </tr>
 <tr>
   <td><code>build_flags</code></td>
-  <td><code>--release</code></td>
+  <td></td>
   <td>An easy place to modify the build flags used</td>
 </tr>
 <tr>

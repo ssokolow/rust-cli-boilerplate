@@ -57,9 +57,9 @@ class TestJustfile(unittest.TestCase):
         """
         variables = get_evaluated_variables(include_private=True)
 
-        # As written, some tests currently depend on --release being in the
-        # build flags to test that it's properly ignored
-        self.assertRegex(variables['_build_flags'], '(^|[ ])--release([ ]|$)')
+        self.assertNotIn('--release', variables['_build_flags'],
+            "--release shouldn't be in the default build flags, since they "
+            "get used by dev-mode commands.")
 
     def test_bloat(self):
         """just bloat"""
@@ -68,27 +68,27 @@ class TestJustfile(unittest.TestCase):
 
     def test_build(self):
         """just build"""
-        if os.path.exists(self.vars['_target_path']):
-            os.remove(self.vars['_target_path'])
+        if os.path.exists(self.vars['_dbg_bin_path']):
+            os.remove(self.vars['_dbg_bin_path'])
 
-        self._assert_task(['build'], br'Finished release \[optimized\]')
-        self.assertTrue(os.path.isfile(self.vars['_target_path']))
+        self._assert_task(['build'], br'Finished dev \[unoptimized')
+        self.assertTrue(os.path.isfile(self.vars['_dbg_bin_path']))
 
     def test_build_release(self):
         """just build-dist"""
         for ext in ('', '.stripped', '.packed'):
-            if os.path.exists(self.vars['_target_path']):
-                os.remove(self.vars['_target_path'] + ext)
+            if os.path.exists(self.vars['_rls_bin_path']):
+                os.remove(self.vars['_rls_bin_path'] + ext)
 
         self._assert_task(['build-dist', '--set', 'upx_flags', ''],
                           b'--== Final Result ==--')
 
         for ext in ('', '.stripped', '.packed'):
-            self.assertTrue(os.path.isfile(self.vars['_target_path'] + ext))
+            self.assertTrue(os.path.isfile(self.vars['_rls_bin_path'] + ext))
 
     def test_check(self):
         """just check"""
-        self._assert_task(['check'], br'Finished release \[optimized\]')
+        self._assert_task(['check'], br'Finished dev \[unoptimized')
         self._assert_task(['check', '--', '--message-format', 'json'],
                           br'\s*"target"\s*:\s*{')
 
@@ -153,7 +153,7 @@ class TestJustfile(unittest.TestCase):
     def test_doc(self):
         """just doc"""
         for command, expected in (
-                (['doc'], br' Finished release \[optimized\]'),
+                (['doc'], br' Finished dev \[unoptimized'),
                 (['doc', '--', '--message-format', 'json'],
                  br'\s*"target"\s*:\s*{')):
 
@@ -199,36 +199,40 @@ class TestJustfile(unittest.TestCase):
         NOTE: Overrides _cargo to test what matters quickly.
         """
         callgrind_temp = self.vars['callgrind_out_file']
-        if os.path.exists(callgrind_temp):
+
+        for arg in ([], ['--set', 'build_flags', ' --release']):
+            if os.path.exists(callgrind_temp):
+                os.remove(callgrind_temp)
+
+            # The justfile echoing and the command output are both checked
+            # to ensure a --release can't sneak in.
+            output = self._assert_task(['kcachegrind'] + arg + [
+                    '--set', 'kcachegrind', 'echo kcachegrind-foo'],
+                b'\necho kcachegrind-foo \'callgrind.out.justfile\'\n'
+                b'kcachegrind-foo callgrind.out.justfile\n')
+            self.assertNotIn(b'--release', output)
+            self.assertTrue(os.path.isfile(callgrind_temp))
             os.remove(callgrind_temp)
 
-        # The justfile echoing and the command output are both checked
-        # to ensure a --release can't sneak in.
-        output = self._assert_task(['kcachegrind', '--set', 'kcachegrind',
-                           'echo kcachegrind-foo'],
-            b'\necho kcachegrind-foo \'callgrind.out.justfile\'\n'
-            b'kcachegrind-foo callgrind.out.justfile\n')
-        self.assertNotIn(b'--release', output)
-        self.assertTrue(os.path.isfile(callgrind_temp))
-        os.remove(callgrind_temp)
-
-        output = self._assert_task(['kcachegrind', '--set', 'kcachegrind',
-            'echo kcachegrind-bar', '--', '--help'], b'.*USAGE:.*')
-        self.assertNotIn(b'--release', output)
-        self.assertTrue(os.path.isfile(callgrind_temp))
+            output = self._assert_task(['kcachegrind'] + arg + [
+                '--set', 'kcachegrind',
+                'echo kcachegrind-bar', '--', '--help'], b'.*USAGE:.*')
+            self.assertNotIn(b'--release', output)
+            self.assertTrue(os.path.isfile(callgrind_temp))
 
     def test_kcov(self):
         """just kcov"""
         outdir = 'target/kcov/html'
 
-        if os.path.exists(outdir):
-            shutil.rmtree(outdir)
+        for arg in ([], ['--set', 'build_flags', ' --release']):
+            if os.path.exists(outdir):
+                shutil.rmtree(outdir)
 
-        # The justfile echoing and the command output are both checked
-        # to ensure a --release can't sneak in.
-        output = self._assert_task(['kcov'], br'\ntest result:')
-        self.assertNotIn(b'--release', output)
-        self.assertTrue(os.path.isdir(outdir))
+            # The justfile echoing and the command output are both checked
+            # to ensure a --release can't sneak in.
+            output = self._assert_task(['kcov'] + arg, br'\ntest result:')
+            self.assertNotIn(b'--release', output)
+            self.assertTrue(os.path.isdir(outdir))
 
     def test_run(self):
         """just run"""
