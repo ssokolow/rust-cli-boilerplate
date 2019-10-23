@@ -13,7 +13,7 @@ This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cl
         clippy::pedantic, clippy::perf, clippy::style, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
-#![allow(clippy::float_arithmetic)]
+#![allow(clippy::float_arithmetic, clippy::implicit_return)]
 
 // stdlib imports
 use std::io;

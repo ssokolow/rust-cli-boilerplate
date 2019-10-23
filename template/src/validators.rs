@@ -299,7 +299,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
     if let Some(file_stem) = path.file_stem() {
         let stem = file_stem.to_string_lossy().to_uppercase();
         if RESERVED_DOS_FILENAMES.iter().any(|&x| x == stem) {
-            return Err(format!("Filename is reserved on Windows: {:?}", file_stem).into());
+            Err(format!("Filename is reserved on Windows: {:?}", file_stem).into())
         } else {
             Ok(())
         }
@@ -500,6 +500,7 @@ mod tests {
     #[test]
     fn path_valid_portable_enforces_length_limits() {
         let mut test_string = String::with_capacity(255 * 130);
+        #[allow(clippy::decimal_literal_representation)]
         while test_string.len() < 32761 {
             test_string.push_str(std::str::from_utf8(&[b'X'; 255]).expect("utf8 from literal"));
             test_string.push('/');
@@ -509,6 +510,7 @@ mod tests {
         assert!(path_valid_portable(OsStr::new(&test_string)).is_err());
 
         // 32760 characters (maximum for FAT32/VFAT/exFAT)
+        #[allow(clippy::decimal_literal_representation)]
         test_string.truncate(32760);
         assert!(path_valid_portable(OsStr::new(&test_string)).is_ok());
 
