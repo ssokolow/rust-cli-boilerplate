@@ -10,7 +10,7 @@ from __future__ import (absolute_import, division, print_function,
 __author__ = "Stephan Sokolow (deitarion/SSokolow)"
 __appname__ = "Test harness for justfile"
 __version__ = "0.1"
-__license__ = "MIT or Apache 2.0"
+__license__ = "Apache-2.0 OR MIT"
 
 import logging, os, re, shutil, subprocess, unittest
 from gzip import GzipFile

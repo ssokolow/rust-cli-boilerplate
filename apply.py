@@ -9,7 +9,7 @@ from __future__ import (absolute_import, division, print_function,
 __author__ = "Stephan Sokolow (deitarion/SSokolow)"
 __appname__ = "Simple Project Template Applicator"
 __version__ = "0.1"
-__license__ = "MIT or Apache 2.0"
+__license__ = "Apache-2.0 OR MIT"
 
 import json, logging, os, re, shutil, subprocess, sys, tempfile, time
 log = logging.getLogger(__name__)
