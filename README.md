@@ -359,8 +359,6 @@ license of choice. You can replace this</td>
 * You can use `just` from any subdirectory in your project. It's like `git` that way.
 * `just path/to/project/` (note the trailing slash) is equivalent to `(cd path/to/project; just)`
 * `just path/to/project/command` is equivalent to `(cd path/to/project; just command)`
-* `just install-cargo-deps` will install `cargo-edit` so you can use `cargo
-  add`, `cargo rm`, and `cargo upgrade` to easily manage your dependencies.
 
 * The simplest way to activate the bash completion installed by `just install`
   is to add this to your `.bashrc`:
@@ -378,7 +376,7 @@ license of choice. You can replace this</td>
   fpath=(~/.zsh/functions(:A) $fpath)
   ```
 
-* Only use Clap/StructOpt validators for references like filesystem paths (as opposed to
+* Use Clap/StructOpt validators for references like filesystem paths (as opposed to
   self-contained data like set sizes) as a way to bail out early on bad data,
   not as your *only* check of validity. See [this blog post
  ](http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/) for more.
@@ -455,7 +453,7 @@ following dependencies must be installed:
   * [`upx`](https://upx.github.io/) (**optional**, `sudo apt-get install upx`)
 * `just fmt` and `just fmt-check`:
   * A nightly Rust toolchain
-  * (`rustup toolchain install nightly`)
+    (`rustup toolchain install nightly`)
   * [rustfmt](https://github.com/rust-lang/rustfmt) for the nightly toolchain
     (`rustup component add rustfmt --toolchain nightly`)
 * `just dist-supplemental`:
@@ -549,10 +547,10 @@ kcov
      to make it easy to leverage the various trade-offs. (And make sure to
      provide convenient access to flame graphs and at least one perf inspector
      GUI or TUI.)
-  * Include a reference to [this](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
-    blog post on how profilers can can mislead in different ways and probably
-    also [this](http://blog.adamperry.me/rust/2016/07/24/profiling-rust-perf-flamegraph/)
-    too.
+  * Include references to these resources on how profilers can mislead in
+    different ways. [[1]](http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html)
+    [[2]](http://www.catb.org/~esr/writings/taoup/html/optimizationchapter.html)
+    [[3]](http://blog.adamperry.me/rust/2016/07/24/profiling-rust-perf-flamegraph/)
   * Look into options for making it as easy as possible to optimize and
     regression-test runtime performance.
     [[1]](https://github.com/rust-lang/rust/issues/31265https://github.com/rust-lang/rust/issues/31265)
@@ -562,9 +560,9 @@ kcov
 * Test and enhance `.travis.yml`
   * Consider officially supporting Windows as a target (probably using
     [cargo-make](https://crates.io/crates/cargo-make) instead of Just) and, if
-    I do, come up with an `appveyor.yml`... possibly the one from this project:
-    https://github.com/starkat99/appveyor-rust
-* Add a `run-memstats` Just task which swaps in jemalloc and sets MALLOC_CONF=stats_print:true
+    I do, come up with an `appveyor.yml`... possibly the one from [this project](https://github.com/starkat99/appveyor-rust).
+
+* Add a `run-memstats` Just task which swaps in jemalloc and sets `MALLOC_CONF=stats_print:true`
 * Investigate commit hooks [[1]](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-repository) [[2]](https://stackoverflow.com/questions/427207/can-git-hook-scripts-be-managed-along-with-the-repository) [[3]](https://mpdaugherty.wordpress.com/2010/04/06/how-to-include-git-hooks-in-a-repository-and-still-personalize-your-machine/)
 * Once I've cleared out these TODOs, consider using this space for a reminder
   list of best practices for avoiding "higher-level footguns" noted in my pile
@@ -588,7 +586,6 @@ kcov
       * Can be parsed as a float in the range `0.0 <= x <= 1.0`
   * Invalidatable/Referential data:
     * Input files:
-      * File exists and is readable
       * Directory exists and is browsable (`+rX`)
       * Path is a readable file or browsable directory (ie. read or recurse)
     * Output files:
@@ -607,9 +604,6 @@ kcov
         * File path is probably FAT32 writable, with `mkdir -p`
           * Nonexistent path components are FAT32-valid
           * Closest existing ancestor is a probably-writable directory
-        * Directory exists and is probably writable
-          * "probably writable" is tested via `access()` and will need
-            portability shimming.
     * Network I/O:
       * Integers:
         * Successfully parses into a valid listening TCP/UDP port number
