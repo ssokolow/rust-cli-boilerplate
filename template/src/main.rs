@@ -17,6 +17,7 @@ This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cl
 
 // stdlib imports
 use std::io;
+use std::convert::TryInto;
 
 // 3rd-party imports
 mod errors;
@@ -48,7 +49,7 @@ fn main() {
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
-        .verbosity(verbosity.saturating_sub(1))
+        .verbosity(verbosity.saturating_sub(1).try_into().expect("should never even come close"))
         .timestamp(opts.boilerplate.timestamp.unwrap_or(stderrlog::Timestamp::Off))
         .init()
         .expect("initializing logging output");

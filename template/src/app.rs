@@ -16,7 +16,7 @@ use crate::helpers::{BoilerplateOpts, HELP_TEMPLATE};
 use crate::validators::path_readable;
 
 /// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
-pub const DEFAULT_VERBOSITY: usize = 1;
+pub const DEFAULT_VERBOSITY: u64 = 1;
 
 /// Command-line argument schema
 ///
@@ -26,7 +26,7 @@ pub const DEFAULT_VERBOSITY: usize = 1;
 ///    description text or the `--help` output won't comply with the platform conventions that
 ///    `help2man` depends on to generate your manpage.
 ///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
-///  * StructOpt's default behaviour of including the author name in the `--help` output is an
+///  * `StructOpt`'s default behaviour of including the author name in the `--help` output is an
 ///    oddity among Linux commands and, if you don't disable it, you run the risk of people
 ///    unfamiliar with `StructOpt` assuming that you are an egotistical person who made a conscious
 ///    choice to add it.
@@ -44,9 +44,9 @@ pub const DEFAULT_VERBOSITY: usize = 1;
 ///  * Do not begin the description text for subcommands with `\n`. It will break the formatting
 ///    in the top-level help output's list of subcommands.
 #[derive(StructOpt, Debug)]
-#[structopt(raw(template = "HELP_TEMPLATE"),
+#[structopt(template = HELP_TEMPLATE,
             about = "TODO: Replace me with the description text for the command",
-            raw(global_setting = "structopt::clap::AppSettings::ColoredHelp"))]
+            global_setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct CliOpts {
     #[allow(clippy::missing_docs_in_private_items)] // StructOpt won't let us document this
     #[structopt(flatten)]
@@ -56,7 +56,7 @@ pub struct CliOpts {
 
     /// File(s) to use as input
     #[structopt(parse(from_os_str),
-                raw(validator_os = "path_readable", default_value_os = "CurDir.as_os_str()"))]
+                validator_os = path_readable, default_value_os = CurDir.as_os_str())]
     inpath: Vec<PathBuf>,
 }
 
