@@ -227,7 +227,7 @@ uninstall:
 
 # -- Release Builds --
 
-# Call `build` and then strip and compress the resulting binary
+# Make a release build and then strip and compress the resulting binary
 build-dist:
 	@echo "\n--== Building with {{channel}} for {{CARGO_BUILD_TARGET}} (features: {{features}}) ==--\n"
 	{{_cargo}} build --release {{_build_flags}}

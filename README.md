@@ -311,7 +311,7 @@ license of choice. You can replace this</td>
 <tr>
   <td><code>build-dist</code></td>
   <td></td>
-  <td>Call <code>build</code> and then strip and compress the resulting binary</td>
+  <td>Make a release build and then strip and compress the resulting binary</td>
 </tr>
 <tr>
   <td><code>dist</code></td>
