@@ -188,6 +188,9 @@ class TestJustfile(unittest.TestCase):
                           br'\nrustfmt \S+-nightly \(\S+ 2\d\d\d-\d\d-\d\d\)')
         # TODO: Assert that the files were not modified
 
+    # TODO: I need to decide how best to test these commands:
+    # - add, rm, and update
+
     # TODO: The following commands need to be tested by overriding the commands
     #       to simulate --dry-run:
     # - install, install-cargo-deps, install-rustup-deps, uninstall,

@@ -213,6 +213,12 @@ license of choice. You can replace this</td>
 </tr>
 <tr><th colspan="3">Development</th></tr>
 <tr>
+  <td><code>add</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for cargo-edit's <code>cargo add</code> which regenerates local API docs
+  afterward</td>
+</tr>
+<tr>
   <td><code>bloat</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo bloat</code></td>
@@ -258,9 +264,26 @@ license of choice. You can replace this</td>
   <td>Generate a statement coverage report in <code>target/cov/</code></td>
 </tr>
 <tr>
+  <td><code>rm</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for cargo-edit's <code>cargo rm</code> which regenerates local API docs
+  afterward</td>
+</tr>
+<tr>
+  <td><code>search</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Convenience alias for opening a crate search on lib.rs in the browser</td>
+</tr>
+<tr>
   <td><code>test</code></td>
   <td></td>
   <td>Run all installed static analysis, plus <code>cargo test</code></td>
+</tr>
+<tr>
+  <td><code>update</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for cargo-edit's <code>cargo update</code> which regenerates local API
+  docs afterward</td>
 </tr>
 <tr><th colspan="3">Local Builds</th></tr>
 <tr>
@@ -366,7 +389,7 @@ In order to be as suitable as possible for building self-contained,
 high-reliability replacements for shell scripts, the following build options
 are defined:
 
-### If built via `cargo build`:
+### If built via `cargo build` or `just build`:
 
 1. Backtrace support will be disabled in `error-chain` unless explicitly
    built with the `backtrace` feature. (This began as a workaround to unbreak
@@ -417,6 +440,9 @@ are defined:
 In order to use the full functionality offered by this boilerplate, the
 following dependencies must be installed:
 
+* `just add`:
+  * [cargo-edit](https://github.com/killercup/cargo-edit)
+    (`cargo install cargo-edit`)
 * `just bloat`:
   * [cargo-bloat](https://github.com/RazrFalcon/cargo-bloat)
     (`cargo install cargo-bloat`)
@@ -441,13 +467,21 @@ following dependencies must be installed:
 * `just kcov`:
   * A [Rust-compatible build](http://sunjay.ca/2016/07/25/rust-code-coverage) of
 kcov
+* `just rm`:
+  * [cargo-edit](https://github.com/killercup/cargo-edit)
+    (`cargo install cargo-edit`)
 * `just test`:
   * [clippy](https://github.com/rust-lang/rust-clippy)
     (`rustup component add clippy`)
+  * [cargo-audit](https://github.com/RustSec/cargo-audit)
+    (`cargo install cargo-audit`)
   * [cargo-deadlinks](https://github.com/deadlinks/cargo-deadlinks)
     (`cargo install cargo-deadlinks`)
   * [cargo-outdated](https://github.com/kbknapp/cargo-outdated)
     (`cargo install cargo-outdated`)
+* `just update`:
+  * [cargo-edit](https://github.com/killercup/cargo-edit)
+    (`cargo install cargo-edit`)
 
 ### Dependency Installation
 

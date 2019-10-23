@@ -84,6 +84,11 @@ DEFAULT: test
 
 # -- Development --
 
+# Alias for cargo-edit's `cargo add` which regenerates local API docs afterward
+add +args="":
+	{{_cargo}} add {{args}}
+	just doc
+
 # Alias for `cargo bloat`
 bloat +args="":
 	{{_cargo}} bloat {{_build_flags}} {{args}}
@@ -156,17 +161,34 @@ kcov:
 		fi
 	done
 
+# Alias for cargo-edit's `cargo rm` which regenerates local API docs afterward
+rm +args="":
+	{{_cargo}} rm {{args}}
+	just doc
+
+# Convenience alias for opening a crate search on lib.rs in the browser
+search +args="":
+	xdg-open "https://lib.rs/search?q={{args}}"
+
 # Run all installed static analysis, plus `cargo test`
 test:
-	@echo "--== Outdated Packages ==--"
-	{{_cargo}} outdated
-	@printf "\n--== Clippy Lints ==--\n"
-	{{_cargo}} clippy {{_build_flags}}
-	@printf "\n--== Dead Internal Documentation Links ==--\n"
-	{{_cargo}} doc --document-private-items {{_build_flags}} && \
+	@echo "============================= Outdated Packages ============================="
+	@{{_cargo}} outdated
+	@echo "\n============================= Insecure Packages ============================="
+	@{{_cargo}} audit -q
+	@echo "\n=============================== Clippy Lints ================================"
+	@{{_cargo}} clippy -q {{_build_flags}}
+	@echo "\n===================== Dead Internal Documentation Links ====================="
+	@{{_cargo}} doc -q --document-private-items {{_build_flags}} && \
 	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
-	@printf "\n--== Test Suite ==--\n"
-	{{_cargo}} test {{_build_flags}}
+	@echo "\n================================ Test Suite ================================="
+	@{{_cargo}} test -q {{_build_flags}}
+	@echo "============================================================================="
+
+# Alias for cargo-edit's `cargo update` which regenerates local API docs afterward
+update +args="":
+	{{_cargo}} update {{args}}
+	just doc
 
 	# TODO: https://users.rust-lang.org/t/howto-sanitize-your-rust-code/9378
 
@@ -256,9 +278,10 @@ install-apt-deps:
 # `install-rustup-deps` and then `cargo install` tools
 install-cargo-deps: install-rustup-deps
 	@# Prevent "already installed" from causing a failure
-	{{_cargo}} install cargo-edit || true
-	{{_cargo}} install cargo-deadlinks || true
+	{{_cargo}} install cargo-audit || true
 	{{_cargo}} install cargo-bloat || true
+	{{_cargo}} install cargo-deadlinks || true
+	{{_cargo}} install cargo-edit || true
 	{{_cargo}} install cargo-outdated || true
 	cargo +nightly install cargo-cov || true
 
