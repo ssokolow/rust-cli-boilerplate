@@ -101,6 +101,18 @@ license of choice. You can replace this</td>
   <td><code>justfile</code></td>
   <td>Build/development-automation commands via <a href="https://github.com/casey/just">just</a> (a pure-Rust make-alike)</td>
 </tr>
+<tr><th colspan="2">Support Code You May Borrow</th></tr>
+<tr>
+  <td><code>gen_justfile_reference.py</code></td>
+  <td>Code which is used to regenerate the reference charts for
+  <code>justfile</code> variables and commands in this README so it's easy
+  to keep them up to date.</td>
+</tr>
+<tr>
+  <td><code>test_justfile.py</code></td>
+  <td>A test suite for my <code>justfile</code> which you may want to adapt
+  for your own projects.</td>
+</tr>
 </table>
 </html>
 
@@ -510,6 +522,8 @@ kcov
 
 ## TODO
 
+* Add a `.travis.yml` at the top level to plumb the various test suites into CI
+  and then add a badge.
 * Get a feel for the workflow surrounding building a project with
   [Failure](https://github.com/rust-lang-nursery/failure),
   [quick-error](https://github.com/tailhook/quick-error),
