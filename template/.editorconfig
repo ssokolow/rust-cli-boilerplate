@@ -9,9 +9,11 @@ insert_final_newline = false
 trim_trailing_whitespace = true
 
 # justfile uses Makefile-like significant indentation
+# but doesn't have a problem with blank lines staying un-indented
+# within an indented block
 [justfile]
 indent_style = tab
-trim_trailing_whitespace = false
+trim_trailing_whitespace = true
 
 # If I have a TODO file, I want the outline lists to line up nicely and
 # .travis.yml just uses 2-space indentation by convention
