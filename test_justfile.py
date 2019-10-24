@@ -204,6 +204,7 @@ class TestJustfile(unittest.TestCase):
         callgrind_temp = self.vars['callgrind_out_file']
 
         for arg in ([], ['--set', 'build_flags', ' --release']):
+            # TODO: Remove the target binary to verify correct paths get built
             if os.path.exists(callgrind_temp):
                 os.remove(callgrind_temp)
 

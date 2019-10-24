@@ -121,7 +121,9 @@ fmt-check +args="":
 kcachegrind +args="":
 	{{_cargo}} build
 	rm -rf '{{ callgrind_out_file }}'
-	valgrind --tool=callgrind --callgrind-out-file='{{ callgrind_out_file }}' {{ callgrind_args }} 'target/debug/{{ _pkgname }}' '{{ args }}' || true
+	valgrind --tool=callgrind --callgrind-out-file='{{ callgrind_out_file }}' \
+		{{ callgrind_args }} 'target/{{ CARGO_BUILD_TARGET }}/debug/{{ _pkgname }}' \
+		'{{ args }}' || true
 	test -e '{{ callgrind_out_file }}'
 	{{kcachegrind}} '{{ callgrind_out_file }}'
 
@@ -267,7 +269,8 @@ dist-supplemental:
 # Call `dist-supplemental` and `build-dist` and copy the packed binary to `dist/`
 dist: build-dist dist-supplemental
 	@# Copy the packed command to dist/
-	cp  "{{ _rls_bin_path }}.packed" dist/{{ _pkgname }}
+	cp  "{{ _rls_bin_path }}.packed" dist/{{ _pkgname }} || \
+	cp  "{{ _rls_bin_path }}.stripped" dist/{{ _pkgname }}
 
 # -- Dependencies --
 
