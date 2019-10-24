@@ -12,6 +12,8 @@ __version__ = "0.1"
 __license__ = "Apache-2.0 OR MIT"
 
 import json, logging, os, re, shutil, subprocess, sys, tempfile, time
+from distutils.spawn import find_executable
+
 log = logging.getLogger(__name__)
 
 try:
@@ -209,6 +211,12 @@ def new_project(dest_dir):
         shutil.rmtree(temp_dir)
         os.chdir(cur_wd)
 
+def assert_command_in_path(command):
+    """Check for the required external commands and exit on failure"""
+    if not find_executable(command):
+        log.critical("Could not find %r in PATH. Exiting.", command)
+        sys.exit(1)
+
 def main():
     """The main entry point, compatible with setuptools entry points."""
     from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -233,6 +241,11 @@ def main():
     args.verbose = max(args.verbose, 0)
     logging.basicConfig(level=log_levels[args.verbose],
                         format='%(levelname)s: %(message)s')
+
+    # TODO: Rework things so ensure_terminal gets brought up first but only
+    # if it is necessary
+    assert_command_in_path('git')
+    assert_command_in_path('cargo')
 
     while not args.destdir:
         ensure_terminal()
