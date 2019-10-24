@@ -2,8 +2,33 @@
 ![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache_2.0-blue.svg)
 ![POSIX-only build tooling](https://img.shields.io/badge/dev_platform-POSIX-lightgrey.svg)
 
-A base project template for building small but reliable utilities in the
-[Rust](https://rust-lang.org/) programming language.
+A base project template for comfortably building small but reliable utilities
+in the [Rust](https://rust-lang.org/) programming language.
+
+## Rationale
+
+Historically, I have used Python for quick little scripts (from which my
+big, long-lived projects tend to unexpectedly develop), but maintaining large
+things written in Python risks turning into a
+[gumption trap](https://en.wikipedia.org/wiki/Gumption_trap) due to the need to
+either manually test every code path I affect when making changes or pour a lot
+of effort into writing an automated test suite to do it for me.
+
+Rust's stronger compile-time guarantees remove most of that motivation-sapping
+busywork, but, since I've spent so many years getting comfortable with Python,
+working in a new language risks being a chicken-and-egg problem which kills off
+the will to change tasks. (Once I start something, it's easy to keep going.)
+
+The purpose of this repository is to lower the friction for Rust-based
+development of such "scripts of unknown potential" as much as possible.
+(Hence the inclusion of aliases like `just run` which serve only to remove the
+need to think about whether to type `just` or `cargo`, and the wrappers for
+`cargo-edit` commands which regenerate the API documentation I'll have open in
+a browser tab after adding/removing/updating dependencies.)
+
+In short, this is a "do it properly" answer to the workflow that evolved around
+the [`boiler` snippet](https://gist.github.com/ssokolow/ef59f97673693d717f5096d7987afd2c) for Python that
+I keep in my [UltiSnips](https://github.com/SirVer/ultisnips).
 
 ## License
 
@@ -18,24 +43,24 @@ your new projects under the GNU GPLv3.
 
 ## Features
 
-* Uses [StructOpt](https://github.com/TeXitoi/structopt) (with colorized
+* Uses [StructOpt](https://github.com/TeXitoi/structopt) (with colourized
   `--help` output and "Did you mean...?" suggestions enabled) for argument
   parsing.
 * Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
   unified error handling.
 * Presents an `app::main(opts: CliOpts) -> Result<()>` function to keep your
   application logic cleanly separated from argument parsing and handling of
-  terminal errors.
-* Exposes Clap's support for generating shell completions by providing a
+  fatal errors.
+* Exposes clap's support for generating shell completions by providing a
   `--dump-completions <shell>` option.
 * Enables almost all rustc and
-  [clippy](https://github.com/rust-lang/rust-clippy) lints without making
-  clippy mandatory.
+  [clippy](https://rust-lang.github.io/rust-clippy/current/) lints without
+  making clippy mandatory.
 * A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables (eg. for cross-compilation), including `install` and
   `uninstall`, which also take care of shell completions and a manpage.
-* `just build-dist` for a 100% static i686 binary totalling roughly `260KiB`
-  (`236KiB` with `panic="abort"`) in new projects
+* `just build-dist` for a 100% static i686 binary that starts at roughly
+  `260KiB` (`236KiB` with `panic="abort"`) in new projects.
 * `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 * `just install-cargo-deps` to install all distro-agnostic dependencies.
@@ -47,13 +72,13 @@ your new projects under the GNU GPLv3.
 
 ## Usage
 
-1. Clone/download a copy of the boilerplate
+1. Clone a copy of this repository (`.git` must exist, so no archive downloads)
 2. Run `apply.py path/to/new/project`
 3. Edit `src/app.rs` to implement your application logic
 
-The boilerplate is currently being refactored, but you should always get a
-usable project skeleton by running `apply.py` regardless of how much the
-resulting skeleton may vary from revision to revision.
+**NOTE:** As a safety measure, `apply.py` generates new projects from the git
+`HEAD` of the template repository (not the working tree), so any local changes
+you make will not be picked up until you commit them.
 
 ## Supplementary Files
 
@@ -63,16 +88,16 @@ resulting skeleton may vary from revision to revision.
 <tr>
   <td><code>LICENSE</code></td>
   <td>A copy of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3</a> as my "until I've had time to think about it"
-license of choice. You can replace this</td>
+license of choice. Make a local commit which replaces this with your preferred
+default for new projects.</td>
 </tr>
 <tr>
-  <td><code>CONTRIBUTING.md</code></td>
+  <td><code>CONTRIBUTING</code></td>
   <td>A copy of the
   <a href="https://developercertificate.org/">Developer Certificate of Origin</a>,
-  suitable for both this template and projects generated from it, which is the
-  Linux kernel developers' more ideologically appropriate alternative to CLAs
-  as a means of legally armoring themselves against bad-faith
-  contributions</td>
+  which is the Linux kernel developers' more ideologically appropriate
+  alternative to CLAs as a means of legally armouring themselves against
+  bad-faith contributions</td>
 </tr>
 <tr><th colspan="2">Configuration</th></tr>
 <tr>
@@ -228,7 +253,7 @@ license of choice. You can replace this</td>
   <td><code>add</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for cargo-edit's <code>cargo add</code> which regenerates local API docs
-  afterward</td>
+  afterwards</td>
 </tr>
 <tr>
   <td><code>bloat</code></td>
@@ -279,7 +304,7 @@ license of choice. You can replace this</td>
   <td><code>rm</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for cargo-edit's <code>cargo rm</code> which regenerates local API docs
-  afterward</td>
+  afterwards</td>
 </tr>
 <tr>
   <td><code>search</code></td>
@@ -295,7 +320,7 @@ license of choice. You can replace this</td>
   <td><code>update</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for cargo-edit's <code>cargo update</code> which regenerates local API
-  docs afterward</td>
+  docs afterwards</td>
 </tr>
 <tr><th colspan="3">Local Builds</th></tr>
 <tr>
@@ -388,41 +413,52 @@ license of choice. You can replace this</td>
   fpath=(~/.zsh/functions(:A) $fpath)
   ```
 
-* Use Clap/StructOpt validators for references like filesystem paths (as opposed to
-  self-contained data like set sizes) as a way to bail out early on bad data,
-  not as your *only* check of validity. See [this blog post
- ](http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/) for more.
+* When using clap/StructOpt validators for inputs such as filesystem paths,
+  only use them to bail out early on bad input, not as your only check. They're
+  conceptually similar to raw pointers and can be invalidated between when you
+  check them and when you try to use them because Rust can't control what the
+  OS and other programs do in the interim. See [this blog post
+ ](http://blog.ssokolow.com/archives/2016/10/17/a-more-formal-way-to-think-about-validity-of-input-data/) for more on this idea of references versus values in
+  command-line arguments.
 
 ## Build Behaviour
 
-In order to be as suitable as possible for building self-contained,
-high-reliability replacements for shell scripts, the following build options
-are defined:
+In order to be as suitable as possible for building compact,
+easy-to-distribute, high-reliability replacements for shell scripts, the
+following build options are defined:
 
-### If built via `cargo build` or `just build`:
+### If built via `cargo build`:
 
 1. Backtrace support will be disabled in `error-chain` unless explicitly
-   built with the `backtrace` feature. (This began as a workaround to unbreak
+   built with the `backtrace` feature. (This began as a workaround to un-break
    cross-compiling to musl-libc and ARM after backtrace-rs 0.1.6 broke it, but
    it also makes sense to opt out of it if you're using `panic="abort"` to save
    space)
 
-### If built via `cargo build --release`:
+### If built via `just build`:
 
 1. Unless otherwise noted, all optimizations listed above.
-2. Link-time optimization will be enabled (`lto = true`)
+2. The default `CARGO_BUILD_TARGET` defined in the `justfile` will specify a
+   32-bit x86 build, statically linked against
+   [musl-libc](http://www.musl-libc.org/) for portability comparable to a
+   [Go](https://en.wikipedia.org/wiki/Go_(programming_language)) binary.
+   (Unless `musl-gcc` is installed, this will cause build failures if you
+   depend on any crates which link to C or C++ code.)
+
+### If built via `cargo build --release`:
+
+1. All optimizations listed above for `cargo build`.
+2. LTO (Link-Time Optimization) will be enabled to allow dead-code
+   elimination. (`lto = true`)
 3. The binary will be built with `opt-level = "z"` to further reduce file size.
-4. Optionally (uncomment a line in `Cargo.toml`) panic via `abort` rather than
-   unwinding to allow backtrace code to be pruned away by dead code
-   optimization.
+4. If `panic="abort"` is uncommented in `Cargo.toml`, LTO will prune away the
+   unwinding machinery to save even more space, but panics will not cause
+   `Drop` implementations to be run and will be uncatchable.
 
 ### If built via `just build-dist`:
 
-1. Unless otherwise noted, all [optimizations
+1. Unless otherwise noted, all optimizations listed above. [[1]
    ](https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html)
-   listed above.
-2. The binary will be statically linked against
-   [musl-libc](http://www.musl-libc.org/) for maximum portability.
 3. The binary will be stripped with [`--strip-unneeded`
    ](https://www.technovelty.org/linux/stripping-shared-libraries.html)
    and then with
@@ -445,6 +481,63 @@ are defined:
 2. Shell completion files and a manpage will also be built and saved into
    `dist/`
 
+
+**NOTE:** Depending on who you're distributing precompiled binaries to, you
+may want get an overview of how virus scanners react to your binary using
+[VirusTotal](https://www.virustotal.com/).
+
+Especially with anything involving compression, small numbers of false
+positives are a fact of life in the world of virus detection. For example, when
+I tested the official installer for the [NSIS
+](https://en.wikipedia.org/wiki/Nullsoft_Scriptable_Install_System)
+authoring tools, which is used by various major companies including McAfeee,
+two or three no-name entries in the list of  60+ virus scanners they test
+reported it to have a virus.
+
+If this proves problematic, you can either uninstall UPX or modify the
+`justfile` so the `dist` command always prefers the `.stripped` copy of the
+binary over the `.packed` one.
+
+## Experimental Cross-Compilation Support
+
+I am currently in the process of extending this template to support generating
+Windows binaries, though I have no immediate plans to replace the `justfile`
+tasks so, for now, Windows-hosted development will have to settle for calling
+`cargo` commands directly.
+
+**NOTE:** I haven't yet used a fresh Ubuntu install under VirtualBox to verify
+that I've correctly listed all the steps needed to achieve a working build
+environment.
+
+To set up an environment where setting `CARGO_BUILD_TARGET` to
+`x86_64-pc-windows-gnu` will complete successfully and produce a `.exe` file
+which appears to work under my preliminary testing:
+
+1. Install a MinGW package like Ubuntu's `mingw-w64`
+2. Run `rustup target add x86_64-pc-windows-gnu`
+3. Add the following two lines to `~/.cargo/config`:
+
+```toml
+[target.x86_64-pc-windows-gnu]
+linker = "/usr/bin/x86_64-w64-mingw32-gcc"
+```
+
+To make `cargo test` also work cross-platform:
+
+1. Make sure your `~/.wine` is 64-bit (indicated by an `#arch=win64` comment
+   in `system.reg`)
+2. Make sure your kernel's `binfmt_misc` support is configured to allow running
+   `.exe` files in the terminal via Wine as if they were native binaries.
+
+**NOTE:** Wine is only suitable for "rapid iteration, approximate
+compatibility" testing. For proper testing of Windows binaries, the only
+reliable solution is to download one of the specially licensed "only for
+testing" [Windows VMs](https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/)
+that Microsoft offers for download from http://modern.ie/ and the only legal
+way to produce Windows binaries for distribution without having Windows is to
+use a CI service like [AppVeyor](appveyor.com).
+(See also [rust-cross](https://github.com/japaric/rust-cross).)
+
 ## Dependencies
 
 In order to use the full functionality offered by this boilerplate, the
@@ -458,7 +551,7 @@ following dependencies must be installed:
     (`cargo install cargo-bloat`)
 * `just build-dist`:
   * The toolchain specified by the <code>channel</code> variable.
-  * The target specified by the <code>target</code> variable.
+  * The target specified by the <code>CARGO_BUILD_TARGET</code> variable.
   * `strip` (Included with binutils)
   * [`sstrip`](http://www.muppetlabs.com/~breadbox/software/elfkickers.html)
     **(optional)**
@@ -524,6 +617,10 @@ kcov
 
 * Add a `.travis.yml` at the top level to plumb the various test suites into CI
   and then add a badge.
+* Add a `#[cfg(windows)]` version of the `path_output_dir` validator and make
+  the `libc` dependency conditional on `not(windows)` so that cross-compiling
+  for Windows using the `x86_64-pc-windows-gnu` target can be a viable way to
+  quickly fire off alpha/beta-testing builds to Windows-using peers.
 * Get a feel for the workflow surrounding building a project with
   [Failure](https://github.com/rust-lang-nursery/failure),
   [quick-error](https://github.com/tailhook/quick-error),
@@ -539,14 +636,14 @@ kcov
     (eg. The `Verbosity` struct doesn't implement "`-v` and `-q` are
     mirrors of each other" and I'm rather fond of stderrlog's approach to
     timestamp toggling.)
-  * What effect does quicli have on the final binary size? (not a huge concern)
+  * What effect does QuiCLI have on the final binary size? (not a huge concern)
 * Investigate why [cargo-cov](https://github.com/kennytm/cov) isn't hiding the
     components of the rust standard library and whether it can be induced to
     generate coverage despite some tests failing. If so, add a command for it.
 * Figure out whether StructOpt or Clap is to blame for doubling the leading
   newline when `about` is specified via the doc comment and then report the bug.
 * Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
-  figure out how to exclude the Rust standard library from what KCacheGrind
+  figure out how to exclude the Rust standard library from what Kcachegrind
   displays.
   * I may need to filter the output.
     [[1]](https://stackoverflow.com/questions/7761448/filter-calls-to-libc-from-valgrinds-callgrind-output)
@@ -584,8 +681,9 @@ kcov
   (Things like "If you can find a way to not need path manipulation beyond
    'pass this opaque token around', then you can eliminate entire classes of
    bugs")
-* At least *list* a snip of example code for something like RustyLine as the
-  suggested way to do simple user prompting.
+* At least *list* a snip of example code for something like
+  [rustyline](https://lib.rs/crates/rustyline) as the suggested way to do
+  simple user prompting.
 * Gather my custom clap validators into a crate, add some more, and have this
   depend on it:
   * Self-Contained data:

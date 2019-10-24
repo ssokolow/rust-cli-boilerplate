@@ -84,7 +84,7 @@ DEFAULT: test
 
 # -- Development --
 
-# Alias for cargo-edit's `cargo add` which regenerates local API docs afterward
+# Alias for cargo-edit's `cargo add` which regenerates local API docs afterwards
 add +args="":
 	{{_cargo}} add {{args}}
 	just doc
@@ -163,7 +163,7 @@ kcov:
 		fi
 	done
 
-# Alias for cargo-edit's `cargo rm` which regenerates local API docs afterward
+# Alias for cargo-edit's `cargo rm` which regenerates local API docs afterwards
 rm +args="":
 	{{_cargo}} rm {{args}}
 	just doc
@@ -187,7 +187,7 @@ test:
 	@{{_cargo}} test -q {{_build_flags}}
 	@echo "============================================================================="
 
-# Alias for cargo-edit's `cargo update` which regenerates local API docs afterward
+# Alias for cargo-edit's `cargo update` which regenerates local API docs afterwards
 update +args="":
 	{{_cargo}} update {{args}}
 	just doc
