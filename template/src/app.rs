@@ -2,7 +2,7 @@
 // Parts Copyright 2017-2019, Stephan Sokolow
 
 // Standard library imports
-use std::path::{Component::CurDir, PathBuf};
+use std::path::PathBuf;
 
 // 3rd-party crate imports
 use structopt::StructOpt;
@@ -13,7 +13,7 @@ use log::{debug, error, info, trace, warn};
 // Local Imports
 use crate::errors::*;
 use crate::helpers::{BoilerplateOpts, HELP_TEMPLATE};
-use crate::validators::path_readable;
+use crate::validators::path_readable_file;
 
 /// The verbosity level when no `-q` or `-v` arguments are given, with `0` being `-q`
 pub const DEFAULT_VERBOSITY: u64 = 1;
@@ -55,8 +55,11 @@ pub struct CliOpts {
     // -- Arguments used by application-specific logic --
 
     /// File(s) to use as input
+    ///
+    /// **TODO:** Figure out if there's a way to only enforce constraints on this when not asking
+    ///           to dump completions.
     #[structopt(parse(from_os_str),
-                validator_os = path_readable, default_value_os = CurDir.as_os_str())]
+                validator_os = path_readable_file)]
     inpath: Vec<PathBuf>,
 }
 

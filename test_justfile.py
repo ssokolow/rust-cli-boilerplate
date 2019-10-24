@@ -242,7 +242,8 @@ class TestJustfile(unittest.TestCase):
         self._assert_task(['run', '--', '--help'], br'\nUSAGE:')
 
         try:
-            subprocess.check_output(['just', 'run'], stderr=subprocess.STDOUT)
+            subprocess.check_output(['just', 'run', '/bin/sh'],
+                                    stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
             self.assertIn(b"panicked at 'not yet implemented'", err.output)
         else:

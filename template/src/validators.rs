@@ -23,6 +23,7 @@ pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Com
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
 /// Module to contain the unsafety of an `unsafe` call to `access()`
+#[cfg(unix)]
 mod access {
     /// TODO: Make this wrapper portable
     ///       <https://doc.rust-lang.org/book/conditional-compilation.html>
@@ -87,7 +88,14 @@ mod access {
 }
 
 /// Test that the given path **should** be writable
+///
+/// **TODO:** Implement a Windows version of this.
+///
+/// Given that every relevant Windows API I can find seems to be a complex mess compared to
+/// `access(2)`, I'll probably just want to settle for the compromise I rejected and just try
+/// writing and then deleting a test file.
 #[allow(dead_code)] // TEMPLATE:REMOVE
+#[cfg(unix)]
 pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     let path = value.as_ref();
 
@@ -109,7 +117,7 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
     Err(format!("Would be unable to write to destination directory: {}", path.display()).into())
 }
 
-/// The given path can be opened for reading
+/// The given path is a file that can be opened for reading
 ///
 /// ## Use For:
 ///  * Input file paths
@@ -138,14 +146,21 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
 ///    as early in your program's operation as possible, use it for all your interactions with the
 ///    file, and keep it open until you are finished. This will both verify its validity and
 ///    minimize the window in which another process could render the path invalid.
-///
-/// **TODO:** Determine why `File::open` has no problem opening directory paths and decide how to
-/// adjust this.
 #[allow(dead_code)] // TEMPLATE:REMOVE
-pub fn path_readable<P: AsRef<Path> + ?Sized>(value: &P) -> std::result::Result<(), OsString> {
+pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
+        -> std::result::Result<(), OsString> {
     let path = value.as_ref();
+
+    if path.is_dir() {
+       return Err(format!("{}: Input path must be a file, not a directory",
+                          path.display()).into());
+    }
+
+    // TODO: Why does this not fail on Linux? I forget what reading a directory actually does.
     File::open(path).map(|_| ()).map_err(|e| format!("{}: {}", path.display(), e).into())
 }
+
+// TODO: Implement path_readable_dir and path_readable for --recurse use-cases
 
 /// The given path is valid on all major filesystems and OSes
 ///
@@ -314,12 +329,13 @@ mod tests {
     use super::*;
     use std::ffi::OsStr;
 
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     use std::os::unix::ffi::OsStrExt;
     #[cfg(windows)]
     use std::os::windows::ffi::OsStringExt;
 
     #[test]
+    #[cfg(unix)]
     fn path_output_dir_basic_functionality() {
         assert!(path_output_dir(OsStr::new("/")).is_err());                      // Root
         assert!(path_output_dir(OsStr::new("/tmp")).is_ok());                    // OK Folder
@@ -335,37 +351,49 @@ mod tests {
         // TODO: Non-UTF8 path that actually does exist and is writable
     }
 
-    // ---- path_readable ----
-
-    // TODO: Use a `cfg` to pick some appropriate alternative paths for Windows
     #[test]
-    fn path_readable_basic_functionality() {
-        // Existing paths
-        assert!(path_readable(OsStr::new("/")).is_ok());                       // OK Folder
-        assert!(path_readable(OsStr::new("/bin/sh")).is_ok());             // OK File
-        assert!(path_readable(OsStr::new("/bin/../etc/.././.")).is_ok());      // Not canonicalized
-        assert!(path_readable(OsStr::new("/../../../..")).is_ok());            // Above root
-
-        // Inaccessible, nonexistent, or invalid paths
-        assert!(path_readable(OsStr::new("")).is_err());                       // Empty String
-        assert!(path_readable(OsStr::new("/etc/shadow")).is_err());            // Denied File
-        assert!(path_readable(OsStr::new("/etc/ssl/private")).is_err());       // Denied Folder
-        assert!(path_readable(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
-        assert!(path_readable(OsStr::new("/null\0containing")).is_err());      // Invalid CString
-
+    #[cfg(windows)]
+    fn path_output_dir_basic_functionality() {
+        unimplemented!("TODO: Implement Windows version of path_output_dir");
     }
 
-    #[cfg(not(windows))]
+    // ---- path_readable_file ----
+
+    #[cfg(unix)]
     #[test]
-    fn path_readable_invalid_utf8() {
-        assert!(path_readable(OsStr::from_bytes(b"/not\xffutf8")).is_err());   // Invalid UTF-8
+    fn path_readable_file_basic_functionality() {
+        // Existing paths
+        assert!(path_readable_file(OsStr::new("/bin/sh")).is_ok());                 // OK File
+        assert!(path_readable_file(OsStr::new("/bin/../etc/.././bin/sh")).is_ok()); // Non-canonic.
+        assert!(path_readable_file(OsStr::new("/../../../../bin/sh")).is_ok());     // Above root
+
+        // Inaccessible, nonexistent, or invalid paths
+        assert!(path_readable_file(OsStr::new("")).is_err());                       // Empty String
+        assert!(path_readable_file(OsStr::new("/")).is_err());                      // OK Folder
+        assert!(path_readable_file(OsStr::new("/etc/shadow")).is_err());            // Denied File
+        assert!(path_readable_file(OsStr::new("/etc/ssl/private")).is_err());       // Denied Foldr
+        assert!(path_readable_file(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
+        assert!(path_readable_file(OsStr::new("/null\0containing")).is_err());      // Invalid CStr
+
+    }
+    #[cfg(windows)]
+    #[test]
+    fn path_readable_file_basic_functionality() {
+        unimplemented!("TODO: Pick some appropriate equivalent test paths for Windows");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn path_readable_file_invalid_utf8() {
+        assert!(path_readable_file(OsStr::from_bytes(b"/not\xffutf8")).is_err());   // Invalid UTF-8
         // TODO: Non-UTF8 path that actually IS valid
     }
     #[cfg(windows)]
     #[test]
-    fn path_readable_unpaired_surrogates() {
-        unimplemented!()
-        // TODO: #[cfg(windows) test with un-paired UTF-16 surrogates
+    fn path_readable_file_unpaired_surrogates() {
+        assert!(path_readable_file(&OsString::from_wide(
+                    &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
+        // TODO: Unpaired surrogate path that actually IS valid
     }
 
     // ---- filename_valid_portable ----
@@ -382,14 +410,14 @@ mod tests {
     #[cfg(windows)]
     const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &[
         "re/lative", "/ab/solute", "re\\lative", "\\ab\\solute"];
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &["re/lative", "/ab/solute"];
 
     // Paths which should fail because std::path::Path won't recognize the separators and we don't
     // want them showing up in the components.
     #[cfg(windows)]
     const PATHS_WITH_FOREIGN_SEPARATORS: &[&str] = &["Classic Mac HD:Folder Name:File"];
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     const PATHS_WITH_FOREIGN_SEPARATORS: &[&str] = &[
         "relative\\win32",
         "C:\\absolute\\win32",
@@ -447,7 +475,7 @@ mod tests {
         assert!(filename_valid_portable(OsStr::new(test_str)).is_ok());
     }
 
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     #[test]
     fn filename_valid_portable_accepts_non_utf8_bytes() {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
@@ -456,8 +484,7 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn filename_valid_portable_accepts_unpaired_surrogates() {
-        unimplemented!()
-        // TODO: Test with un-paired UTF-16 surrogates
+        assert!(path_valid_portable(&OsString::from_wide(&[0xd800])).is_ok());
     }
 
     // ---- path_valid_portable ----
@@ -480,6 +507,7 @@ mod tests {
 
         // Verify that repeated separators are getting collapsed before filename_valid_portable
         // sees them.
+        // TODO: Make this conditional on platform and also test repeated backslashes on Windows
         assert!(path_valid_portable(OsStr::new("/path//with/repeated//separators")).is_ok());
     }
 
@@ -524,7 +552,7 @@ mod tests {
         assert!(path_valid_portable(OsStr::new(&test_string)).is_ok());
     }
 
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     #[test]
     fn path_valid_portable_accepts_non_utf8_bytes() {
         // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
@@ -532,9 +560,9 @@ mod tests {
     }
     #[cfg(windows)]
     #[test]
-    fn filename_valid_portable_accepts_unpaired_surrogates() {
-        unimplemented!()
-        // TODO: Test with un-paired UTF-16 surrogates
+    fn path_valid_portable_accepts_unpaired_surrogates() {
+        assert!(path_valid_portable(&OsString::from_wide(
+                    &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_ok());
     }
 
 }
