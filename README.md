@@ -533,9 +533,13 @@ To make `cargo test` also work cross-platform:
 compatibility" testing. For proper testing of Windows binaries, the only
 reliable solution is to download one of the specially licensed "only for
 testing" [Windows VMs](https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/)
-that Microsoft offers for download from http://modern.ie/ and the only legal
-way to produce Windows binaries for distribution without having Windows is to
-use a CI service like [AppVeyor](appveyor.com).
+that Microsoft offers for download from http://modern.ie/ and those cannot be
+used to make legally redistributable builds.
+
+If you want to set up a Continuous
+Deployment-style workflow with testing against real Windows targets, the only
+viable option is to bypass `just` and call `cargo` directly under real Windows.
+I suggest a CI service like [AppVeyor](appveyor.com) for this.
 (See also [rust-cross](https://github.com/japaric/rust-cross).)
 
 ## Dependencies
