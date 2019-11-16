@@ -76,6 +76,7 @@ _doc_flags = "--document-private-items --features=\"" + features + "\""
 # using only the commands any POSIX-compliant platform should have
 # Source: http://stackoverflow.com/a/40778047/435253
 export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
+export _pkgname_snake=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@' | tr - _`
 export _rls_bin_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
 export _dbg_bin_path="target/" + CARGO_BUILD_TARGET  + "/debug/" + _pkgname
 
@@ -106,7 +107,7 @@ clean +args="":
 # Run rustdoc with `--document-private-items` and then run cargo-deadlinks
 doc +args="":
 	{{_cargo}} doc {{_doc_flags}} {{args}} && \
-	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
+	{{_cargo}} deadlinks --dir target/{{CARGO_BUILD_TARGET}}/doc/{{_pkgname_snake}}
 
 # Alias for `cargo +nightly fmt -- {{args}}`
 fmt +args="":
