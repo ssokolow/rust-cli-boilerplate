@@ -295,7 +295,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         // invalid on all APIs which don't use counted strings like inside the NT kernel
         b'\0' => true,
         // invalid under FAT*, VFAT, exFAT, and NTFS
-        0x0..=0x1f | 0x7f | b'"' | b'*' | b'<' | b'>' | b'?' | b'|' => true,
+        0x1..=0x1f | 0x7f | b'"' | b'*' | b'<' | b'>' | b'?' | b'|' => true,
         // POSIX path separator (invalid on Unixy platforms like Linux and BSD)
         b'/' => true,
         // HFS/Carbon path separator (invalid in filenames on MacOS and Mac filesystems)
