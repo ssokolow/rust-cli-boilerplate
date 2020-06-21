@@ -46,6 +46,8 @@ fn main() {
     let verbosity = opts.boilerplate.verbose
                         .saturating_add(app::DEFAULT_VERBOSITY)
                         .saturating_sub(opts.boilerplate.quiet);
+
+    #[allow(clippy::result_expect_used)]
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
