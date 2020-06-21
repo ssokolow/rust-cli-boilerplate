@@ -9,11 +9,11 @@ This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cl
 
 // Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration so
 // we see new lints as they get written (We'll opt back out selectively)
-#![warn(warnings, rust_2018_idioms, clippy::all, clippy::complexity, clippy::correctness,
-        clippy::pedantic, clippy::perf, clippy::style, clippy::restriction)]
+#![warn(warnings, rust_2018_idioms, unsafe_code)]
+#![warn(clippy::all, clippy::pedantic, clippy::restriction)]
 
 // Opt out of the lints I've seen and don't want
-#![allow(clippy::float_arithmetic, clippy::implicit_return)]
+#![allow(clippy::float_arithmetic, clippy::implicit_return, clippy::needless_return)]
 
 // stdlib imports
 use std::io;
