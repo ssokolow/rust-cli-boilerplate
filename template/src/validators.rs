@@ -22,6 +22,7 @@ pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Com
 // TODO: Add the rest of the disallowed names from
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
+
 /// Module to contain the unsafety of an `unsafe` call to `access()`
 #[cfg(unix)]
 mod access {
@@ -45,6 +46,7 @@ mod access {
         debug_assert!(abs_path.is_absolute());
 
         // Make a null-terminated copy of the path for libc
+        #[allow(unsafe_code)]
         match CString::new(abs_path.as_os_str().as_bytes()) {
             // If we succeed, call access(2), convert the result into bool, and return it
             Ok(cstr) => unsafe { access(cstr.as_ptr(), mode) == 0 },
