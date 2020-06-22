@@ -25,8 +25,7 @@ USAGE:
 {all-args}
 ";
 
-/// Options used by boilerplate code
-// TODO: Move these into a struct of their own in something like helpers.rs
+// Options used by boilerplate code (Can't doc-comment until TeXitoi/structopt#333 is fixed)
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
 pub struct BoilerplateOpts {
@@ -53,4 +52,3 @@ pub struct BoilerplateOpts {
     #[structopt(long, value_name = "shell")]
     pub dump_completions: Option<clap::Shell>,
 }
-
