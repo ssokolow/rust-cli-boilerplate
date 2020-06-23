@@ -63,8 +63,8 @@ your new projects under the GNU GPLv3.
 - A comprehensive set of [just](https://github.com/casey/just) commands, easily
   customized via variables (eg. for cross-compilation), including `install` and
   `uninstall`, which also take care of shell completions and a manpage.
-- `just build-dist` for a 100% static i686 binary that starts at roughly
-  `260KiB` (`236KiB` with `panic="abort"`) in new projects.
+- `just build-dist` for a 100% static x86_64 binary that starts at roughly
+  `272KiB` (`248KiB` with `panic="abort"`) in new projects.
 - `just install-deps` to install all but two optional dependencies on
   Debian-family distros.
 - `just install-cargo-deps` to install all distro-agnostic dependencies.
@@ -157,7 +157,7 @@ default for new projects.</td>
 <tr><th>Variable</th><th>Default Value</th><th>Description</th></tr>
 <tr>
   <td><code>CARGO_BUILD_TARGET</code></td>
-  <td><code>i686-unknown-linux-musl</code></td>
+  <td><code>x86_64-unknown-linux-musl</code></td>
   <td>The target for <code>cargo</code> commands to use and
   <code>install-rustup-deps</code> to install</td>
 </tr>

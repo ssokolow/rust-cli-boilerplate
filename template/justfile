@@ -4,7 +4,7 @@
 # --== Variables to be customized/overridden by the user ==--
 
 # The target for `cargo` commands to use and `install-rustup-deps` to install
-export CARGO_BUILD_TARGET = "i686-unknown-linux-musl"
+export CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl"
 
 # An easy way to override the `cargo` channel for just this project
 channel = "stable"
