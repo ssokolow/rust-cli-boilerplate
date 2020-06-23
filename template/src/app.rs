@@ -1,5 +1,5 @@
 /*! Application-specific logic lives here */
-// Parts Copyright 2017-2019, Stephan Sokolow
+// Parts Copyright 2017-2020, Stephan Sokolow
 
 // Standard library imports
 use std::path::PathBuf;
@@ -48,7 +48,7 @@ pub const DEFAULT_VERBOSITY: u64 = 1;
             about = "TODO: Replace me with the description text for the command",
             global_setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct CliOpts {
-    #[allow(clippy::missing_docs_in_private_items)] // StructOpt won't let us document this
+    #[allow(clippy::missing_docs_in_private_items)] // StructOpt compile-time errors if we doc this
     #[structopt(flatten)]
     pub boilerplate: BoilerplateOpts,
 
@@ -67,7 +67,7 @@ pub struct CliOpts {
 pub fn main(opts: CliOpts) -> Result<()> {
     #[allow(unused_variables, clippy::unimplemented)] // TEMPLATE:REMOVE
     for inpath in opts.inpath {
-        unimplemented!()
+        todo!("Implement application logic")
     }
 
     Ok(())
@@ -79,8 +79,8 @@ mod tests {
     #[allow(unused_imports)] // TEMPLATE:REMOVE
     use super::CliOpts;
 
-    // TODO: Unit test to verify that the doc comment on `CliOpts` isn't overriding the intended
-    // about string.
+    // TODO: Unit test to verify that the doc comments on `CliOpts` or `BoilerplateOpts` aren't
+    // overriding the intended about string.
 
     #[test]
     /// Test something

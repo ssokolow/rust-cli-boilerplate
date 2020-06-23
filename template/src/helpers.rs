@@ -1,11 +1,6 @@
 /*! Functions and templates which can be imported by app.rs to save effort */
 // Copyright 2017-2019, Stephan Sokolow
 
-// FIXME: Report that StructOpt is tripping Clippy's `result_unwrap_used` lint (which I use to push
-// for .expect() instead) in my two Option<T> fields and the `allow` gets ignored unless I
-// `#![...]` it onto the entire module.
-#![allow(clippy::result_unwrap_used)]
-
 use structopt::{clap, StructOpt};
 
 /// Modified version of Clap's default template for proper help2man compatibility
@@ -25,7 +20,9 @@ USAGE:
 {all-args}
 ";
 
-// Options used by boilerplate code (Can't doc-comment until TeXitoi/structopt#333 is fixed)
+
+#[allow(clippy::missing_docs_in_private_items)] // Can't doc-comment until TeXitoi/structopt#333
+// Options used by boilerplate code
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
 pub struct BoilerplateOpts {

@@ -1,5 +1,5 @@
 /*! Validator functions suitable for use with `Clap` and `StructOpt` */
-// Copyright 2017-2019, Stephan Sokolow
+// Copyright 2017-2020, Stephan Sokolow
 
 use std::ffi::OsString;
 use std::fs::File;
@@ -46,7 +46,7 @@ mod access {
         debug_assert!(abs_path.is_absolute());
 
         // Make a null-terminated copy of the path for libc
-        #[allow(unsafe_code)]
+        #[allow(unsafe_code)]  // All known ways to call `access(2)` require `unsafe`
         match CString::new(abs_path.as_os_str().as_bytes()) {
             // If we succeed, call access(2), convert the result into bool, and return it
             Ok(cstr) => unsafe { access(cstr.as_ptr(), mode) == 0 },
@@ -69,6 +69,7 @@ mod access {
 
     #[cfg(test)]
     mod tests {
+        #![allow(clippy::panic)] // Allow panicking constructs in tests (RLS complains otherwise)
         use std::ffi::OsStr;
         use std::os::unix::ffi::OsStrExt; // TODO: Find a better way to produce invalid UTF-8
         use super::probably_writable;
@@ -213,9 +214,9 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 ///   * Write another function for enforcing the limits imposed by targeting optical media.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
-    #![allow(clippy::match_same_arms, clippy::decimal_literal_representation)]
     let path = value.as_ref();
 
+    #[allow(clippy::decimal_literal_representation)]  // Path lengths are most intuitive as decimal
     if path.as_os_str().is_empty() {
         Err("Path is empty".into())
     } else if path.as_os_str().len() > 32760 {
@@ -328,6 +329,9 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 
 #[cfg(test)]
 mod tests {
+    // Allow super::* and panicking constructs in tests (RLS complains otherwise)
+    #![allow(clippy::wildcard_imports, clippy::panic, clippy::result_expect_used)]
+
     use super::*;
     use std::ffi::OsStr;
 
@@ -529,8 +533,10 @@ mod tests {
 
     #[test]
     fn path_valid_portable_enforces_length_limits() {
+        // Silence advice to use 0x7FFx since path length limits are most intuitive as decimals
+        #![allow(clippy::decimal_literal_representation)]
+
         let mut test_string = String::with_capacity(255 * 130);
-        #[allow(clippy::decimal_literal_representation)]
         while test_string.len() < 32761 {
             test_string.push_str(std::str::from_utf8(&[b'X'; 255]).expect("utf8 from literal"));
             test_string.push('/');
@@ -540,7 +546,6 @@ mod tests {
         assert!(path_valid_portable(OsStr::new(&test_string)).is_err());
 
         // 32760 characters (maximum for FAT32/VFAT/exFAT)
-        #[allow(clippy::decimal_literal_representation)]
         test_string.truncate(32760);
         assert!(path_valid_portable(OsStr::new(&test_string)).is_ok());
 
