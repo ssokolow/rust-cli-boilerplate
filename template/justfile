@@ -49,7 +49,7 @@ kcachegrind = "kcachegrind"
 # -- `install` and `uninstall` --
 
 # Where to `install` bash completions.
-# **You'll need to manually add some lines to source these files in `.bashrc.`**
+# **You'll need to manually add some lines to source these files in `.bashrc`**
 bash_completion_dir = "~/.bash_completion.d"
 
 # Where to `install` fish completions. You'll probably never need to change this.
@@ -117,6 +117,10 @@ fmt +args="":
 fmt-check +args="":
 	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
 
+# Alias for `cargo geiger`
+geiger +args="":
+	{{_cargo}} geiger {{args}}
+
 # Run a debug build under [callgrind](http://valgrind.org/docs/manual/cl-manual.html), then open the
 # profile in [KCachegrind](https://kcachegrind.github.io/)
 kcachegrind +args="":
@@ -157,6 +161,7 @@ kcov:
 		if [ -x "$file" ]; then
 			outpath="$kcov_path/$(basename "$file")"
 			mkdir -p "$outpath"
+			rustig -f --binary "$file" || true
 			kcov --exclude-pattern=/.cargo,/usr/lib --verify "$outpath" "$file" "$@"
 		elif echo "$file" | grep -F -e '-*'; then
 			echo "No build files found for coverage!"
@@ -286,7 +291,9 @@ install-cargo-deps: install-rustup-deps
 	{{_cargo}} install cargo-bloat || true
 	{{_cargo}} install cargo-deadlinks || true
 	{{_cargo}} install cargo-edit || true
+	{{_cargo}} install cargo-geiger || true
 	{{_cargo}} install cargo-outdated || true
+	{{_cargo}} install --git https://github.com/Technolution/rustig rustig
 	cargo +nightly install cargo-cov || true
 
 # Install (don't update) nightly and `channel` toolchains, plus `CARGO_BUILD_TARGET`, clippy, and rustfmt

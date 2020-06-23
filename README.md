@@ -224,15 +224,15 @@ default for new projects.</td>
 <tr>
   <td><code>fish_completion_dir</code></td>
   <td><code>~/.config/fish/completions</code></td>
-  <td>Where to <code>install</code> fish completions. You'll probably never
-  need to change this.</td>
+  <td>Where to <code>install</code> fish completions. You'll probably never need to
+  change this.</td>
 </tr>
 <tr>
   <td><code>manpage_dir</code></td>
   <td><code>~/.cargo/share/man/man1</code></td>
-  <td>Where to <code>install</code> manpages. As long as
-  <code>~/.cargo/bin</code> is in your <code>PATH</code>, <code>man</code>
-  should automatically pick up this location.</td>
+  <td>Where to <code>install</code> manpages. As long as <code>~/.cargo/bin</code> is
+  in your <code>PATH</code>, <code>man</code> should automatically pick up this
+  location.</td>
 </tr>
 <tr>
   <td><code>zsh_completion_dir</code></td>
@@ -294,6 +294,11 @@ default for new projects.</td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo +nightly fmt -- --check {{args}}</code> which un-bloats
   TODO/FIXME warnings</td>
+</tr>
+<tr>
+  <td><code>geiger</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for <code>cargo geiger</code></td>
 </tr>
 <tr>
   <td><code>kcachegrind</code></td>
@@ -383,8 +388,8 @@ default for new projects.</td>
 <tr>
   <td><code>install-deps</code></td>
   <td></td>
-  <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>.
-  List what remains.</td>
+  <td>Run <code>install-apt-deps</code> and <code>install-cargo-deps</code>. List what
+  remains.</td>
 </tr>
 <tr>
   <td><code>install-rustup-deps</code></td>
