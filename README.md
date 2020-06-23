@@ -50,8 +50,7 @@ your new projects under the GNU GPLv3.
   parsing because [gumdrop](https://github.com/murarth/gumdrop) doesn't support
   `OsString`-based parsing for correct handling of
   [non-UTF8 paths](https://en.wikipedia.org/wiki/Mojibake).
-- Uses [error-chain](https://github.com/rust-lang-nursery/error-chain) for
-  unified error handling.
+- Uses [anyhow](https://github.com/dtolnay/anyhow) for unified error handling.
 - Presents an `app::main(opts: CliOpts) -> Result<()>` function to keep your
   application logic cleanly separated from argument parsing and handling of
   fatal errors.
@@ -443,14 +442,6 @@ In order to be as suitable as possible for building compact, easy-to-distribute,
 high-reliability replacements for shell scripts, the following build options are
 defined:
 
-### If built via `cargo build`:
-
-1. Backtrace support will be disabled in `error-chain` unless explicitly built
-   with the `backtrace` feature. (This began as a workaround to un-break
-   cross-compiling to musl-libc and ARM after backtrace-rs 0.1.6 broke it, but
-   it also makes sense to opt out of it if you're using `panic="abort"` to save
-   space)
-
 ### If built via `just build`:
 
 1. Unless otherwise noted, all optimizations listed above.
@@ -463,11 +454,10 @@ defined:
 
 ### If built via `cargo build --release`:
 
-1. All optimizations listed above for `cargo build`.
-2. LTO (Link-Time Optimization) will be enabled to allow dead-code elimination.
+1. LTO (Link-Time Optimization) will be enabled to allow dead-code elimination.
    (`lto = true`)
-3. The binary will be built with `opt-level = "z"` to further reduce file size.
-4. If `panic="abort"` is uncommented in `Cargo.toml`, LTO will prune away the
+2. The binary will be built with `opt-level = "z"` to further reduce file size.
+3. If `panic="abort"` is uncommented in `Cargo.toml`, LTO will prune away the
    unwinding machinery to save even more space, but panics will not cause `Drop`
    implementations to be run and will be uncatchable.
 
