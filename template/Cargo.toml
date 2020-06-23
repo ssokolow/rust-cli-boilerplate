@@ -8,13 +8,10 @@ edition = "2018"
 log = "0.4"
 stderrlog = "0.4"
 structopt = "0.3"
+anyhow = "1.0.31"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
-
-[dependencies.error-chain]
-version = "0.12"
-default-features = false  # disable pulling in backtrace
 
 [profile.release]
 lto = true

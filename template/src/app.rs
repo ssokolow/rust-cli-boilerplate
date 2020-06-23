@@ -5,13 +5,13 @@
 use std::path::PathBuf;
 
 // 3rd-party crate imports
+use anyhow::Result;
 use structopt::StructOpt;
 
 #[allow(unused_imports)] // TEMPLATE:REMOVE
 use log::{debug, error, info, trace, warn};
 
 // Local Imports
-use crate::errors::*;
 use crate::helpers::{BoilerplateOpts, HELP_TEMPLATE};
 use crate::validators::path_readable_file;
 

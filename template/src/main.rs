@@ -2,10 +2,7 @@
 
 This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cli-boilerplate)
 */
-// Copyright 2017-2019, Stephan Sokolow
-
-// `error_chain` recursion adjustment
-#![recursion_limit = "1024"]
+// Copyright 2017-2020, Stephan Sokolow
 
 // Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration so
 // we see new lints as they get written (We'll opt back out selectively)
@@ -20,9 +17,8 @@ use std::io;
 use std::convert::TryInto;
 
 // 3rd-party imports
-mod errors;
+use anyhow::{Context, Result};
 use structopt::{clap, StructOpt};
-use log::error;
 
 // Local imports
 mod app;
@@ -31,14 +27,8 @@ mod validators;
 
 /// Boilerplate to parse command-line arguments, set up logging, and handle bubbled-up `Error`s.
 ///
-/// Based on the `StructOpt` example from stderrlog and the suggested error-chain harness from
-/// [quickstart.rs](https://github.com/brson/error-chain/blob/master/examples/quickstart.rs).
-///
 /// See `app::main` for the application-specific logic.
-///
-/// **TODO:** Consider switching to Failure and look into `impl Termination` as a way to avoid
-///           having to put the error message pretty-printing inside main()
-fn main() {
+fn main() -> Result<()> {
     // Parse command-line arguments (exiting on parse error, --version, or --help)
     let opts = app::CliOpts::from_args();
 
@@ -51,10 +41,10 @@ fn main() {
     stderrlog::new()
         .module(module_path!())
         .quiet(verbosity == 0)
-        .verbosity(verbosity.saturating_sub(1).try_into().expect("should never even come close"))
+        .verbosity(verbosity.saturating_sub(1).try_into().context("Verbosity too high")?)
         .timestamp(opts.boilerplate.timestamp.unwrap_or(stderrlog::Timestamp::Off))
         .init()
-        .expect("initializing logging output");
+        .context("Failed to initialize logging output")?;
 
     // If requested, generate shell completions and then exit with status of "success"
     if let Some(shell) = opts.boilerplate.dump_completions {
@@ -62,22 +52,13 @@ fn main() {
             app::CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
             shell,
             &mut io::stdout());
-        std::process::exit(0);
-    };
-
-    if let Err(ref e) = app::main(opts) {
-        // Write the top-level error message, then chained errors, then backtrace if available
-        error!("error: {}", e);
-        for e in e.iter().skip(1) {
-            error!("caused by: {}", e);
-        }
-        if let Some(backtrace) = e.backtrace() {
-            error!("backtrace: {:?}", backtrace);
-        }
-
-        // Exit with a nonzero exit code
-        // TODO: Decide how to allow code to set this to something other than 1
-        std::process::exit(1);
+        Ok(())
+    } else {
+        // Run the actual `main` and rely on `impl Termination` to provide a simple, concise way to
+        // allow terminal errors that can be changed later as needed but starts out analogous to
+        // letting an unhandled exception bubble up in something like Python.
+        // TODO: Experiment with this and look for ways to polish it up further
+        app::main(opts)
     }
 }
 
