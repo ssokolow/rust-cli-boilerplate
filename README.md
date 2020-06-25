@@ -252,7 +252,7 @@ default for new projects.</td>
 <tr>
   <td><code>DEFAULT</code></td>
   <td></td>
-  <td>Shorthand for <code>just test</code></td>
+  <td>Shorthand for <code>just fulltest</code></td>
 </tr>
 <tr><th colspan="3">Development</th></tr>
 <tr>
@@ -295,6 +295,11 @@ default for new projects.</td>
   TODO/FIXME warnings</td>
 </tr>
 <tr>
+  <td><code>fulltest</code></td>
+  <td></td>
+  <td>Run all installed static analysis, plus <code>cargo test</code></td>
+</tr>
+<tr>
   <td><code>geiger</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Alias for <code>cargo geiger</code></td>
@@ -324,8 +329,8 @@ default for new projects.</td>
 </tr>
 <tr>
   <td><code>test</code></td>
-  <td></td>
-  <td>Run all installed static analysis, plus <code>cargo test</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for <code>cargo test</code></td>
 </tr>
 <tr>
   <td><code>update</code></td>

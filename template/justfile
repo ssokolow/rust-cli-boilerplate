@@ -80,8 +80,8 @@ export _pkgname_snake=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; 
 export _rls_bin_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
 export _dbg_bin_path="target/" + CARGO_BUILD_TARGET  + "/debug/" + _pkgname
 
-# Shorthand for `just test`
-DEFAULT: test
+# Shorthand for `just fulltest`
+DEFAULT: fulltest
 
 # -- Development --
 
@@ -116,6 +116,21 @@ fmt +args="":
 # Alias for `cargo +nightly fmt -- --check {{args}}` which un-bloats TODO/FIXME warnings
 fmt-check +args="":
 	cargo +nightly fmt -- --check --color always {{args}} 2>&1 | egrep -v '[0-9]*[ ]*\|'
+
+# Run all installed static analysis, plus `cargo test`
+fulltest:
+	@echo "============================= Outdated Packages ============================="
+	{{_cargo}} outdated
+	@echo "\n============================= Insecure Packages ============================="
+	{{_cargo}} audit -q
+	@echo "\n=============================== Clippy Lints ================================"
+	{{_cargo}} clippy -q {{_build_flags}}
+	@echo "\n===================== Dead Internal Documentation Links ====================="
+	{{_cargo}} doc -q --document-private-items {{_build_flags}} && \
+	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
+	@echo "\n============================== Automated Tests =============================="
+	{{_cargo}} test -q {{_build_flags}}
+	@echo "==============================================================================="
 
 # Alias for `cargo geiger`
 geiger +args="":
@@ -178,20 +193,9 @@ rm +args="":
 search +args="":
 	xdg-open "https://lib.rs/search?q={{args}}"
 
-# Run all installed static analysis, plus `cargo test`
-test:
-	@echo "============================= Outdated Packages ============================="
-	@{{_cargo}} outdated
-	@echo "\n============================= Insecure Packages ============================="
-	@{{_cargo}} audit -q
-	@echo "\n=============================== Clippy Lints ================================"
-	@{{_cargo}} clippy -q {{_build_flags}}
-	@echo "\n===================== Dead Internal Documentation Links ====================="
-	@{{_cargo}} doc -q --document-private-items {{_build_flags}} && \
-	{{_cargo}} deadlinks --dir target/$CARGO_BUILD_TARGET/doc/{{_pkgname}}
-	@echo "\n================================ Test Suite ================================="
-	@{{_cargo}} test -q {{_build_flags}}
-	@echo "============================================================================="
+# Alias for `cargo test`
+test +args="":
+	{{_cargo}} test -q {{_build_flags}} {{args}}
 
 # Alias for cargo-edit's `cargo update` which regenerates local API docs afterwards
 update +args="":
