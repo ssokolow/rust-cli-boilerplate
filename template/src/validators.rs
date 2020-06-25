@@ -14,7 +14,6 @@ use std::path::{Component, Path};
 ///
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
-#[allow(dead_code)] // TEMPLATE:REMOVE
 pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
@@ -108,12 +107,10 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
         return Err(format!("Not a directory: {}", path.display()).into());
     }
 
-    // TODO: Think about how to code this more elegantly (try! perhaps?)
-    if let Ok(abs_pathbuf) = path.canonicalize() {
-        if let Some(abs_path) = abs_pathbuf.to_str() {
-            if self::access::probably_writable(abs_path) {
-                return Ok(());
-            }
+    // TODO: Think about how to code this more elegantly (probably .map_err and ?)
+    if let Ok(abs_path) = path.canonicalize() {
+        if self::access::probably_writable(&abs_path) {
+            return Ok(());
         }
     }
 
@@ -159,7 +156,6 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
                           path.display()).into());
     }
 
-    // TODO: Why does this not fail on Linux? I forget what reading a directory actually does.
     File::open(path).map(|_| ()).map_err(|e| format!("{}: {}", path.display(), e).into())
 }
 
