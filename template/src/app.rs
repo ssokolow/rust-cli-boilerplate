@@ -41,8 +41,8 @@ pub const DEFAULT_VERBOSITY: u64 = 1;
 ///    doc comment. The precedence is affected by things you wouldn't expect, such as the presence
 ///    or absence of `template` and it's easy to wind up with this doc-comment as your `--help`
 ///    ([TeXitoi/structopt#173](https://github.com/TeXitoi/structopt/issues/173))
-///  * Do not begin the description text for subcommands with `\n`. It will break the formatting
-///    in the top-level help output's list of subcommands.
+///  * Do not begin the description text for subcommands with `\n`. It will break the formatting in
+///    the top-level help output's list of subcommands.
 #[derive(StructOpt, Debug)]
 #[structopt(template = HELP_TEMPLATE,
             about = "TODO: Replace me with the description text for the command",

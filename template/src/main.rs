@@ -13,8 +13,8 @@ This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cl
 #![allow(clippy::float_arithmetic, clippy::implicit_return, clippy::needless_return)]
 
 // stdlib imports
-use std::io;
 use std::convert::TryInto;
+use std::io;
 
 // 3rd-party imports
 use anyhow::{Context, Result};

@@ -14,6 +14,7 @@ use std::path::{Component, Path};
 ///
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
+#[rustfmt::skip]
 pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
@@ -45,7 +46,7 @@ mod access {
         debug_assert!(abs_path.is_absolute());
 
         // Make a null-terminated copy of the path for libc
-        #[allow(unsafe_code)]  // All known ways to call `access(2)` require `unsafe`
+        #[allow(unsafe_code)] // All known ways to call `access(2)` require `unsafe`
         match CString::new(abs_path.as_os_str().as_bytes()) {
             // If we succeed, call access(2), convert the result into bool, and return it
             Ok(cstr) => unsafe { access(cstr.as_ptr(), mode) == 0 },

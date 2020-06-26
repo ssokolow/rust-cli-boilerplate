@@ -20,13 +20,11 @@ USAGE:
 {all-args}
 ";
 
-
 #[allow(clippy::missing_docs_in_private_items)] // Can't doc-comment until TeXitoi/structopt#333
 // Options used by boilerplate code
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
 pub struct BoilerplateOpts {
-
     // -- Arguments used by main.rs --
     // TODO: Move these into a struct of their own in something like helpers.rs
 
