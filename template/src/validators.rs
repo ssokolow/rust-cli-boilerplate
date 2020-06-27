@@ -201,17 +201,21 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 
     // Check that the length is within range
     let os_str = path.as_os_str();
-    if os_str.is_empty() {
-        return Err("File/folder name is empty".into());
-    }
     if os_str.len() > 255 {
         return Err(format!("File/folder name is too long ({} chars): {}",
                     path.as_os_str().len(), path.display()).into());
     }
 
     // Check for invalid characters
-    let lossy_str = os_str.to_string_lossy();
-    let last_char = lossy_str.chars().last().expect("getting last character");
+    let lossy_str = match os_str.to_str() {
+        Some(string) => string,
+        None => return Err(
+            "File/folder names containing non-UTF8 characters aren't portable".into())
+    };
+    let last_char = match lossy_str.chars().last() {
+        Some(chr) => chr,
+        None => return Err("File/folder name is empty".into()),
+    };
     if [' ', '.'].iter().any(|&x| x == last_char) {
         // The Windows shell and UI don't support component names ending in periods or spaces
         // Source: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
@@ -406,9 +410,10 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
-    fn filename_valid_portable_accepts_non_utf8_bytes() {
-        // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
-        assert!(filename_valid_portable(OsStr::from_bytes(b"\xff")).is_ok());
+    fn filename_valid_portable_refuses_non_utf8_bytes() {
+        // Ensure that we refuse invalid UTF-8 since it's unclear if/how things like POSIX's
+        // "bag of bytes" paths and Windows's un-paired UTF-16 surrogates map to each other.
+        assert!(filename_valid_portable(OsStr::from_bytes(b"\xff")).is_err());
     }
     #[cfg(windows)]
     #[test]
@@ -484,8 +489,9 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn path_valid_portable_accepts_non_utf8_bytes() {
-        // Ensure that we don't refuse invalid UTF-8 that "bag of bytes" POSIX allows
-        assert!(path_valid_portable(OsStr::from_bytes(b"/\xff/foo")).is_ok());
+        // Ensure that we refuse invalid UTF-8 since it's unclear if/how things like POSIX's
+        // "bag of bytes" paths and Windows's un-paired UTF-16 surrogates map to each other.
+        assert!(path_valid_portable(OsStr::from_bytes(b"/\xff/foo")).is_err());
     }
     #[cfg(windows)]
     #[test]
