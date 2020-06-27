@@ -79,6 +79,7 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
 ///    file, and keep it open until you are finished. This will both verify its validity and
 ///    minimize the window in which another process could render the path invalid.
 #[allow(dead_code)] // TEMPLATE:REMOVE
+#[rustfmt::skip]
 pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
         -> std::result::Result<(), OsString> {
     let path = value.as_ref();
@@ -209,6 +210,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
     // Check that the length is within range
     let os_str = path.as_os_str();
     if os_str.len() > 255 {
+        #[rustfmt::skip]
         return Err(format!("File/folder name is too long ({} chars): {}",
                            path.as_os_str().len(), path.display()).into());
     }
@@ -218,7 +220,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         Some(string) => string,
         None => {
             return Err("File/folder names containing non-UTF8 characters aren't portable".into())
-        }
+        },
     };
     let last_char = match lossy_str.chars().last() {
         Some(chr) => chr,
@@ -246,6 +248,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         // let everything else through
         _ => false,
     }) {
+        #[rustfmt::skip]
         return Err(format!("Path component contains invalid characters: {}",
                 path.display()).into());
     }
@@ -277,6 +280,7 @@ mod tests {
 
     #[test]
     #[cfg(unix)]
+    #[rustfmt::skip]
     fn path_output_dir_basic_functionality() {
         assert!(path_output_dir(OsStr::new("/")).is_err());                      // Root
         assert!(path_output_dir(OsStr::new("/tmp")).is_ok());                    // OK Folder
@@ -301,6 +305,7 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    #[rustfmt::skip]
     fn path_readable_file_basic_functionality() {
         // Existing paths
         assert!(path_readable_file(OsStr::new("/bin/sh")).is_ok());                 // OK File
@@ -324,12 +329,14 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    #[rustfmt::skip]
     fn path_readable_file_invalid_utf8() {
         assert!(path_readable_file(OsStr::from_bytes(b"/not\xffutf8")).is_err()); // Invalid UTF-8
         // TODO: Non-UTF8 path that actually IS valid
     }
     #[cfg(windows)]
     #[test]
+    #[rustfmt::skip]
     fn path_readable_file_unpaired_surrogates() {
         assert!(path_readable_file(&OsString::from_wide(
             &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
@@ -338,13 +345,11 @@ mod tests {
 
     // ---- filename_valid_portable ----
 
+    #[rustfmt::skip]
     const VALID_FILENAMES: &[&str] = &[
-        // stdin/stdout
-        "-",
-        // regular, space, and leading period
-        "test1", "te st", ".test",
-        // Stuff which would break if the DOS reserved names check is doing dumb pattern matching
-        "lpt", "lpt0", "lpt10",
+        "-",                       // stdin/stdout
+        "test1", "te st", ".test", // regular, space, and leading period
+        "lpt", "lpt0", "lpt10",    // would break if DOS reserved check is doing dumb matching
     ];
 
     // Paths which should pass because std::path::Path will recognize the separators
@@ -369,6 +374,7 @@ mod tests {
     ];
 
     // Source: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
+    #[rustfmt::skip]
     const INVALID_PORTABLE_FILENAMES: &[&str] = &[
         "test\x03", "test\x07", "test\x08", "test\x0B", "test\x7f",  // Control characters (VFAT)
         "\"test\"", "<testsss", "testsss>", "testsss|", "testsss*", "testsss?", "?estsss", // VFAT
@@ -504,6 +510,7 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn path_valid_portable_accepts_unpaired_surrogates() {
+        #[rustfmt::skip]
         assert!(path_valid_portable(&OsString::from_wide(
                     &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_ok());
     }

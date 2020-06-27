@@ -31,8 +31,8 @@ pub const DEFAULT_VERBOSITY: u64 = 1;
 ///
 ///  * Make sure that there is a blank space between the `<name>` `<version>` line and the
 ///    description text or the `--help` output won't comply with the platform conventions that
-///    `help2man` depends on to generate your manpage.
-///    (Specifically, it will mistake the `<name> <version>` line for part of the description.)
+///    `help2man` depends on to generate your manpage. (Specifically, it will mistake the `<name>
+///    <version>` line for part of the description.)
 ///  * `StructOpt`'s default behaviour of including the author name in the `--help` output is an
 ///    oddity among Linux commands and, if you don't disable it, you run the risk of people
 ///    unfamiliar with `StructOpt` assuming that you are an egotistical person who made a conscious
@@ -58,8 +58,6 @@ pub struct CliOpts {
     #[allow(clippy::missing_docs_in_private_items)] // StructOpt compile-time errors if we doc this
     #[structopt(flatten)]
     pub boilerplate: BoilerplateOpts,
-
-    // -- Arguments used by application-specific logic --
 
     /// File(s) to use as input
     ///

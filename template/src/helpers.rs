@@ -20,17 +20,15 @@ USAGE:
 {all-args}
 ";
 
-#[allow(clippy::missing_docs_in_private_items)] // Can't doc-comment until TeXitoi/structopt#333
-// Options used by boilerplate code
+#[allow(clippy::missing_docs_in_private_items)]
+// Can't doc-comment until TeXitoi/structopt#333
+// Options used by boilerplate code in `main.rs`
+//
+// FIXME: Report that StructOpt trips Clippy's `cast_possible_truncation` lint unless I use
+//        `u64` for my `from_occurrences` inputs, which is a ridiculous state of things.
 #[derive(StructOpt, Debug)]
 #[structopt(rename_all = "kebab-case")]
 pub struct BoilerplateOpts {
-    // -- Arguments used by main.rs --
-    // TODO: Move these into a struct of their own in something like helpers.rs
-
-    // FIXME: Report that StructOpt trips Clippy's `cast_possible_truncation` lint unless I use
-    //        `u64` for my `from_occurrences` inputs, which is a ridiculous state of things.
-
     /// Decrease verbosity (-q, -qq, -qqq, etc.)
     #[structopt(short, long, parse(from_occurrences))]
     pub quiet: u64,

@@ -11,7 +11,7 @@ use_try_shorthand = true
 # and rigorously enforce by using `git gui` to only commit rustfmt changes
 # I approve of.
 brace_style = "PreferSameLine"
-comment_width = 99
+comment_width = 100
 enum_discrim_align_threshold = 10
 format_strings = true
 fn_args_density = "Compressed"
@@ -25,7 +25,7 @@ struct_field_align_threshold = 10
 use_field_init_shorthand = true
 use_small_heuristics = "Max"
 where_single_line = true
-wrap_comments = true
+wrap_comments = false
 
 # I happen to like /* this */ for multi-line comments, thank you very much
 normalize_comments = false

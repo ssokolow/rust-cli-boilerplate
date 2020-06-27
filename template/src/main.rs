@@ -5,15 +5,11 @@ This file provided by [rust-cli-boilerplate](https://github.com/ssokolow/rust-cl
 // Copyright 2017-2020, Stephan Sokolow
 
 // Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration so
-// we see new lints as they get written (We'll opt back out selectively)
+// we see new lints as they get written, then opt out of ones we have seen and don't want
 #![warn(warnings, rust_2018_idioms)]
 #![warn(clippy::all, clippy::pedantic, clippy::restriction)]
-
-// Opt out of the lints I've seen and don't want
 #![allow(clippy::float_arithmetic, clippy::implicit_return, clippy::needless_return)]
-
-// Forbid unsafe code by default for my policy of only allowing it in my own code as a last resort
-#![forbid(unsafe_code)]
+#![forbid(unsafe_code)] // Enforce my policy of only allowing it in my own code as a last resort
 
 // stdlib imports
 use std::convert::TryInto;
@@ -36,9 +32,11 @@ fn main() -> Result<()> {
     let opts = app::CliOpts::from_args();
 
     // Configure logging output so that -q is "decrease verbosity" rather than instant silence
-    let verbosity = opts.boilerplate.verbose
-                        .saturating_add(app::DEFAULT_VERBOSITY)
-                        .saturating_sub(opts.boilerplate.quiet);
+    let verbosity = opts
+        .boilerplate
+        .verbose
+        .saturating_add(app::DEFAULT_VERBOSITY)
+        .saturating_sub(opts.boilerplate.quiet);
 
     stderrlog::new()
         .module(module_path!())
@@ -53,7 +51,8 @@ fn main() -> Result<()> {
         app::CliOpts::clap().gen_completions_to(
             app::CliOpts::clap().get_bin_name().unwrap_or_else(|| clap::crate_name!()),
             shell,
-            &mut io::stdout());
+            &mut io::stdout(),
+        );
         Ok(())
     } else {
         // Run the actual `main` and rely on `impl Termination` to provide a simple, concise way to
