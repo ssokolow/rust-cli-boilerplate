@@ -1,4 +1,11 @@
-/*! Application-specific logic lives here */
+/*! Application-specific logic lives here
+
+    **TODO:** Look into moving the argument definition into a
+    [build.rs](https://doc.rust-lang.org/cargo/reference/build-scripts.html) like in the
+    [clap_generate](https://docs.rs/clap_generate/3.0.0-beta.1/clap_generate/fn.generate_to.html)
+    examples so I don't have build the completion generation code into the output binary.
+*/
+
 // Parts Copyright 2017-2020, Stephan Sokolow
 
 // Standard library imports
