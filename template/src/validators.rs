@@ -14,15 +14,18 @@ use faccess::PathExt;
 ///
 /// **NOTE:** These are still reserved if you append an extension to them.
 ///
-/// Source: [Boost Path Name Portability Guide
+/// Sources:
+/// * [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
+/// * Wikipedia: [Filename: Comparison of filename limitations
+/// ](https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations)
+///
+/// **TODO:** Decide what (if anything) to do about the NTFS "only in root directory" reservations.
 #[rustfmt::skip]
 pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",   // Comments for rustfmt
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
-    "CLOCK$" ]; // https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
-// TODO: Add the rest of the disallowed names from
-// https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
+    "CLOCK$", "$IDLE$", "CONFIG$", "KEYBD$", "LST", "SCREEN$"];
 
 /// Test that the given path *should* be writable
 ///
