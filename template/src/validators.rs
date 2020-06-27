@@ -60,6 +60,9 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
 ///  * Interpret a value of `-` to mean "read from `stdin`" if feasible.
 ///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
 ///
+/// **TODO:** Provide an alternative variant of this which accepts `-` regardless of whether a file
+/// of that name exists.
+///
 /// **Note:** The following command-lines, which interleave files and `stdin`, are a good test of
 /// how the above conventions should interact:
 ///
