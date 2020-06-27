@@ -104,6 +104,11 @@ clean +args="":
 	export CARGO_TARGET_DIR="target/kcov" && {{_cargo}} clean -v
 	rm -rf dist
 
+# Alias for `cargo clippy` which touches `src/*` to work around clippy bug
+clippy +args="":
+	touch src/*
+	{{_cargo}} clippy {{args}}
+
 # Run rustdoc with `--document-private-items` and then run cargo-deadlinks
 doc +args="":
 	{{_cargo}} doc {{_doc_flags}} {{args}} && \

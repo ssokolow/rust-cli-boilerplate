@@ -278,6 +278,12 @@ default for new projects.</td>
   builds</td>
 </tr>
 <tr>
+  <td><code>clippy</code></td>
+  <td>args&nbsp;(optional)</td>
+  <td>Alias for <code>cargo clippy</code> which touches <code>src/*</code> to work
+  around clippy bug</td>
+</tr>
+<tr>
   <td><code>doc</code></td>
   <td>args&nbsp;(optional)</td>
   <td>Run rustdoc with <code>--document-private-items</code> and then run
