@@ -16,5 +16,6 @@ lto = true
 codegen-units = 1
 opt-level = "z"
 
-# Uncomment to sacrifice Drop-on-panic cleanup for 20K space saving
+# Uncomment to sacrifice Drop-on-panic cleanup and std::panic::catch_unwind
+# for ~24K space saving
 #panic = 'abort'
