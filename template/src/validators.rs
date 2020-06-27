@@ -193,7 +193,6 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 /// comes about.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
-    #![allow(clippy::match_same_arms, clippy::else_if_without_else)]
     let path = value.as_ref();
 
     // TODO: Should I refuse incorrect Unicode normalization since Finder doesn't like it or just
@@ -202,11 +201,12 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 
     // Check that the length is within range
     let os_str = path.as_os_str();
+    if os_str.is_empty() {
+        return Err("File/folder name is empty".into());
+    }
     if os_str.len() > 255 {
-        return Err(format!("File/folder name is too long ({} chars): {:?}",
-                    path.as_os_str().len(), path).into());
-    } else if os_str.is_empty() {
-        return Err("Path component is empty".into());
+        return Err(format!("File/folder name is too long ({} chars): {}",
+                    path.as_os_str().len(), path.display()).into());
     }
 
     // Check for invalid characters
@@ -216,7 +216,10 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         // The Windows shell and UI don't support component names ending in periods or spaces
         // Source: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
         return Err("Windows forbids path components ending with spaces/periods".into());
-    } else if lossy_str.as_bytes().iter().any(|c| match c {
+    }
+
+    #[allow(clippy::match_same_arms)] // Would need to cram everything onto one arm otherwise
+    if lossy_str.as_bytes().iter().any(|c| match c {
         // invalid on all APIs which don't use counted strings like inside the NT kernel
         b'\0' => true,
         // invalid under FAT*, VFAT, exFAT, and NTFS
@@ -231,8 +234,8 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         // let everything else through
         _ => false,
     }) {
-        #[allow(clippy::use_debug)]
-        return Err(format!("Path component contains invalid characters: {:?}", path).into());
+        return Err(format!("Path component contains invalid characters: {}",
+                path.display()).into());
     }
 
     // Reserved DOS filenames that still can't be used on modern Windows for compatibility
@@ -251,8 +254,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
 
 #[cfg(test)]
 mod tests {
-    // Allow super::* and panicking constructs in tests (RLS complains otherwise)
-    #![allow(clippy::wildcard_imports, clippy::panic, clippy::result_expect_used)]
+    #![allow(clippy::wildcard_imports, clippy::panic, clippy::result_expect_used)] // OK for tests
 
     use super::*;
     use std::ffi::OsStr;
@@ -454,10 +456,9 @@ mod tests {
 
     #[test]
     fn path_valid_portable_enforces_length_limits() {
-        // Silence advice to use 0x7FFx since path length limits are most intuitive as decimals
-        #![allow(clippy::decimal_literal_representation)]
 
         let mut test_string = String::with_capacity(255 * 130);
+        #[allow(clippy::decimal_literal_representation)] // Path lengths more intuitive as decimal
         while test_string.len() < 32761 {
             test_string.push_str(std::str::from_utf8(&[b'X'; 255]).expect("utf8 from literal"));
             test_string.push('/');
