@@ -24,7 +24,7 @@ pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Com
 // TODO: Add the rest of the disallowed names from
 // https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
 
-/// Test that the given path **should** be writable
+/// Test that the given path *should* be writable
 ///
 /// **TODO:** Implement Windows tests for this.
 #[allow(dead_code)] // TEMPLATE:REMOVE
@@ -93,7 +93,7 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 ///  * Output file or directory paths
 ///
 /// ## Relevant Conventions:
-///  * Use `-o` to specify the output path.
+///  * Use `-o` to specify the output path if doing so is optional.
 ///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
 ///    [[2]](http://tldp.org/LDP/abs/html/standard-options.html)
 ///  * Interpret a value of `-` to mean "Write output to stdout".
@@ -112,14 +112,14 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 ///    This will both verify its validity and minimize the window in which another process could
 ///    render the path invalid.
 ///
-/// ## Design Considerations: [[4]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
+/// ## Design Considerations:
 ///  * Many popular Linux filesystems impose no total length limit.
 ///  * This function imposes a 32,760-character limit for compatibility with flash drives formatted
-///    FAT32 or exFAT.
+///    FAT32 or exFAT. [[4]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
 ///  * Some POSIX API functions, such as `getcwd()` and `realpath()` rely on the `PATH_MAX`
 ///    constant, which typically specifies a length of 4096 bytes including terminal `NUL`, but
 ///    this is not enforced by the filesystem itself.
-///    [[4]](https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html)
+///    [[5]](https://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html)
 ///
 ///    Programs which rely on libc for this functionality but do not attempt to canonicalize paths
 ///    will usually work if you change the working directory and use relative paths.
@@ -127,10 +127,10 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 ///    * The UDF filesystem used on DVDs imposes a 1023-byte length limit on paths.
 ///    * When not using the `\\?\` prefix to disable legacy compatibility, Windows paths  are
 ///      limited to 260 characters, which was arrived at as `A:\MAX_FILENAME_LENGTH<NULL>`.
-///      [[5]](https://stackoverflow.com/a/1880453/435253)
+///      [[6]](https://stackoverflow.com/a/1880453/435253)
 ///    * ISO 9660 without Joliet or Rock Ridge extensions does not permit periods in directory
 ///      names, directory trees more than 8 levels deep, or filenames longer than 32 characters.
-///      [[6]](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
+///      [[7]](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 ///
 ///  **TODO:**
 ///   * Write another function for enforcing the limits imposed by targeting optical media.
@@ -174,22 +174,23 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///    file, and keep it open until you are finished. This will both verify its validity and
 ///    minimize the window in which another process could render the path invalid.
 ///
-/// ## Design Considerations: [[3]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
+/// ## Design Considerations:
 ///  * In the interest of not inconveniencing users in the most common case, this validator imposes
 ///    a 255-character length limit.
+///    [[1]](https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits)
 ///  * The eCryptFS home directory encryption offered by Ubuntu Linux imposes a 143-character
 ///    length limit when filename encryption is enabled.
-///    [[4]](https://bugs.launchpad.net/ecryptfs/+bug/344878)
+///    [[2]](https://bugs.launchpad.net/ecryptfs/+bug/344878)
 ///  * the Joliet extensions for ISO 9660 are specified to support only 64-character filenames and
 ///    tested to support either 103 or 110 characters depending whether you ask the mkisofs
-///    developers or Microsoft. [[5]](https://en.wikipedia.org/wiki/Joliet_(file_system))
+///    developers or Microsoft. [[3]](https://en.wikipedia.org/wiki/Joliet_(file_system))
 ///  * The [POSIX Portable Filename Character Set
 ///    ](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282)
 ///    is too restrictive to be baked into a general-purpose validator.
 ///
 /// **TODO:** Consider converting this to a private function that just exists as a helper for the
 /// path validator in favour of more specialized validators for filename patterns, prefixes, and/or
-/// suffixes, to properly account for how "you can specify a name bu not a path" generally
+/// suffixes, to properly account for how "you can specify a name but not a path" generally
 /// comes about.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
@@ -332,6 +333,8 @@ mod tests {
     // ---- filename_valid_portable ----
 
     const VALID_FILENAMES: &[&str] = &[
+        // stdin/stdout
+        "-",
         // regular, space, and leading period
         "test1", "te st", ".test",
         // Stuff which would break if the DOS reserved names check is doing dumb pattern matching

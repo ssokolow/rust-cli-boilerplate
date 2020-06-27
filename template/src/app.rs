@@ -45,9 +45,9 @@ pub const DEFAULT_VERBOSITY: u64 = 1;
 ///  * Subcommands do not inherit `template` and it must be re-specified for each one.
 ///    ([clap-rs/clap#1184](https://github.com/clap-rs/clap/issues/1184))
 ///  * Double-check that your choice of `about` or `long_about` is actually overriding this
-///    doc comment. The precedence is affected by things you wouldn't expect, such as the presence
-///    or absence of `template` and it's easy to wind up with this doc-comment as your `--help`
-///    ([TeXitoi/structopt#173](https://github.com/TeXitoi/structopt/issues/173))
+///    doc comment. The precedence has some bugs such as
+///    [TeXitoi/structopt#391](https://github.com/TeXitoi/structopt/issues/391) and
+///    [TeXitoi/structopt#333](https://github.com/TeXitoi/structopt/issues/333).
 ///  * Do not begin the description text for subcommands with `\n`. It will break the formatting in
 ///    the top-level help output's list of subcommands.
 #[derive(StructOpt, Debug)]

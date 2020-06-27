@@ -1,4 +1,4 @@
-/*! Functions and templates which can be imported by app.rs to save effort */
+/*! Functions and templates which can be imported by `app.rs` to save effort */
 // Copyright 2017-2019, Stephan Sokolow
 
 use structopt::{clap, StructOpt};
