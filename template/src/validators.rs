@@ -17,7 +17,7 @@ use faccess::PathExt;
 /// Source: [Boost Path Name Portability Guide
 /// ](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
 #[rustfmt::skip]
-pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN", // Comments for rustfmt
+pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",   // Comments for rustfmt
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
     "CLOCK$" ]; // https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm
@@ -78,8 +78,8 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
     let path = value.as_ref();
 
     if path.is_dir() {
-       return Err(format!("{}: Input path must be a file, not a directory",
-                          path.display()).into());
+        return Err(format!("{}: Input path must be a file, not a directory",
+                           path.display()).into());
     }
 
     File::open(path).map(|_| ()).map_err(|e| format!("{}: {}", path.display(), e).into())
@@ -138,7 +138,7 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     let path = value.as_ref();
 
-    #[allow(clippy::decimal_literal_representation)]  // Path lengths are most intuitive as decimal
+    #[allow(clippy::decimal_literal_representation)] // Path lengths are most intuitive as decimal
     if path.as_os_str().is_empty() {
         Err("Path is empty".into())
     } else if path.as_os_str().len() > 32760 {
@@ -204,14 +204,15 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
     let os_str = path.as_os_str();
     if os_str.len() > 255 {
         return Err(format!("File/folder name is too long ({} chars): {}",
-                    path.as_os_str().len(), path.display()).into());
+                           path.as_os_str().len(), path.display()).into());
     }
 
     // Check for invalid characters
     let lossy_str = match os_str.to_str() {
         Some(string) => string,
-        None => return Err(
-            "File/folder names containing non-UTF8 characters aren't portable".into())
+        None => {
+            return Err("File/folder names containing non-UTF8 characters aren't portable".into())
+        }
     };
     let last_char = match lossy_str.chars().last() {
         Some(chr) => chr,
@@ -255,7 +256,6 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -308,8 +308,8 @@ mod tests {
         assert!(path_readable_file(OsStr::new("/etc/ssl/private")).is_err());       // Denied Foldr
         assert!(path_readable_file(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
         assert!(path_readable_file(OsStr::new("/null\0containing")).is_err());      // Invalid CStr
-
     }
+
     #[cfg(windows)]
     #[test]
     fn path_readable_file_basic_functionality() {
@@ -319,14 +319,14 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn path_readable_file_invalid_utf8() {
-        assert!(path_readable_file(OsStr::from_bytes(b"/not\xffutf8")).is_err());   // Invalid UTF-8
+        assert!(path_readable_file(OsStr::from_bytes(b"/not\xffutf8")).is_err()); // Invalid UTF-8
         // TODO: Non-UTF8 path that actually IS valid
     }
     #[cfg(windows)]
     #[test]
     fn path_readable_file_unpaired_surrogates() {
         assert!(path_readable_file(&OsString::from_wide(
-                    &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
+            &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
         // TODO: Unpaired surrogate path that actually IS valid
     }
 
@@ -344,8 +344,8 @@ mod tests {
     // Paths which should pass because std::path::Path will recognize the separators
     // TODO: Actually run the tests on Windows to make sure they work
     #[cfg(windows)]
-    const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &[
-        "re/lative", "/ab/solute", "re\\lative", "\\ab\\solute"];
+    const PATHS_WITH_NATIVE_SEPARATORS: &[&str] =
+        &["re/lative", "/ab/solute", "re\\lative", "\\ab\\solute"];
     #[cfg(unix)]
     const PATHS_WITH_NATIVE_SEPARATORS: &[&str] = &["re/lative", "/ab/solute"];
 
@@ -464,7 +464,6 @@ mod tests {
 
     #[test]
     fn path_valid_portable_enforces_length_limits() {
-
         let mut test_string = String::with_capacity(255 * 130);
         #[allow(clippy::decimal_literal_representation)] // Path lengths more intuitive as decimal
         while test_string.len() < 32761 {
@@ -502,5 +501,4 @@ mod tests {
         assert!(path_valid_portable(&OsString::from_wide(
                     &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_ok());
     }
-
 }
