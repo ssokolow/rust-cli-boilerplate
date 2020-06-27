@@ -9,9 +9,7 @@ log = "0.4"
 stderrlog = "0.4"
 structopt = "0.3"
 anyhow = "1.0.31"
-
-[target.'cfg(unix)'.dependencies]
-libc = "0.2"
+faccess = "0.2.3"
 
 [profile.release]
 lto = true
