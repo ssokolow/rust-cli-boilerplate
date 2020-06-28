@@ -29,7 +29,21 @@ pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",   // C
 
 /// Test that the given path *should* be writable
 ///
-/// **TODO:** Implement Windows tests for this.
+/// ## Use For:
+///  * Output directories that should exist and be writable.
+///
+/// ## Relevant Conventions:
+///  * Use `-o` to specify the output path if doing so is optional. Less commonly, `-d` is also
+///    used. [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///
+/// ## Cautions:
+///  * Never assume a directory's permissions will remain unchanged between the time you check them
+///    and the time you attempt to use them.
+///  * Some filesystems provide sufficiently fine-grained permissions that having access to create
+///    a file does not imply having access to delete the file you've created.
+///
+/// **TODO:** A complementary validator which will verify that the closest existing ancestor is
+///           writable. (for things that will `mkdir -p` if necessary.)
 #[allow(dead_code)] // TEMPLATE:REMOVE
 #[cfg(unix)]
 pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
@@ -46,28 +60,55 @@ pub fn path_output_dir<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsStrin
     Err(format!("Would be unable to write to destination directory: {}", path.display()).into())
 }
 
-/// The given path is a file that can be opened for reading
+/// The given path is a file that can be opened for reading or `-` denoting `stdin`
 ///
 /// ## Use For:
 ///  * Input file paths
 ///
 /// ## Relevant Conventions:
-///  * Commands which read from `stdin` by default should use `-f` to specify the input path.
+///  * If specifying an input file via an option flag, use `-f` as the name of the flag.
 ///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
-///  * Commands which read from files by default should use positional arguments to specify input
-///    paths.
-///  * Allow an arbitrary number of input paths if feasible.
-///  * Interpret a value of `-` to mean "read from `stdin`" if feasible.
-///    [[2]](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)
-///
-/// **TODO:** Provide an alternative variant of this which accepts `-` regardless of whether a file
-/// of that name exists.
+///  * Prefer taking input paths as positional arguments and, if feasible, allow an arbitrary
+///    number of input arguments. This allows easy use of shell globs.
 ///
 /// **Note:** The following command-lines, which interleave files and `stdin`, are a good test of
 /// how the above conventions should interact:
 ///
 ///     data_source | my_utility_a header.dat - footer.dat > output.dat
 ///     data_source | my_utility_b -f header.dat -f - -f footer.dat > output.dat
+///
+/// ## Cautions:
+///  * If the value is not `-`, this will momentarily open the given path for reading to verify
+///    that it is readable. However, relying on this to remain true will introduce a race
+///    condition. This validator is intended only to allow your program to exit as quickly as
+///    possible in the case of obviously bad input.
+///  * As a more reliable validity check, you are advised to open a handle to the file in question
+///    as early in your program's operation as possible, use it for all your interactions with the
+///    file, and keep it open until you are finished. This will both verify its validity and
+///    minimize the window in which another process could render the path invalid.
+#[allow(dead_code)] // TEMPLATE:REMOVE
+#[rustfmt::skip]
+pub fn path_readable_file_or_stdin<P: AsRef<Path> + ?Sized>(value: &P)
+        -> std::result::Result<(), OsString> {
+    if value.as_ref().to_string_lossy() == "-" {
+       return Ok(())
+    }
+
+    path_readable_file(value)
+}
+
+/// The given path is a file that can be opened for reading
+///
+/// ## Use For:
+///  * Input file paths
+///
+/// ## Relevant Conventions:
+///  * **Prefer [`path_readable_file_or_stdin`](fn.path_readable_file_or_stdin.html).**
+///    Commands should support taking input via `stdin` whenever feasible.
+///  * If specifying an input file via an option flag, use `-f` as the name of the flag.
+///    [[1]](http://www.catb.org/esr/writings/taoup/html/ch10s05.html)
+///  * Prefer taking input paths as positional arguments and, if feasible, allow an arbitrary
+///    number of input arguments. This allows easy use of shell globs.
 ///
 /// ## Cautions:
 ///  * This will momentarily open the given path for reading to verify that it is readable.
@@ -97,7 +138,8 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 /// The given path is valid on all major filesystems and OSes
 ///
 /// ## Use For:
-///  * Output file or directory paths
+///  * Output file or directory paths that will be created if missing
+///    (See also [`path_output_dir`](fn.path_output_dir.html).)
 ///
 /// ## Relevant Conventions:
 ///  * Use `-o` to specify the output path if doing so is optional.
@@ -138,9 +180,10 @@ pub fn path_readable_file<P: AsRef<Path> + ?Sized>(value: &P)
 ///    * ISO 9660 without Joliet or Rock Ridge extensions does not permit periods in directory
 ///      names, directory trees more than 8 levels deep, or filenames longer than 32 characters.
 ///      [[7]](https://www.boost.org/doc/libs/1_36_0/libs/filesystem/doc/portability_guide.htm)
+///  * See [`filename_valid_portable`](fn.filename_valid_portable.html) for design considerations
+///      relating to individual path components.
 ///
-///  **TODO:**
-///   * Write another function for enforcing the limits imposed by targeting optical media.
+///  **TODO:** Write another function for enforcing the limits imposed by targeting optical media.
 #[allow(dead_code)] // TEMPLATE:REMOVE
 pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsString> {
     let path = value.as_ref();
@@ -169,7 +212,7 @@ pub fn path_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(), OsS
 ///
 /// ## Relevant Conventions:
 ///  * Most of the time, you want to let users specify a full path via [`path_valid_portable`
-///    ](fn.path_valid_portable.html)instead.
+///    ](fn.path_valid_portable.html) instead.
 ///
 /// ## Cautions:
 ///  * To ensure files can be copied/moved without issue, this validator may impose stricter
@@ -303,22 +346,30 @@ mod tests {
 
     // ---- path_readable_file ----
 
+    #[test]
+    fn path_readable_file_stdin_test() {
+        assert!(path_readable_file(OsStr::new("-")).is_err());
+        assert!(path_readable_file_or_stdin(OsStr::new("-")).is_ok());
+    }
+
     #[cfg(unix)]
     #[test]
     #[rustfmt::skip]
     fn path_readable_file_basic_functionality() {
-        // Existing paths
-        assert!(path_readable_file(OsStr::new("/bin/sh")).is_ok());                 // OK File
-        assert!(path_readable_file(OsStr::new("/bin/../etc/.././bin/sh")).is_ok()); // Non-canonic.
-        assert!(path_readable_file(OsStr::new("/../../../../bin/sh")).is_ok());     // Above root
+        for func in &[path_readable_file, path_readable_file_or_stdin] {
+            // Existing paths
+            assert!(func(OsStr::new("/bin/sh")).is_ok());                 // OK File
+            assert!(func(OsStr::new("/bin/../etc/.././bin/sh")).is_ok()); // Non-canonicalized
+            assert!(func(OsStr::new("/../../../../bin/sh")).is_ok());     // Above root
 
-        // Inaccessible, nonexistent, or invalid paths
-        assert!(path_readable_file(OsStr::new("")).is_err());                       // Empty String
-        assert!(path_readable_file(OsStr::new("/")).is_err());                      // OK Folder
-        assert!(path_readable_file(OsStr::new("/etc/shadow")).is_err());            // Denied File
-        assert!(path_readable_file(OsStr::new("/etc/ssl/private")).is_err());       // Denied Foldr
-        assert!(path_readable_file(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
-        assert!(path_readable_file(OsStr::new("/null\0containing")).is_err());      // Invalid CStr
+            // Inaccessible, nonexistent, or invalid paths
+            assert!(func(OsStr::new("")).is_err());                       // Empty String
+            assert!(func(OsStr::new("/")).is_err());                      // OK Folder
+            assert!(func(OsStr::new("/etc/shadow")).is_err());            // Denied File
+            assert!(func(OsStr::new("/etc/ssl/private")).is_err());       // Denied Folder
+            assert!(func(OsStr::new("/nonexistant_test_path")).is_err()); // Missing Path
+            assert!(func(OsStr::new("/null\0containing")).is_err());      // Invalid CString
+        }
     }
 
     #[cfg(windows)]
@@ -331,16 +382,20 @@ mod tests {
     #[test]
     #[rustfmt::skip]
     fn path_readable_file_invalid_utf8() {
-        assert!(path_readable_file(OsStr::from_bytes(b"/not\xffutf8")).is_err()); // Invalid UTF-8
-        // TODO: Non-UTF8 path that actually IS valid
+        for func in &[path_readable_file, path_readable_file_or_stdin] {
+            assert!(func(OsStr::from_bytes(b"/not\xffutf8")).is_err()); // Invalid UTF-8
+            // TODO: Non-UTF8 path that actually IS valid
+        }
     }
     #[cfg(windows)]
     #[test]
     #[rustfmt::skip]
     fn path_readable_file_unpaired_surrogates() {
-        assert!(path_readable_file(&OsString::from_wide(
-            &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
-        // TODO: Unpaired surrogate path that actually IS valid
+        for func in &[path_readable_file, path_readable_file_or_stdin] {
+            assert!(path_readable_file(&OsString::from_wide(
+                &['C' as u16, ':' as u16, '\\' as u16, 0xd800])).is_err());
+            // TODO: Unpaired surrogate path that actually IS valid
+        }
     }
 
     // ---- filename_valid_portable ----
@@ -437,6 +492,11 @@ mod tests {
     }
 
     // ---- path_valid_portable ----
+
+    #[test]
+    fn path_valid_portable_accepts_stdout() {
+        assert!(path_valid_portable(OsStr::new("-")).is_ok());
+    }
 
     #[test]
     fn path_valid_portable_accepts_valid_names() {
