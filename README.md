@@ -645,14 +645,6 @@ following dependencies must be installed:
   the `libc` dependency conditional on `not(windows)` so that cross-compiling
   for Windows using the `x86_64-pc-windows-gnu` target can be a viable way to
   quickly fire off alpha/beta-testing builds to Windows-using peers.
-- Get a feel for the workflow surrounding building a project with
-  [Failure](https://github.com/rust-lang-nursery/failure),
-  [quick-error](https://github.com/tailhook/quick-error),
-  [thiserror](https://github.com/dtolnay/thiserror),
-  [error](https://github.com/reem/rust-error),
-  [snafu](https://crates.io/crates/snafu), and
-  [anyhow](https://github.com/dtolnay/anyhow) and decide whether to rebase this
-  template on top of one of them.
 - Investigate how flexible [QuiCLI](https://github.com/killercup/quicli) and its
   dependency on env_logger are and whether it'd be useful to rebase on it or
   whether I'd just be reinventing most of it anyway to force the exact look and
@@ -663,8 +655,6 @@ following dependencies must be installed:
 - Investigate why [cargo-cov](https://github.com/kennytm/cov) isn't hiding the
   components of the rust standard library and whether it can be induced to
   generate coverage despite some tests failing. If so, add a command for it.
-- Figure out whether StructOpt or Clap is to blame for doubling the leading
-  newline when `about` is specified via the doc comment and then report the bug.
 - Read the [callgrind docs](http://valgrind.org/docs/manual/cl-manual.html) and
   figure out how to exclude the Rust standard library from what Kcachegrind
   displays.
@@ -735,8 +725,6 @@ following dependencies must be installed:
           validator with upper limit for producing files representable by
           ISO9660/FAT32 filesystems on removable media. (2GiB, since some
           implementations use 32-bit signed offsets)
-      - Strings:
-        - Is valid FAT32-safe filename/prefix (path separators disallowed)
       - Paths:
         - File path is probably FAT32 writable
           - If file exists, `access()` says it's probably writable
