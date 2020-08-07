@@ -22,7 +22,7 @@ use faccess::PathExt;
 ///
 /// **TODO:** Decide what (if anything) to do about the NTFS "only in root directory" reservations.
 #[rustfmt::skip]
-pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",   // Comments for rustfmt
+pub const RESERVED_DOS_FILENAMES: &[&str] = &["AUX", "CON", "NUL", "PRN",
     "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", // Serial Ports
     "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", // Parallel Ports
     "CLOCK$", "$IDLE$", "CONFIG$", "KEYBD$", "LST", "SCREEN$"];
@@ -263,7 +263,7 @@ pub fn filename_valid_portable<P: AsRef<Path> + ?Sized>(value: &P) -> Result<(),
         Some(string) => string,
         None => {
             return Err("File/folder names containing non-UTF8 characters aren't portable".into())
-        },
+        }
     };
     let last_char = match lossy_str.chars().last() {
         Some(chr) => chr,
