@@ -426,7 +426,9 @@ default for new projects.</td>
 
   ```sh
   for script in ~/.bash_completion.d/*; do
-    . "$script"
+    if [ -e "$script" ]; then
+      . "$script"
+    fi
   done
   ```
 
@@ -455,8 +457,7 @@ defined:
 
 ### If built via `just build`:
 
-1. Unless otherwise noted, all optimizations listed above.
-2. The default `CARGO_BUILD_TARGET` defined in the `justfile` will specify a
+1. The default `CARGO_BUILD_TARGET` defined in the `justfile` will specify a
    32-bit x86 build, statically linked against
    [musl-libc](http://www.musl-libc.org/) for portability comparable to a
    [Go](<https://en.wikipedia.org/wiki/Go_(programming_language)>) binary.
@@ -465,8 +466,7 @@ defined:
 
 ### If built via `cargo build --release`:
 
-1. LTO (Link-Time Optimization) will be enabled to allow dead-code elimination.
-   (`lto = true`)
+1. Full LTO (Link-Time Optimization) will be enabled. (`lto = true`)
 2. The binary will be built with `opt-level = "z"` to further reduce file size.
 3. If `panic="abort"` is uncommented in `Cargo.toml`, LTO will prune away the
    unwinding machinery to save even more space, but panics will not cause `Drop`
@@ -639,8 +639,8 @@ following dependencies must be installed:
 
 ## TODO
 
-- Add a `.travis.yml` at the top level to plumb the various test suites into CI
-  and then add a badge.
+- Add a `.travis.yml` at the top level to plumb the various test suites
+  (template repo and generated project) into CI and then add a badge.
 - Add a `#[cfg(windows)]` version of the `path_output_dir` validator and make
   the `libc` dependency conditional on `not(windows)` so that cross-compiling
   for Windows using the `x86_64-pc-windows-gnu` target can be a viable way to
