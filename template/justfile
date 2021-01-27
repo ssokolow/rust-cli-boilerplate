@@ -1,84 +1,84 @@
-# Version 0.2
-# Copyright 2017-2019, Stephan Sokolow
+# Version 0.3
+# Copyright 2017-2020, Stephan Sokolow
 
 # --== Variables to be customized/overridden by the user ==--
 
 # The target for `cargo` commands to use and `install-rustup-deps` to install
-export CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl"
+export CARGO_BUILD_TARGET := "x86_64-unknown-linux-musl"
 
 # An easy way to override the `cargo` channel for just this project
-channel = "stable"
+channel := "stable"
 
 # Extra cargo features to enable
-features = ""
+features := ""
 
 # An easy place to modify the build flags used
-build_flags = ""
+build_flags := ""
 
 # Example for OpenPandora cross-compilation
-# export CARGO_BUILD_TARGET = "arm-unknown-linux-gnueabi"
+# export CARGO_BUILD_TARGET := "arm-unknown-linux-gnueabi"
 
 # -- `build-dist` --
 
 # Set this to the cross-compiler's `strip` when cross-compiling
-strip_bin = "strip"
+strip_bin := "strip"
 
 # Flags passed to `strip_bin`
-strip_flags = "--strip-unneeded"
+strip_flags := "--strip-unneeded"
 
 # Set this if you need to override it for a cross-compiling `sstrip`
-sstrip_bin = "sstrip"
+sstrip_bin := "sstrip"
 
 # Flags passed to [UPX](https://upx.github.io/)
-upx_flags = "--ultra-brute"
+upx_flags := "--ultra-brute"
 
 # Example for OpenPandora cross-compilation
-# strip_bin = `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
+# strip_bin := `echo $HOME/opt/pandora-dev/arm-2011.09/bin/pandora-strip`
 
 # -- `kcachegrind` --
 
 # Extra arguments to pass to [callgrind](http://valgrind.org/docs/manual/cl-manual.html).
-callgrind_args = ""
+callgrind_args := ""
 
 # Temporary file used by `just kcachegrind`
-callgrind_out_file = "callgrind.out.justfile"
+callgrind_out_file := "callgrind.out.justfile"
 
 # Set this to override how `kcachegrind` is called
-kcachegrind = "kcachegrind"
+kcachegrind := "kcachegrind"
 
 # -- `install` and `uninstall` --
 
 # Where to `install` bash completions.
 # **You'll need to manually add some lines to source these files in `.bashrc`**
-bash_completion_dir = "~/.bash_completion.d"
+bash_completion_dir := "~/.bash_completion.d"
 
 # Where to `install` fish completions. You'll probably never need to change this.
-fish_completion_dir = "~/.config/fish/completions"
+fish_completion_dir := "~/.config/fish/completions"
 
 # Where to `install` zsh completions.
 # **You'll need to add this to your `fpath` manually**
-zsh_completion_dir = "~/.zsh/functions"
+zsh_completion_dir := "~/.zsh/functions"
 
 # Where to `install` manpages. As long as `~/.cargo/bin` is in your `PATH`, `man` should
 # automatically pick up this location.
-manpage_dir = "~/.cargo/share/man/man1"
+manpage_dir := "~/.cargo/share/man/man1"
 
 # --== Code Begins ==--
 
 # Internal variables
 # TODO: Look up that GitHub issues post on whitespace handling
-_cargo_cmd = "cargo"  # Used for --dry-run simulation
-_cargo = _cargo_cmd + " \"+" + channel + "\""
-_build_flags = "--features=\"" + features + "\" " + build_flags
-_doc_flags = "--document-private-items --features=\"" + features + "\""
+_cargo_cmd := "cargo"  # Used for --dry-run simulation
+_cargo := _cargo_cmd + " \"+" + channel + "\""
+_build_flags := "--features=\"" + features + "\" " + build_flags
+_doc_flags := "--document-private-items --features=\"" + features + "\""
 
 # Parse the value of the "name" key in the [package] section of Cargo.toml
 # using only the commands any POSIX-compliant platform should have
 # Source: http://stackoverflow.com/a/40778047/435253
-export _pkgname=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
-export _pkgname_snake=`sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@' | tr - _`
-export _rls_bin_path="target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
-export _dbg_bin_path="target/" + CARGO_BUILD_TARGET  + "/debug/" + _pkgname
+export _pkgname := `sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@'`
+export _pkgname_snake := `sed -nr "/^\[package\]/ { :l /^name[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" Cargo.toml | sed 's@^"\(.*\)"$@\1@' | tr - _`
+export _rls_bin_path := "target/" + CARGO_BUILD_TARGET  + "/release/" + _pkgname
+export _dbg_bin_path := "target/" + CARGO_BUILD_TARGET  + "/debug/" + _pkgname
 
 # Shorthand for `just fulltest`
 DEFAULT: fulltest
